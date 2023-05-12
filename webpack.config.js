@@ -31,6 +31,9 @@ module.exports = () => {
         type: "module",
       },
     },
+    externals: {
+      // TODO: Either put peer-dependencies here or make them regular dependencies
+    },
     optimization: {
       minimizer: [
         new TerserPlugin({
