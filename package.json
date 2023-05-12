@@ -17,46 +17,33 @@
     "type": "git",
     "url": "git+https://github.com/marekdedic/prosemirror-unified.git"
   },
-  "main": "index.js",
+  "main": "dist/prosemirror-unified.min.js",
   "scripts": {
     "build": "webpack",
     "lint": "eslint --color 'src/**/*.ts' 'webpack.config.js'"
   },
-  "dependencies": {
-    "remark-unwrap-images": "^3.0.1"
-  },
   "peerDependencies": {
+    "prosemirror-commands": "^1.5.1",
+    "prosemirror-inputrules": "^1.2.0",
+    "prosemirror-keymap": "^1.2.1",
     "prosemirror-model": "^1.19.0",
     "prosemirror-state": "^1.4.2",
-    "prosemirror-view": "^1.30.2"
+    "unified": "^10.1.2"
   },
   "devDependencies": {
+    "@types/mdast": "^3.0.11",
+    "@types/unist": "^2.0.6",
     "@typescript-eslint/eslint-plugin": "^5.59.0",
     "@typescript-eslint/parser": "^5.59.0",
-    "css-loader": "^6.7.3",
     "eslint": "^8.38.0",
     "eslint-config-prettier": "^8.8.0",
     "eslint-plugin-deprecation": "^1.4.1",
     "eslint-plugin-prettier": "^4.2.1",
     "eslint-plugin-simple-import-sort": "^10.0.0",
-    "html-webpack-plugin": "^5.5.1",
-    "mini-css-extract-plugin": "^2.7.5",
     "prettier": "^2.8.7",
-    "prosemirror-example-setup": "^1.2.1",
-    "prosemirror-inputrules": "^1.2.0",
-    "prosemirror-markdown": "^1.10.1",
-    "prosemirror-schema-basic": "^1.2.1",
-    "prosemirror-schema-list": "^1.2.2",
-    "rehype-sanitize": "^5.0.1",
-    "rehype-stringify": "^9.0.3",
-    "remark-gfm": "^3.0.1",
-    "remark-parse": "^10.0.1",
-    "remark-rehype": "^10.1.0",
-    "remark-stringify": "^10.0.2",
+    "terser-webpack-plugin": "^5.3.8",
     "ts-loader": "^9.4.2",
-    "unified": "^10.1.2",
     "webpack": "^5.80.0",
-    "webpack-cli": "^5.0.1",
-    "webpack-subresource-integrity": "^5.2.0-rc.1"
+    "webpack-cli": "^5.0.1"
   }
 }
