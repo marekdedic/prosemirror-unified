@@ -2,6 +2,7 @@
 
 const TerserPlugin = require("terser-webpack-plugin");
 
+// TODO: Emit type declaration
 module.exports = () => {
   return {
     mode: "production",
