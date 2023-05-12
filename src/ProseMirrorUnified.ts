@@ -1,3 +1,4 @@
+// TODO: Remove `@types/mdast` dependency
 import type { Root } from "mdast";
 import type { Node as ProseMirrorNode, Schema } from "prosemirror-model";
 import type { Plugin } from "prosemirror-state";
