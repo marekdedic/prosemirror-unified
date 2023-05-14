@@ -10,6 +10,9 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "sourceMap": true,
+    "declaration": true,
+    "declarationMap": true,
+    "declarationDir": "types",
     "strict": true
   }
 }
