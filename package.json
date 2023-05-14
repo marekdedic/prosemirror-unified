@@ -22,7 +22,7 @@
     "build": "webpack",
     "lint": "eslint --color 'src/**/*.ts' 'webpack.config.js'"
   },
-  "peerDependencies": {
+  "dependencies": {
     "prosemirror-commands": "^1.5.1",
     "prosemirror-inputrules": "^1.2.0",
     "prosemirror-keymap": "^1.2.1",

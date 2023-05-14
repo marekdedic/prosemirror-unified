@@ -33,7 +33,12 @@ module.exports = () => {
       },
     },
     externals: {
-      // TODO: Either put peer-dependencies here or make them regular dependencies
+      "prosemirror-commands": "module prosemirror-commands",
+      "prosemirror-inputrules": "module prosemirror-inputrules",
+      "prosemirror-keymap": "module prosemirror-keymap",
+      "prosemirror-model": "module prosemirror-model",
+      "prosemirror-state": "module prosemirror-state",
+      unified: "module unified",
     },
     optimization: {
       minimizer: [
