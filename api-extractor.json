@@ -23,6 +23,9 @@
     "extractorMessageReporting": {
       "default": {
         "logLevel": "error"
+      },
+      "ae-forgotten-export": {
+        "logLevel": "none"
       }
     },
     "tsdocMessageReporting": {
