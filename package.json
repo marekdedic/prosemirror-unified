@@ -17,7 +17,12 @@
     "type": "git",
     "url": "git+https://github.com/marekdedic/prosemirror-unified.git"
   },
-  "main": "dist/prosemirror-unified.min.js",
+  "main": "dist/prosemirror-unified.cjs",
+  "module": "dist/prosemirror-unified.js",
+  "types": "dist/prosemirror-unified.d.ts",
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build:webpack": "webpack",
     "build:api-extractor": "api-extractor run",
