@@ -1,7 +1,6 @@
 /* eslint-env node */
 
-// TODO: Emit type declaration
-module.exports = () => {
+function createConfig(libraryType, extension) {
   return {
     mode: "production",
     devtool: "source-map",
@@ -25,9 +24,9 @@ module.exports = () => {
       "prosemirror-unified": "./src/index.ts",
     },
     output: {
-      filename: "[name].js",
+      filename: "[name]." + extension,
       library: {
-        type: "module",
+        type: libraryType,
       },
     },
     externals: {
@@ -45,4 +44,10 @@ module.exports = () => {
       outputModule: true,
     },
   };
-};
+}
+
+// TODO: Emit type declaration
+module.exports = [
+  createConfig("module", "js"),
+  createConfig("commonjs2", "cjs"),
+];
