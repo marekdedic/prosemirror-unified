@@ -19,7 +19,9 @@
   },
   "main": "dist/prosemirror-unified.min.js",
   "scripts": {
-    "build": "webpack",
+    "build:webpack": "webpack",
+    "build:api-extractor": "api-extractor run",
+    "build": "npm run build:webpack && npm run build:api-extractor",
     "lint": "eslint --color 'src/**/*.ts' 'webpack.config.js'"
   },
   "dependencies": {
