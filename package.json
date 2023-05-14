@@ -21,7 +21,9 @@
   "module": "dist/prosemirror-unified.js",
   "types": "dist/prosemirror-unified.d.ts",
   "files": [
-    "dist"
+    "dist",
+    "LICENSE",
+    "README.md"
   ],
   "scripts": {
     "build:webpack": "webpack",
