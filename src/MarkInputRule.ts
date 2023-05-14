@@ -7,6 +7,9 @@ import {
   type Transaction,
 } from "prosemirror-state";
 
+/**
+ * @public
+ */
 export class MarkInputRule extends InputRule {
   private readonly markType: MarkType;
 

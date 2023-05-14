@@ -7,6 +7,9 @@ import type { Node as UnistNode } from "unist";
 
 import { SyntaxExtension } from "./SyntaxExtension";
 
+/**
+ * @public
+ */
 export abstract class NodeExtension<
   UNode extends UnistNode
 > extends SyntaxExtension<UNode> {

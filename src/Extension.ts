@@ -1,6 +1,9 @@
 import type { Processor } from "unified";
 import type { Node as UnistNode } from "unist";
 
+/**
+ * @public
+ */
 export abstract class Extension {
   public dependencies(): Array<Extension> {
     return [];
