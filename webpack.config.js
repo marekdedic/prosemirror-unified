@@ -1,7 +1,5 @@
 /* eslint-env node */
 
-const TerserPlugin = require("terser-webpack-plugin");
-
 // TODO: Emit type declaration
 module.exports = () => {
   return {
@@ -27,7 +25,7 @@ module.exports = () => {
       "prosemirror-unified": "./src/index.ts",
     },
     output: {
-      filename: "[name].min.js",
+      filename: "[name].js",
       library: {
         type: "module",
       },
@@ -41,11 +39,7 @@ module.exports = () => {
       unified: "module unified",
     },
     optimization: {
-      minimizer: [
-        new TerserPlugin({
-          extractComments: false,
-        }),
-      ],
+      minimize: false,
     },
     experiments: {
       outputModule: true,
