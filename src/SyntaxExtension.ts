@@ -3,7 +3,6 @@ import type { Node as ProseMirrorNode, Schema } from "prosemirror-model";
 import type { Command } from "prosemirror-state";
 import type { Node as UnistNode } from "unist";
 
-import type { ConverterContext } from "./ConverterContext";
 import { Extension } from "./Extension";
 
 export abstract class SyntaxExtension<
@@ -29,7 +28,7 @@ export abstract class SyntaxExtension<
   }
 
   public postUnistToProseMirrorHook(
-    _context: ConverterContext<Context>
+    _context: Partial<Context>
     // eslint-disable-next-line @typescript-eslint/no-empty-function
   ): void {}
 
@@ -42,6 +41,6 @@ export abstract class SyntaxExtension<
   public abstract unistNodeToProseMirrorNodes(
     node: UNode,
     convertedChildren: Array<ProseMirrorNode>,
-    context: ConverterContext<Context>
+    context: Partial<Context>
   ): Array<ProseMirrorNode>;
 }
