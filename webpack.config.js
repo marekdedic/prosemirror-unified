@@ -46,7 +46,6 @@ function createConfig(libraryType, extension) {
   };
 }
 
-// TODO: Emit type declaration
 module.exports = [
   createConfig("module", "js"),
   createConfig("commonjs2", "cjs"),
