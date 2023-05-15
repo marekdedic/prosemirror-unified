@@ -1,7 +1,6 @@
 import type { Node as ProseMirrorNode } from "prosemirror-model";
 import type { Node as UnistNode, Parent } from "unist";
 
-import type { ConverterContext } from "./ConverterContext";
 import type { ExtensionManager } from "./ExtensionManager";
 
 export class UnistToProseMirrorConverter {
@@ -16,7 +15,7 @@ export class UnistToProseMirrorConverter {
   }
 
   public convert(unist: UnistNode): ProseMirrorNode | null {
-    const context: ConverterContext<unknown> = {};
+    const context: Partial<unknown> = {};
     const rootNode = this.convertNode(unist, context);
     for (const extension of this.extensionManager.syntaxExtensions()) {
       extension.postUnistToProseMirrorHook(context);
@@ -30,7 +29,7 @@ export class UnistToProseMirrorConverter {
 
   private convertNode(
     node: UnistNode,
-    context: ConverterContext<unknown>
+    context: Partial<unknown>
   ): Array<ProseMirrorNode> {
     for (const extension of this.extensionManager.syntaxExtensions()) {
       if (!extension.unistToProseMirrorTest(node)) {
