@@ -1,5 +1,3 @@
-// TODO: Remove `@types/mdast` dependency
-import type { Root } from "mdast";
 import type { Node as ProseMirrorNode, Schema } from "prosemirror-model";
 import type { Plugin } from "prosemirror-state";
 import type { Processor } from "unified";
@@ -42,10 +40,6 @@ export class ProseMirrorUnified {
 
   public parse(source: string): ProseMirrorNode | null {
     const unist = this.unified.runSync(this.unified.parse(source));
-    // TODO: Fix remark-unwrap-images to not put text nodes in root
-    (unist as Root).children = (unist as Root).children.filter(
-      (child) => child.type !== "text"
-    );
     const ret = this.unistToProseMirrorConverter.convert(unist);
     console.log(ret);
     return ret;
