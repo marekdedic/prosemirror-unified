@@ -1,4 +1,3 @@
-// TODO: Remove `@types/mdast` dependency
 import type { Node as ProseMirrorNode, Schema } from "prosemirror-model";
 import type { Plugin } from "prosemirror-state";
 import type { Processor } from "unified";
