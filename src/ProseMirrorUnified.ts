@@ -49,8 +49,12 @@ export class ProseMirrorUnified {
     return this.builtSchema;
   }
 
-  public plugins(): Array<Plugin> {
-    return [this.inputRulesBuilder.build(), this.keymapBuilder.build()];
+  public inputRulesPlugin(): Plugin {
+    return this.inputRulesBuilder.build();
+  }
+
+  public keymapPlugin(): Plugin {
+    return this.keymapBuilder.build();
   }
 
   public serialize(doc: ProseMirrorNode): string {
