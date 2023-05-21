@@ -8,7 +8,7 @@ module.exports = {
       tsconfig: "tsconfig.json",
     },
   },
-  preset: "ts-jest/presets/default-esm",
+  preset: "ts-jest/presets/default-esm-legacy",
   resetMocks: true,
   testMatch: ["<rootDir>/__tests__/**/*.test.ts"],
 };
