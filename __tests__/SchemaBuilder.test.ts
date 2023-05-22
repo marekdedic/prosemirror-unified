@@ -4,7 +4,7 @@ import { SchemaBuilder } from "../src/SchemaBuilder";
 import { mockExtensionManager } from "./mockExtensionManager";
 import { mockNodeExtension } from "./mockNodeExtension";
 
-describe("SchemaBuilder works with nodes", () => {
+test("SchemaBuilder works with nodes", () => {
   const docExtension = mockNodeExtension();
   docExtension.proseMirrorNodeName.mockReturnValueOnce("doc");
   docExtension.proseMirrorNodeSpec.mockReturnValueOnce({});
@@ -22,6 +22,6 @@ describe("SchemaBuilder works with nodes", () => {
   expect(schema).toBeInstanceOf(Schema);
   expect(schema.nodes["doc"]).toBeInstanceOf(NodeType);
   expect(schema.nodes["text"]).toBeInstanceOf(NodeType);
-  expect(schema.spec.nodes.get("doc")).toEqual({});
-  expect(schema.spec.nodes.get("text")).toEqual({});
+  expect(schema.spec.nodes.get("doc")).toStrictEqual({});
+  expect(schema.spec.nodes.get("text")).toStrictEqual({});
 });
