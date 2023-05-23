@@ -1,3 +1,4 @@
+import { mocked } from "jest-mock";
 import {
   type DOMOutputSpec,
   type Mark,
@@ -6,10 +7,12 @@ import {
   Schema,
 } from "prosemirror-model";
 
+import { ExtensionManager } from "../src/ExtensionManager";
 import { SchemaBuilder } from "../src/SchemaBuilder";
-import { mockExtensionManager } from "./mockExtensionManager";
 import { mockMarkExtension } from "./mockMarkExtension";
 import { mockNodeExtension } from "./mockNodeExtension";
+
+jest.mock("../src/ExtensionManager");
 
 test("SchemaBuilder works with nodes", () => {
   const docExtension = mockNodeExtension();
@@ -19,7 +22,7 @@ test("SchemaBuilder works with nodes", () => {
   textExtension.proseMirrorNodeName.mockReturnValueOnce("text");
   textExtension.proseMirrorNodeSpec.mockReturnValueOnce({});
 
-  const manager = mockExtensionManager();
+  const manager = mocked(new ExtensionManager([]));
   manager.markExtensions.mockReturnValueOnce([]);
   manager.nodeExtensions.mockReturnValueOnce([docExtension, textExtension]);
 
@@ -44,7 +47,7 @@ test("SchemaBuilder works with marks", () => {
   markExtension1.proseMirrorMarkName.mockReturnValueOnce("MARK_1");
   markExtension1.proseMirrorMarkSpec.mockReturnValueOnce({});
 
-  const manager = mockExtensionManager();
+  const manager = mocked(new ExtensionManager([]));
   manager.markExtensions.mockReturnValueOnce([markExtension1]);
   manager.nodeExtensions.mockReturnValueOnce([docExtension, textExtension]);
 
@@ -101,7 +104,7 @@ test("SchemaBuilder works with complex specs", () => {
   };
   markExtension1.proseMirrorMarkSpec.mockReturnValueOnce(markSpec);
 
-  const manager = mockExtensionManager();
+  const manager = mocked(new ExtensionManager([]));
   manager.markExtensions.mockReturnValueOnce([markExtension1]);
   manager.nodeExtensions.mockReturnValueOnce([docExtension, textExtension]);
 
