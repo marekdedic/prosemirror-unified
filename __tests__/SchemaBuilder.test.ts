@@ -10,15 +10,15 @@ import {
 import { ExtensionManager } from "../src/ExtensionManager";
 import { SchemaBuilder } from "../src/SchemaBuilder";
 import { mockMarkExtension } from "./mockMarkExtension";
-import { mockNodeExtension } from "./mockNodeExtension";
+import { MockNodeExtension } from "./MockNodeExtension";
 
 jest.mock("../src/ExtensionManager");
 
 test("SchemaBuilder works with nodes", () => {
-  const docExtension = mockNodeExtension();
+  const docExtension = mocked(new MockNodeExtension());
   docExtension.proseMirrorNodeName.mockReturnValueOnce("doc");
   docExtension.proseMirrorNodeSpec.mockReturnValueOnce({});
-  const textExtension = mockNodeExtension();
+  const textExtension = mocked(new MockNodeExtension());
   textExtension.proseMirrorNodeName.mockReturnValueOnce("text");
   textExtension.proseMirrorNodeSpec.mockReturnValueOnce({});
 
@@ -37,10 +37,10 @@ test("SchemaBuilder works with nodes", () => {
 });
 
 test("SchemaBuilder works with marks", () => {
-  const docExtension = mockNodeExtension();
+  const docExtension = mocked(new MockNodeExtension());
   docExtension.proseMirrorNodeName.mockReturnValueOnce("doc");
   docExtension.proseMirrorNodeSpec.mockReturnValueOnce({});
-  const textExtension = mockNodeExtension();
+  const textExtension = mocked(new MockNodeExtension());
   textExtension.proseMirrorNodeName.mockReturnValueOnce("text");
   textExtension.proseMirrorNodeSpec.mockReturnValueOnce({});
   const markExtension1 = mockMarkExtension();
@@ -64,7 +64,7 @@ test("SchemaBuilder works with marks", () => {
 });
 
 test("SchemaBuilder works with complex specs", () => {
-  const docExtension = mockNodeExtension();
+  const docExtension = mocked(new MockNodeExtension());
   docExtension.proseMirrorNodeName.mockReturnValueOnce("doc");
   const docSpec = {
     content: "text*",
@@ -78,7 +78,7 @@ test("SchemaBuilder works with complex specs", () => {
     },
   };
   docExtension.proseMirrorNodeSpec.mockReturnValueOnce(docSpec);
-  const textExtension = mockNodeExtension();
+  const textExtension = mocked(new MockNodeExtension());
   textExtension.proseMirrorNodeName.mockReturnValueOnce("text");
   textExtension.proseMirrorNodeSpec.mockReturnValueOnce({});
   const markExtension1 = mockMarkExtension();
