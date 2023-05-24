@@ -16,10 +16,8 @@ export class MockNodeExtension<
     [ProseMirrorNode, Array<UnistNode>]
   >();
 
-  // TODO: This is from SyntaxExtension
   public unistNodeName = jest.fn<UNode["type"], []>();
 
-  // TODO: This is from SyntaxExtension
   public unistNodeToProseMirrorNodes = jest.fn<
     Array<ProseMirrorNode>,
     [UNode, Array<ProseMirrorNode>, Partial<Context>]

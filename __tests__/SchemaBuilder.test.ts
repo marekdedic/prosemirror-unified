@@ -9,7 +9,7 @@ import {
 
 import { ExtensionManager } from "../src/ExtensionManager";
 import { SchemaBuilder } from "../src/SchemaBuilder";
-import { mockMarkExtension } from "./mockMarkExtension";
+import { MockMarkExtension } from "./MockMarkExtension";
 import { MockNodeExtension } from "./MockNodeExtension";
 
 jest.mock("../src/ExtensionManager");
@@ -43,7 +43,7 @@ test("SchemaBuilder works with marks", () => {
   const textExtension = mocked(new MockNodeExtension());
   textExtension.proseMirrorNodeName.mockReturnValueOnce("text");
   textExtension.proseMirrorNodeSpec.mockReturnValueOnce({});
-  const markExtension1 = mockMarkExtension();
+  const markExtension1 = mocked(new MockMarkExtension());
   markExtension1.proseMirrorMarkName.mockReturnValueOnce("MARK_1");
   markExtension1.proseMirrorMarkSpec.mockReturnValueOnce({});
 
@@ -81,7 +81,7 @@ test("SchemaBuilder works with complex specs", () => {
   const textExtension = mocked(new MockNodeExtension());
   textExtension.proseMirrorNodeName.mockReturnValueOnce("text");
   textExtension.proseMirrorNodeSpec.mockReturnValueOnce({});
-  const markExtension1 = mockMarkExtension();
+  const markExtension1 = mocked(new MockMarkExtension());
   markExtension1.proseMirrorMarkName.mockReturnValueOnce("MARK_1");
   const markSpec = {
     attrs: { href: { default: null } },
