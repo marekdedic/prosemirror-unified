@@ -1,5 +1,7 @@
 import { mocked } from "jest-mock";
+import type { Node as UnistNode } from "unist";
 
+import { Extension } from "../src/Extension";
 import { ExtensionManager } from "../src/ExtensionManager";
 import { MockMarkExtension } from "./MockMarkExtension";
 import { MockNodeExtension } from "./MockNodeExtension";
@@ -24,18 +26,69 @@ test("ExtensionManager manages node extensions", () => {
   expect(manager.syntaxExtensions()).toStrictEqual([nodeExtension]);
 });
 
-test("ExtensionManager manages mixed mark and node extensions", () => {
-  const markExtension = mocked(new MockMarkExtension());
-  const nodeExtension = mocked(new MockNodeExtension());
-  const manager = new ExtensionManager([markExtension, nodeExtension]);
+test("ExtensionManager manages other extensions", () => {
+  class MockExtension extends Extension {}
+  const extension = mocked(new MockExtension());
+  const manager = new ExtensionManager([extension]);
 
-  expect(manager.extensions()).toStrictEqual([nodeExtension, markExtension]);
-  expect(manager.markExtensions()).toStrictEqual([markExtension]);
-  expect(manager.nodeExtensions()).toStrictEqual([nodeExtension]);
-  expect(manager.syntaxExtensions()).toStrictEqual([
-    nodeExtension,
-    markExtension,
-  ]);
+  expect(manager.extensions()).toStrictEqual([extension]);
+  expect(manager.markExtensions()).toStrictEqual([]);
+  expect(manager.nodeExtensions()).toStrictEqual([]);
+  expect(manager.syntaxExtensions()).toStrictEqual([]);
 });
 
 // TODO: Multiple extensions of the same type
+
+test("ExtensionManager manages mark and node extensions", () => {
+  class MarkExtension1<
+    UNode extends UnistNode
+  > extends MockMarkExtension<UNode> {}
+  class MarkExtension2<
+    UNode extends UnistNode
+  > extends MockMarkExtension<UNode> {}
+  class NodeExtension1<
+    UNode extends UnistNode
+  > extends MockNodeExtension<UNode> {}
+  class NodeExtension2<
+    UNode extends UnistNode
+  > extends MockNodeExtension<UNode> {}
+  class MockExtension1 extends Extension {}
+  class MockExtension2 extends Extension {}
+  const markExtension1 = mocked(new MarkExtension1());
+  const markExtension2 = mocked(new MarkExtension2());
+  const nodeExtension1 = mocked(new NodeExtension1());
+  const nodeExtension2 = mocked(new NodeExtension2());
+  const otherExtension1 = mocked(new MockExtension1());
+  const otherExtension2 = mocked(new MockExtension2());
+  const manager = new ExtensionManager([
+    markExtension1,
+    markExtension2,
+    nodeExtension1,
+    nodeExtension2,
+    otherExtension1,
+    otherExtension2,
+  ]);
+
+  expect(manager.extensions()).toStrictEqual([
+    nodeExtension1,
+    nodeExtension2,
+    markExtension1,
+    markExtension2,
+    otherExtension1,
+    otherExtension2,
+  ]);
+  expect(manager.markExtensions()).toStrictEqual([
+    markExtension1,
+    markExtension2,
+  ]);
+  expect(manager.nodeExtensions()).toStrictEqual([
+    nodeExtension1,
+    nodeExtension2,
+  ]);
+  expect(manager.syntaxExtensions()).toStrictEqual([
+    nodeExtension1,
+    nodeExtension2,
+    markExtension1,
+    markExtension2,
+  ]);
+});
