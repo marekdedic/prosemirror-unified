@@ -90,3 +90,54 @@ test("ExtensionManager manages mark and node extensions", () => {
     markExtension2,
   ]);
 });
+
+test("ExtensionManager manages extensions with dependencies", () => {
+  class MarkExtension1<
+    UNode extends UnistNode
+  > extends MockMarkExtension<UNode> {}
+  class MarkExtension2<
+    UNode extends UnistNode
+  > extends MockMarkExtension<UNode> {}
+  class NodeExtension1<
+    UNode extends UnistNode
+  > extends MockNodeExtension<UNode> {}
+  class NodeExtension2<
+    UNode extends UnistNode
+  > extends MockNodeExtension<UNode> {}
+  class MockExtension1 extends Extension {}
+  const markExtension1 = mocked(new MarkExtension1());
+  const markExtension2 = mocked(new MarkExtension2());
+  const nodeExtension1 = mocked(new NodeExtension1());
+  const nodeExtension2 = mocked(new NodeExtension2());
+  const extension1 = mocked(new MockExtension1());
+  console.log(jest.isMockFunction(extension1.dependencies));
+  extension1.dependencies.mockReturnValueOnce([
+    markExtension1,
+    markExtension2,
+    nodeExtension1,
+    nodeExtension2,
+  ]);
+  const manager = new ExtensionManager([extension1]);
+
+  expect(manager.extensions()).toStrictEqual([
+    nodeExtension1,
+    nodeExtension2,
+    markExtension1,
+    markExtension2,
+    extension1,
+  ]);
+  expect(manager.markExtensions()).toStrictEqual([
+    markExtension1,
+    markExtension2,
+  ]);
+  expect(manager.nodeExtensions()).toStrictEqual([
+    nodeExtension1,
+    nodeExtension2,
+  ]);
+  expect(manager.syntaxExtensions()).toStrictEqual([
+    nodeExtension1,
+    nodeExtension2,
+    markExtension1,
+    markExtension2,
+  ]);
+});
