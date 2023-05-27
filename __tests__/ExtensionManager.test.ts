@@ -37,8 +37,6 @@ test("ExtensionManager manages other extensions", () => {
   expect(manager.syntaxExtensions()).toStrictEqual([]);
 });
 
-// TODO: Multiple extensions of the same type
-
 test("ExtensionManager manages mark and node extensions", () => {
   class MarkExtension1<
     UNode extends UnistNode
@@ -58,15 +56,15 @@ test("ExtensionManager manages mark and node extensions", () => {
   const markExtension2 = mocked(new MarkExtension2());
   const nodeExtension1 = mocked(new NodeExtension1());
   const nodeExtension2 = mocked(new NodeExtension2());
-  const otherExtension1 = mocked(new MockExtension1());
-  const otherExtension2 = mocked(new MockExtension2());
+  const extension1 = mocked(new MockExtension1());
+  const extension2 = mocked(new MockExtension2());
   const manager = new ExtensionManager([
     markExtension1,
     markExtension2,
     nodeExtension1,
     nodeExtension2,
-    otherExtension1,
-    otherExtension2,
+    extension1,
+    extension2,
   ]);
 
   expect(manager.extensions()).toStrictEqual([
@@ -74,8 +72,8 @@ test("ExtensionManager manages mark and node extensions", () => {
     nodeExtension2,
     markExtension1,
     markExtension2,
-    otherExtension1,
-    otherExtension2,
+    extension1,
+    extension2,
   ]);
   expect(manager.markExtensions()).toStrictEqual([
     markExtension1,
