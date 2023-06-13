@@ -10,7 +10,8 @@ jest.mock("../src/ExtensionManager");
 test("Converts basic document", () => {
   const docExtension = mocked(new MockNodeExtension());
   docExtension.proseMirrorNodeName.mockReturnValueOnce("doc");
-  docExtension.proseMirrorNodeToUnistNodes.mockReturnValueOnce([]);
+  const rootUnistNode = { type: "root", children: [] };
+  docExtension.proseMirrorNodeToUnistNodes.mockReturnValueOnce([rootUnistNode]);
 
   const manager = mocked(new ExtensionManager([]));
   manager.nodeExtensions.mockReturnValueOnce([docExtension]);
@@ -23,9 +24,9 @@ test("Converts basic document", () => {
       text: {},
     },
   });
-  const rootNode = schema.nodes["doc"].createAndFill({}, [])!;
+  const rootProseMirrorNode = schema.nodes["doc"].createAndFill({}, [])!;
 
-  expect(converter.convert(rootNode)).toBeNull();
+  expect(converter.convert(rootProseMirrorNode)).toStrictEqual(rootUnistNode);
 });
 
 /*
