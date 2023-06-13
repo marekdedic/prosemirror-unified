@@ -41,7 +41,6 @@ export class ProseMirrorUnified {
   public parse(source: string): ProseMirrorNode | null {
     const unist = this.unified.runSync(this.unified.parse(source));
     const ret = this.unistToProseMirrorConverter.convert(unist);
-    console.log(ret);
     return ret;
   }
 
@@ -59,11 +58,7 @@ export class ProseMirrorUnified {
 
   public serialize(doc: ProseMirrorNode): string {
     const unist = this.proseMirrorToUnistConverter.convert(doc);
-    if (unist === null) {
-      return "";
-    }
     const source: string = this.unified.stringify(unist);
-    console.log(unist);
     return source;
   }
 }

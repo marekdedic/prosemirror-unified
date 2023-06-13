@@ -14,15 +14,14 @@ export class UnistToProseMirrorConverter {
     return "children" in node;
   }
 
-  public convert(unist: UnistNode): ProseMirrorNode | null {
+  public convert(unist: UnistNode): ProseMirrorNode {
     const context: Partial<unknown> = {};
     const rootNode = this.convertNode(unist, context);
     for (const extension of this.extensionManager.syntaxExtensions()) {
       extension.postUnistToProseMirrorHook(context);
     }
     if (rootNode.length !== 1) {
-      console.error("Couldn't find any way to convert the root unist node.");
-      return null;
+      throw new Error("Couldn't find any way to convert the root unist node.");
     }
     return rootNode[0];
   }
