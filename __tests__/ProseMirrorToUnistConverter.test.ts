@@ -26,7 +26,9 @@ test("Converts basic document", () => {
   });
   const rootProseMirrorNode = schema.nodes["doc"].createAndFill({}, [])!;
 
+  jest.spyOn(console, "warn").mockImplementation();
   expect(converter.convert(rootProseMirrorNode)).toStrictEqual(rootUnistNode);
+  expect(console.warn).not.toHaveBeenCalled();
 });
 
 test("Fails gracefully on no root converter", () => {
