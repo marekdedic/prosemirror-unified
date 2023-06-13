@@ -7,7 +7,7 @@ import { Extension } from "./Extension";
 
 export abstract class SyntaxExtension<
   UNode extends UnistNode,
-  Context = Record<string, never> // TODO: Have this extend it as well?
+  Context extends Record<string, unknown> = Record<string, never>
 > extends Extension {
   private schema: Schema<string, string> | undefined;
 
