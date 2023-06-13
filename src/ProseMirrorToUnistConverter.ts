@@ -10,13 +10,12 @@ export class ProseMirrorToUnistConverter {
     this.extensionManager = extensionManager;
   }
 
-  public convert(node: ProseMirrorNode): UnistNode | null {
+  public convert(node: ProseMirrorNode): UnistNode {
     const rootNode = this.convertNode(node);
     if (rootNode.length !== 1) {
-      console.error(
+      throw new Error(
         "Couldn't find any way to convert the root ProseMirror node."
       );
-      return null;
     }
     return rootNode[0];
   }

@@ -59,9 +59,6 @@ export class ProseMirrorUnified {
 
   public serialize(doc: ProseMirrorNode): string {
     const unist = this.proseMirrorToUnistConverter.convert(doc);
-    if (unist === null) {
-      return "";
-    }
     const source: string = this.unified.stringify(unist);
     console.log(unist);
     return source;
