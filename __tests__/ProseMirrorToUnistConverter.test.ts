@@ -29,7 +29,6 @@ test("Converts basic document", () => {
   expect(converter.convert(rootProseMirrorNode)).toStrictEqual(rootUnistNode);
 });
 
-/*
 test("Fails gracefully on no root converter", () => {
   const manager = mocked(new ExtensionManager([]));
   manager.nodeExtensions.mockReturnValueOnce([]);
@@ -44,6 +43,11 @@ test("Fails gracefully on no root converter", () => {
   });
   const rootNode = schema.nodes["doc"].createAndFill({}, [])!;
 
-  expect(converter.convert(rootNode)).toBeNull();
+  jest.spyOn(console, "warn").mockImplementation();
+  expect(() => converter.convert(rootNode)).toThrow(
+    "Couldn't find any way to convert the root ProseMirror node."
+  );
+  expect(console.warn).toHaveBeenCalledWith(
+    'Couldn\'t find any way to convert ProseMirror node of type "doc" to a unist node.'
+  );
 });
-*/
