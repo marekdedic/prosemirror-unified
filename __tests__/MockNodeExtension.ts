@@ -5,7 +5,7 @@ import { NodeExtension } from "../src/NodeExtension";
 
 export class MockNodeExtension<
   UNode extends UnistNode,
-  Context = Record<string, never>
+  Context extends Record<string, unknown> = Record<string, never>
 > extends NodeExtension<UNode, Context> {
   public proseMirrorNodeName = jest.fn<string | null, []>();
 

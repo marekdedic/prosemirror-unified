@@ -32,7 +32,7 @@ test("NodeExtension.proseMirrorToUnistTest has a default implementation", () => 
 describe("NodeExtension.createProseMirrorNodeHelper has a default implementation", () => {
   class ExposeMethod<
     UNode extends UnistNode,
-    Context = Record<string, never>
+    Context extends Record<string, unknown> = Record<string, never>
   > extends MockNodeExtension<UNode, Context> {
     public proseMirrorSchema = jest.fn<Schema<string, string>, []>();
 
