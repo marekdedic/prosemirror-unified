@@ -3,10 +3,17 @@
   "collectCoverageFrom": ["src/**/*"],
   "coverageDirectory": "coverage",
   "coverageProvider": "babel",
-  "preset": "ts-jest/presets/default-esm",
   "transform": {
-    "^.+\\.ts$": "ts-jest"
+    "^.+\\.(j|t)s$": [
+      "ts-jest",
+      {
+        "tsconfig": "test.tsconfig.json"
+      }
+    ]
   },
+  "transformIgnorePatterns": [
+    "node_modules/(?!unified)/"
+  ],
   "resetMocks": true,
   "testMatch": ["<rootDir>/__tests__/**/*.test.ts"]
 }
