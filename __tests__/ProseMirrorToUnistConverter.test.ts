@@ -7,6 +7,7 @@ import { MockMarkExtension } from "./MockMarkExtension";
 import { MockNodeExtension } from "./MockNodeExtension";
 
 jest.mock("../src/ExtensionManager");
+jest.mock("../src/MarkExtension");
 
 test("Converts basic document", () => {
   const docExtension = mocked(new MockNodeExtension());

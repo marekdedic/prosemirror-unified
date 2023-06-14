@@ -11,11 +11,6 @@ export class MockMarkExtension<
   UNode extends UnistNode,
   Context extends Record<string, unknown> = Record<string, never>
 > extends MarkExtension<UNode, Context> {
-  public proseMirrorToUnistTest = jest.fn<
-    boolean,
-    [node: UnistNode, mark: Mark]
-  >();
-
   public proseMirrorMarkName = jest.fn<string | null, []>();
 
   public proseMirrorMarkSpec = jest.fn<MarkSpec | null, []>();
