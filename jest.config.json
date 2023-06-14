@@ -1,6 +1,9 @@
 {
   "collectCoverage": true,
-  "collectCoverageFrom": ["src/**/*"],
+  "collectCoverageFrom": [
+    "src/**/*",
+    "!src/index.ts"
+  ],
   "coverageDirectory": "coverage",
   "coverageProvider": "babel",
   "transform": {
