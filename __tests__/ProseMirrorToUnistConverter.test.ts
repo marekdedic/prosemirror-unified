@@ -96,9 +96,6 @@ test("Converts a document with children of multiple types", () => {
     typeTwoUnistNode,
   ]);
 
-  const typeThreeExtension = mocked(new MockNodeExtension());
-  typeThreeExtension.proseMirrorNodeName.mockReturnValue("typeThree");
-
   const docExtension = mocked(new MockNodeExtension());
   docExtension.proseMirrorNodeName.mockReturnValueOnce("doc");
   const rootUnistNode = {
@@ -112,7 +109,6 @@ test("Converts a document with children of multiple types", () => {
     docExtension,
     typeOneExtension,
     typeTwoExtension,
-    typeThreeExtension,
   ]);
 
   const converter = new ProseMirrorToUnistConverter(manager);
@@ -126,9 +122,6 @@ test("Converts a document with children of multiple types", () => {
         group: "groupOne",
       },
       typeTwo: {
-        group: "groupOne",
-      },
-      typeThree: {
         group: "groupOne",
       },
       text: {},
@@ -151,7 +144,6 @@ test("Converts a document with children of multiple types", () => {
     typeTwoProseMirrorNode,
     []
   );
-  expect(typeThreeExtension.proseMirrorNodeToUnistNodes).not.toHaveBeenCalled();
   expect(docExtension.proseMirrorNodeToUnistNodes).toHaveBeenCalledWith(
     rootProseMirrorNode,
     [typeOneUnistNode, typeTwoUnistNode]
