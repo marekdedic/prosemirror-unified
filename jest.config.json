@@ -1,0 +1,22 @@
+{
+  "collectCoverage": true,
+  "collectCoverageFrom": [
+    "src/**/*",
+    "!src/index.ts"
+  ],
+  "coverageDirectory": "coverage",
+  "coverageProvider": "babel",
+  "transform": {
+    "^.+\\.(j|t)s$": [
+      "ts-jest",
+      {
+        "tsconfig": "test.tsconfig.json"
+      }
+    ]
+  },
+  "transformIgnorePatterns": [
+    "node_modules/(?!unified)/"
+  ],
+  "resetMocks": true,
+  "testMatch": ["<rootDir>/__tests__/**/*.test.ts"]
+}
