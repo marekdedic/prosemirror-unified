@@ -3,7 +3,7 @@ import { Plugin } from "prosemirror-state";
 
 import { ExtensionManager } from "../src/ExtensionManager";
 import { InputRulesBuilder } from "../src/InputRulesBuilder";
-import { MockNodeExtension } from "./MockNodeExtension";
+import { MockNodeExtension } from "./mocks/MockNodeExtension";
 
 test("InputRulesBuilder creates a plugin", () => {
   const docExtension = mocked(new MockNodeExtension());

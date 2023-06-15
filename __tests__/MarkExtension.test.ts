@@ -3,7 +3,7 @@ import { Schema } from "prosemirror-model";
 import { Extension } from "../src/Extension";
 import { MarkExtension } from "../src/MarkExtension";
 import { SyntaxExtension } from "../src/SyntaxExtension";
-import { MockMarkExtension } from "./MockMarkExtension";
+import { MockMarkExtension } from "./mocks/MockMarkExtension";
 
 test("MarkExtension.proseMirrorToUnistTest has a default implementation", () => {
   const extension = new MockMarkExtension();

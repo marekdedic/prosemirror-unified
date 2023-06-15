@@ -4,8 +4,8 @@ import type { Node as UnistNode } from "unist";
 
 import { Extension } from "../src/Extension";
 import { ExtensionManager } from "../src/ExtensionManager";
-import { MockMarkExtension } from "./MockMarkExtension";
-import { MockNodeExtension } from "./MockNodeExtension";
+import { MockMarkExtension } from "./mocks/MockMarkExtension";
+import { MockNodeExtension } from "./mocks/MockNodeExtension";
 
 jest.mock("../src/Extension");
 jest.mock("../src/SyntaxExtension");

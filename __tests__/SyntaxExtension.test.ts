@@ -1,7 +1,7 @@
 import { Schema } from "prosemirror-model";
 import type { Node as UnistNode } from "unist";
 
-import { MockSyntaxExtension } from "./MockSyntaxExtension";
+import { MockSyntaxExtension } from "./mocks/MockSyntaxExtension";
 
 test("SyntaxExtension manages schema", () => {
   class ExposeMethod<

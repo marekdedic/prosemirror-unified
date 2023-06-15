@@ -3,8 +3,8 @@ import { Schema } from "prosemirror-model";
 
 import { ExtensionManager } from "../src/ExtensionManager";
 import { ProseMirrorToUnistConverter } from "../src/ProseMirrorToUnistConverter";
-import { MockMarkExtension } from "./MockMarkExtension";
-import { MockNodeExtension } from "./MockNodeExtension";
+import { MockMarkExtension } from "./mocks/MockMarkExtension";
+import { MockNodeExtension } from "./mocks/MockNodeExtension";
 
 jest.mock("../src/ExtensionManager");
 jest.mock("../src/MarkExtension");

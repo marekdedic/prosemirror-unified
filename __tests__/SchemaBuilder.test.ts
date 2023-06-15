@@ -9,8 +9,8 @@ import {
 
 import { ExtensionManager } from "../src/ExtensionManager";
 import { SchemaBuilder } from "../src/SchemaBuilder";
-import { MockMarkExtension } from "./MockMarkExtension";
-import { MockNodeExtension } from "./MockNodeExtension";
+import { MockMarkExtension } from "./mocks/MockMarkExtension";
+import { MockNodeExtension } from "./mocks/MockNodeExtension";
 
 jest.mock("../src/ExtensionManager");
 

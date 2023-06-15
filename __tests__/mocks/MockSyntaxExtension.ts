@@ -1,7 +1,7 @@
 import type { Node as ProseMirrorNode } from "prosemirror-model";
 import type { Node as UnistNode } from "unist";
 
-import { SyntaxExtension } from "../src/SyntaxExtension";
+import { SyntaxExtension } from "../../src/SyntaxExtension";
 
 export class MockSyntaxExtension<
   UNode extends UnistNode,

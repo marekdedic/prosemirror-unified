@@ -4,7 +4,7 @@ import type { Node as UnistNode } from "unist";
 import { Extension } from "../src/Extension";
 import { NodeExtension } from "../src/NodeExtension";
 import { SyntaxExtension } from "../src/SyntaxExtension";
-import { MockNodeExtension } from "./MockNodeExtension";
+import { MockNodeExtension } from "./mocks/MockNodeExtension";
 
 test("NodeExtension.proseMirrorToUnistTest has a default implementation", () => {
   const extension = new MockNodeExtension();

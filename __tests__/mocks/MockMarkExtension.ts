@@ -5,7 +5,7 @@ import type {
 } from "prosemirror-model";
 import type { Node as UnistNode } from "unist";
 
-import { MarkExtension } from "../src/MarkExtension";
+import { MarkExtension } from "../../src/MarkExtension";
 
 export class MockMarkExtension<
   UNode extends UnistNode,

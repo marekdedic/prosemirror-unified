@@ -3,7 +3,7 @@ import { Plugin } from "prosemirror-state";
 
 import { ExtensionManager } from "../src/ExtensionManager";
 import { KeymapBuilder } from "../src/KeymapBuilder";
-import { MockNodeExtension } from "./MockNodeExtension";
+import { MockNodeExtension } from "./mocks/MockNodeExtension";
 
 test("KeymapBuilder creates a plugin", () => {
   const docExtension = mocked(new MockNodeExtension());
