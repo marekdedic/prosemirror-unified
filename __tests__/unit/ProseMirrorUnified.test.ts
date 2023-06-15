@@ -6,23 +6,23 @@ import { Schema } from "prosemirror-model";
 import type { Processor } from "unified";
 import type { Node as UnistNode } from "unist";
 
-import { Extension } from "../src";
-import { ExtensionManager } from "../src/ExtensionManager";
-import { InputRulesBuilder } from "../src/InputRulesBuilder";
-import { KeymapBuilder } from "../src/KeymapBuilder";
-import { ProseMirrorToUnistConverter } from "../src/ProseMirrorToUnistConverter";
-import { ProseMirrorUnified } from "../src/ProseMirrorUnified";
-import { SchemaBuilder } from "../src/SchemaBuilder";
-import { UnifiedBuilder } from "../src/UnifiedBuilder";
-import { UnistToProseMirrorConverter } from "../src/UnistToProseMirrorConverter";
+import { Extension } from "../../src";
+import { ExtensionManager } from "../../src/ExtensionManager";
+import { InputRulesBuilder } from "../../src/InputRulesBuilder";
+import { KeymapBuilder } from "../../src/KeymapBuilder";
+import { ProseMirrorToUnistConverter } from "../../src/ProseMirrorToUnistConverter";
+import { ProseMirrorUnified } from "../../src/ProseMirrorUnified";
+import { SchemaBuilder } from "../../src/SchemaBuilder";
+import { UnifiedBuilder } from "../../src/UnifiedBuilder";
+import { UnistToProseMirrorConverter } from "../../src/UnistToProseMirrorConverter";
 
-jest.mock("../src/ExtensionManager");
-jest.mock("../src/InputRulesBuilder");
-jest.mock("../src/KeymapBuilder");
-jest.mock("../src/ProseMirrorToUnistConverter");
-jest.mock("../src/SchemaBuilder");
-jest.mock("../src/UnifiedBuilder");
-jest.mock("../src/UnistToProseMirrorConverter");
+jest.mock("../../src/ExtensionManager");
+jest.mock("../../src/InputRulesBuilder");
+jest.mock("../../src/KeymapBuilder");
+jest.mock("../../src/ProseMirrorToUnistConverter");
+jest.mock("../../src/SchemaBuilder");
+jest.mock("../../src/UnifiedBuilder");
+jest.mock("../../src/UnistToProseMirrorConverter");
 
 test("ProseMirrorUnified passes extensions to manager", () => {
   class MockExtension extends Extension {}

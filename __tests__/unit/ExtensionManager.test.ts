@@ -2,13 +2,13 @@ import { mocked } from "jest-mock";
 import { Schema } from "prosemirror-model";
 import type { Node as UnistNode } from "unist";
 
-import { Extension } from "../src/Extension";
-import { ExtensionManager } from "../src/ExtensionManager";
-import { MockMarkExtension } from "./mocks/MockMarkExtension";
-import { MockNodeExtension } from "./mocks/MockNodeExtension";
+import { Extension } from "../../src/Extension";
+import { ExtensionManager } from "../../src/ExtensionManager";
+import { MockMarkExtension } from "../mocks/MockMarkExtension";
+import { MockNodeExtension } from "../mocks/MockNodeExtension";
 
-jest.mock("../src/Extension");
-jest.mock("../src/SyntaxExtension");
+jest.mock("../../src/Extension");
+jest.mock("../../src/SyntaxExtension");
 
 test("ExtensionManager manages mark extensions", () => {
   const markExtension = mocked(new MockMarkExtension());

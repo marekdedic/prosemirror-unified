@@ -1,12 +1,12 @@
 import { mocked } from "jest-mock";
 import { Schema } from "prosemirror-model";
 
-import { ExtensionManager } from "../src/ExtensionManager";
-import { UnistToProseMirrorConverter } from "../src/UnistToProseMirrorConverter";
-import { MockSyntaxExtension } from "./mocks/MockSyntaxExtension";
+import { ExtensionManager } from "../../src/ExtensionManager";
+import { UnistToProseMirrorConverter } from "../../src/UnistToProseMirrorConverter";
+import { MockSyntaxExtension } from "../mocks/MockSyntaxExtension";
 
-jest.mock("../src/ExtensionManager");
-jest.mock("../src/SyntaxExtension");
+jest.mock("../../src/ExtensionManager");
+jest.mock("../../src/SyntaxExtension");
 
 test("Converts basic document", () => {
   const schema = new Schema({

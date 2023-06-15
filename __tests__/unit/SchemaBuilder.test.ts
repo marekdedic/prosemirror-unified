@@ -7,12 +7,12 @@ import {
   Schema,
 } from "prosemirror-model";
 
-import { ExtensionManager } from "../src/ExtensionManager";
-import { SchemaBuilder } from "../src/SchemaBuilder";
-import { MockMarkExtension } from "./mocks/MockMarkExtension";
-import { MockNodeExtension } from "./mocks/MockNodeExtension";
+import { ExtensionManager } from "../../src/ExtensionManager";
+import { SchemaBuilder } from "../../src/SchemaBuilder";
+import { MockMarkExtension } from "../mocks/MockMarkExtension";
+import { MockNodeExtension } from "../mocks/MockNodeExtension";
 
-jest.mock("../src/ExtensionManager");
+jest.mock("../../src/ExtensionManager");
 
 test("SchemaBuilder works with nodes", () => {
   const docExtension = mocked(new MockNodeExtension());

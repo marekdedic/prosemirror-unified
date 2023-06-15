@@ -1,13 +1,13 @@
 import { mocked } from "jest-mock";
 import { Schema } from "prosemirror-model";
 
-import { ExtensionManager } from "../src/ExtensionManager";
-import { ProseMirrorToUnistConverter } from "../src/ProseMirrorToUnistConverter";
-import { MockMarkExtension } from "./mocks/MockMarkExtension";
-import { MockNodeExtension } from "./mocks/MockNodeExtension";
+import { ExtensionManager } from "../../src/ExtensionManager";
+import { ProseMirrorToUnistConverter } from "../../src/ProseMirrorToUnistConverter";
+import { MockMarkExtension } from "../mocks/MockMarkExtension";
+import { MockNodeExtension } from "../mocks/MockNodeExtension";
 
-jest.mock("../src/ExtensionManager");
-jest.mock("../src/MarkExtension");
+jest.mock("../../src/ExtensionManager");
+jest.mock("../../src/MarkExtension");
 
 test("Converts basic document", () => {
   const docExtension = mocked(new MockNodeExtension());

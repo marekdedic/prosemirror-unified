@@ -1,7 +1,7 @@
 import { type Processor, unified } from "unified";
 import type { Node as UnistNode } from "unist";
 
-import { Extension } from "../src/Extension";
+import { Extension } from "../../src/Extension";
 
 test("Extension.dependencies has a default implementation", () => {
   class MockExtension extends Extension {}

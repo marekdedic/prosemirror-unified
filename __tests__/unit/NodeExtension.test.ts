@@ -1,10 +1,10 @@
 import { type Attrs, Node as ProseMirrorNode, Schema } from "prosemirror-model";
 import type { Node as UnistNode } from "unist";
 
-import { Extension } from "../src/Extension";
-import { NodeExtension } from "../src/NodeExtension";
-import { SyntaxExtension } from "../src/SyntaxExtension";
-import { MockNodeExtension } from "./mocks/MockNodeExtension";
+import { Extension } from "../../src/Extension";
+import { NodeExtension } from "../../src/NodeExtension";
+import { SyntaxExtension } from "../../src/SyntaxExtension";
+import { MockNodeExtension } from "../mocks/MockNodeExtension";
 
 test("NodeExtension.proseMirrorToUnistTest has a default implementation", () => {
   const extension = new MockNodeExtension();

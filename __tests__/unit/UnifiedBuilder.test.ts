@@ -1,11 +1,11 @@
 import { mocked } from "jest-mock";
 
-import { Extension } from "../src/Extension";
-import { ExtensionManager } from "../src/ExtensionManager";
-import { UnifiedBuilder } from "../src/UnifiedBuilder";
+import { Extension } from "../../src/Extension";
+import { ExtensionManager } from "../../src/ExtensionManager";
+import { UnifiedBuilder } from "../../src/UnifiedBuilder";
 
-jest.mock("../src/Extension");
-jest.mock("../src/ExtensionManager");
+jest.mock("../../src/Extension");
+jest.mock("../../src/ExtensionManager");
 
 test("UnifiedBuilder builds an empty processor", () => {
   const manager = mocked(new ExtensionManager([]));
