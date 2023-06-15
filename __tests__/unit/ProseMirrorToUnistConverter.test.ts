@@ -245,7 +245,6 @@ test("Converts a document with marks", () => {
     textUnistNode,
     textProseMirrorNode.marks[0]
   );
-  // TODO: This is correct, but not optimal
   expect(markTwoExtension.proseMirrorToUnistTest).toHaveBeenCalledWith(
     bothMarksUnistNode,
     textProseMirrorNode.marks[1]
