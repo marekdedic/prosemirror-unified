@@ -26,6 +26,8 @@
     "README.md"
   ],
   "scripts": {
+    "clean": "rimraf dist/*",
+    "prebuild": "npm run clean",
     "build:webpack": "webpack",
     "build:api-extractor": "api-extractor run",
     "build": "npm run build:webpack && npm run build:api-extractor",
@@ -54,6 +56,7 @@
     "eslint-plugin-simple-import-sort": "^10.0.0",
     "jest": "^29.5.0",
     "prettier": "^2.8.7",
+    "rimraf": "^5.0.1",
     "ts-jest": "^29.1.0",
     "ts-loader": "^9.4.2",
     "webpack": "^5.80.0",
