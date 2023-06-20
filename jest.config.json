@@ -6,18 +6,38 @@
   ],
   "coverageDirectory": "coverage",
   "coverageProvider": "babel",
-  "testEnvironment": "jsdom",
-  "transform": {
-    "^.+\\.(j|t)s$": [
-      "ts-jest",
-      {
-        "tsconfig": "test.tsconfig.json"
-      }
-    ]
-  },
-  "transformIgnorePatterns": [
-    "node_modules/(?!unified)/"
-  ],
   "resetMocks": true,
-  "testMatch": ["<rootDir>/__tests__/**/*.test.ts"]
+  "projects": [
+    {
+      "displayName": "Unit tests",
+      "testMatch": ["<rootDir>/__tests__/unit/**/*.test.ts"],
+      "transform": {
+        "^.+\\.(j|t)s$": [
+          "ts-jest",
+          {
+            "tsconfig": "test.tsconfig.json"
+          }
+        ]
+      },
+      "transformIgnorePatterns": [
+        "node_modules/(?!unified)/"
+      ]
+    },
+    {
+      "displayName": "Integration tests",
+      "testMatch": ["<rootDir>/__tests__/integration/**/*.test.ts"],
+      "transform": {
+        "^.+\\.(j|t)s$": [
+          "ts-jest",
+          {
+            "tsconfig": "test.tsconfig.json"
+          }
+        ]
+      },
+      "transformIgnorePatterns": [
+        "node_modules/(?!unified)/"
+      ],
+      "testEnvironment": "jsdom"
+    }
+  ]
 }
