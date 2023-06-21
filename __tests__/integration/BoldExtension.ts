@@ -1,3 +1,4 @@
+import type { InputRule } from "prosemirror-inputrules";
 import type {
   DOMOutputSpec,
   MarkSpec,
@@ -5,6 +6,7 @@ import type {
 } from "prosemirror-model";
 import type { Node as UnistNode } from "unist";
 
+import { MarkInputRule } from "../../src";
 import { MarkExtension } from "../../src/MarkExtension";
 import type { UnistText } from "./TextExtension";
 
@@ -45,5 +47,14 @@ export class BoldExtension extends MarkExtension<UnistBold> {
 
   public processConvertedUnistNode(convertedNode: UnistText): UnistBold {
     return { type: this.unistNodeName(), children: [convertedNode] };
+  }
+
+  public proseMirrorInputRules(): Array<InputRule> {
+    return [
+      new MarkInputRule(
+        /<b>([^\s](?:.*[^\s])?)<\/b>(.)$/,
+        this.proseMirrorSchema().marks[this.proseMirrorMarkName()]
+      ),
+    ];
   }
 }
