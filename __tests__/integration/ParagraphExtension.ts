@@ -6,11 +6,12 @@ import type {
 import type { Node as UnistNode } from "unist";
 
 import { NodeExtension } from "../../src/NodeExtension";
+import type { UnistBold } from "./BoldExtension";
 import type { UnistText } from "./TextExtension";
 
 export interface UnistParagraph extends UnistNode {
   type: "paragraph";
-  children: Array<UnistText>;
+  children: Array<UnistBold | UnistText>;
 }
 
 export const paragraphSpec: NodeSpec = {
