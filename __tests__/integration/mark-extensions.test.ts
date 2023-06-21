@@ -1,17 +1,16 @@
 import type { Mocked } from "jest-mock";
 import { mocked } from "jest-mock";
 import { createEditor } from "jest-prosemirror";
-import type { Processor } from "unified";
+import { type Processor, unified } from "unified";
 import type { Node as UnistNode } from "unist";
 
 import { ProseMirrorUnified } from "../../src/ProseMirrorUnified";
-import { UnifiedBuilder } from "../../src/UnifiedBuilder";
 import { BoldExtension, boldSpec } from "./BoldExtension";
 import { ParagraphExtension, paragraphSpec } from "./ParagraphExtension";
 import { RootExtension, rootSpec, type UnistRoot } from "./RootExtension";
 import { TextExtension, textSpec } from "./TextExtension";
 
-jest.mock("../../src/UnifiedBuilder");
+jest.mock("unified");
 
 test("Parsing a document with a paragraph", () => {
   expect.assertions(29);
@@ -51,7 +50,7 @@ test("Parsing a document with a paragraph", () => {
     stringify: jest.fn().mockReturnValueOnce(source),
   } as unknown as Mocked<Processor<UnistNode, UnistNode, UnistNode, string>>;
 
-  mocked(UnifiedBuilder).prototype.build.mockReturnValueOnce(unifiedMock);
+  mocked(unified).mockReturnValueOnce(unifiedMock);
 
   const pmu = new ProseMirrorUnified([
     new BoldExtension(),
