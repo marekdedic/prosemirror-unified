@@ -45,6 +45,8 @@ test("Parsing a document with a paragraph", () => {
   ]);
 
   const proseMirrorRoot = pmu.parse(source)!;
+
+  jest.spyOn(console, "warn").mockImplementation();
   createEditor(proseMirrorRoot).callback((content) => {
     expect(content.schema.spec.marks.size).toBe(0);
     expect(content.schema.spec.nodes.size).toBe(3);
@@ -76,6 +78,8 @@ test("Parsing a document with a paragraph", () => {
 });
 
 test("Parsing a document with no root node", () => {
+  jest.spyOn(console, "warn").mockImplementation();
+
   expect(
     () =>
       new ProseMirrorUnified([new TextExtension(), new ParagraphExtension()])
@@ -84,6 +88,8 @@ test("Parsing a document with no root node", () => {
 });
 
 test("Parsing a document with no text node", () => {
+  jest.spyOn(console, "warn").mockImplementation();
+
   expect(
     () =>
       new ProseMirrorUnified([new ParagraphExtension(), new RootExtension()])
