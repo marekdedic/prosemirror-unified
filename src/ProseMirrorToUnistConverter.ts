@@ -46,6 +46,7 @@ export class ProseMirrorToUnistConverter {
       return [];
     }
     return convertedNodes.map((convertedNode) => {
+      // TODO: Warn if no applicable conversions found
       for (const mark of node.marks) {
         for (const extension of this.extensionManager.markExtensions()) {
           if (extension.proseMirrorToUnistTest(convertedNode, mark)) {
