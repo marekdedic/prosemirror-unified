@@ -115,7 +115,7 @@ test("Adding a mark with an input rule", () => {
   expect.assertions(29);
 
   const source = "Hello ";
-  const target = "Hello <b>World</b>";
+  const target = "Hello <b>World</b>!";
   const sourceUnistTree: UnistRoot = {
     type: "root",
     children: [
