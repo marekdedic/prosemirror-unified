@@ -13,7 +13,7 @@ import { TextExtension, textSpec } from "./TextExtension";
 jest.mock("unified");
 
 test("Parsing a document with a paragraph", () => {
-  expect.assertions(29);
+  expect.assertions(30);
 
   const source = "Hello <b>World</b>!";
   const unistTree: UnistRoot = {
@@ -60,6 +60,8 @@ test("Parsing a document with a paragraph", () => {
   ]);
 
   const proseMirrorRoot = pmu.parse(source)!;
+
+  jest.spyOn(console, "warn").mockImplementation();
   createEditor(proseMirrorRoot).callback((content) => {
     expect(content.schema.spec.marks.size).toBe(1);
     expect(content.schema.spec.marks.get("bold")).toBe(boldSpec);
@@ -109,10 +111,11 @@ test("Parsing a document with a paragraph", () => {
     expect(unifiedMock.stringify).toHaveBeenCalledTimes(1);
     expect(unifiedMock.stringify).toHaveBeenCalledWith(unistTree);
   });
+  expect(console.warn).not.toHaveBeenCalled();
 });
 
 test("Adding a mark with an input rule", () => {
-  expect.assertions(29);
+  expect.assertions(30);
 
   const source = "Hello ";
   const target = "Hello <b>World</b>!";
@@ -174,6 +177,8 @@ test("Adding a mark with an input rule", () => {
   ]);
 
   const proseMirrorRoot = pmu.parse(source)!;
+
+  jest.spyOn(console, "warn").mockImplementation();
   createEditor(proseMirrorRoot, {
     plugins: [pmu.inputRulesPlugin()],
   })
@@ -230,4 +235,5 @@ test("Adding a mark with an input rule", () => {
       expect(unifiedMock.stringify).toHaveBeenCalledTimes(1);
       expect(unifiedMock.stringify).toHaveBeenCalledWith(targetUnistTree);
     });
+  expect(console.warn).not.toHaveBeenCalled();
 });

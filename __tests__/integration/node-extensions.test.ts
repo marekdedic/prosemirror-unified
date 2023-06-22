@@ -12,7 +12,7 @@ import { TextExtension, textSpec } from "./TextExtension";
 jest.mock("unified");
 
 test("Parsing a document with a paragraph", () => {
-  expect.assertions(19);
+  expect.assertions(20);
 
   const source = "<p>Hello World!</p>";
   const unistTree: UnistRoot = {
@@ -72,4 +72,5 @@ test("Parsing a document with a paragraph", () => {
     expect(unifiedMock.stringify).toHaveBeenCalledTimes(1);
     expect(unifiedMock.stringify).toHaveBeenCalledWith(unistTree);
   });
+  expect(console.warn).not.toHaveBeenCalled();
 });

@@ -19,7 +19,7 @@ class SetExtension extends Extension {
 }
 
 test("Parsing a document with an extension set", () => {
-  expect.assertions(19);
+  expect.assertions(20);
 
   const source = "<p>Hello World!</p>";
   const unistTree: UnistRoot = {
@@ -47,6 +47,7 @@ test("Parsing a document with an extension set", () => {
 
   const pmu = new ProseMirrorUnified([new SetExtension()]);
 
+  jest.spyOn(console, "warn").mockImplementation();
   const proseMirrorRoot = pmu.parse(source)!;
   createEditor(proseMirrorRoot).callback((content) => {
     expect(content.schema.spec.marks.size).toBe(0);
@@ -75,4 +76,5 @@ test("Parsing a document with an extension set", () => {
     expect(unifiedMock.stringify).toHaveBeenCalledTimes(1);
     expect(unifiedMock.stringify).toHaveBeenCalledWith(unistTree);
   });
+  expect(console.warn).not.toHaveBeenCalled();
 });
