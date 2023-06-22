@@ -1,9 +1,11 @@
+import { toggleMark } from "prosemirror-commands";
 import type { InputRule } from "prosemirror-inputrules";
 import type {
   DOMOutputSpec,
   MarkSpec,
   Node as ProseMirrorNode,
 } from "prosemirror-model";
+import type { Command } from "prosemirror-state";
 import type { Node as UnistNode } from "unist";
 
 import { MarkInputRule } from "../../src";
@@ -56,5 +58,13 @@ export class BoldExtension extends MarkExtension<UnistBold> {
         this.proseMirrorSchema().marks[this.proseMirrorMarkName()]
       ),
     ];
+  }
+
+  public proseMirrorKeymap(): Record<string, Command> {
+    return {
+      "Mod-b": toggleMark(
+        this.proseMirrorSchema().marks[this.proseMirrorMarkName()]
+      ),
+    };
   }
 }
