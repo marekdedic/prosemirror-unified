@@ -158,11 +158,11 @@ This method should return the type of the unist node this extension translates.
 
 ##### `unistToProseMirrorTest(node: UnistNode): boolean`
 
-This method is used to check whether the extension can translate a given unist node to a ProseMirror node. By default, it checks whether the node type matches `this.unistNodeName()`, but it can be overridden.
+This method is used to check whether the extension can translate a given unist node to a ProseMirror node. By default, it checks whether the node type matches `this.unistNodeName()`.
 
 ##### `abstract unistNodeToProseMirrorNode(node: UNode, convertedChildren: Array<ProseMirrorNode>, context: Partial<Context>): Array<ProseMirrorNode>`
 
-This method handles the translation from an unist node to a ProseMirror node. It receives the original unist node, the already-translated children and the global translation context that it can modify. It should return an array of ProseMirror nodes (usually only one, but you can theoretically convert one unist node into multiple ProseMirror nodes).
+This method handles the translation from a unist node to a ProseMirror node. It receives the original unist node, the already-translated children and the global translation context that it can modify. It should return an array of ProseMirror nodes (usually only one, but you can theoretically convert one unist node into multiple ProseMirror nodes).
 
 ##### `postUnistToProseMirrorHook(context: Partial<Context>): void`
 
@@ -182,4 +182,42 @@ By default returns `{}`.
 
 ##### `proseMirrorSchema(): Schema<string, string>`
 
-A helper function that returns the built ProseMirror schema. You don't need to override this, rather use it in your implementations.
+A helper function that returns the built ProseMirror schema. You don't need to override this, rather use it in your implementation.
+
+### The `NodeExtension` class
+
+The abstract class `NodeExtension` extends the `SyntaxExtension` class. You should extend this class to provide support for custom nodes.
+
+#### Generic parameters
+
+If you are using TypeScript, the `NodeExtension` class has two generic parameters that you need to specify.
+
+##### `UNode extends UnistNode`
+
+This specifies the unist node type that the extension handles.
+
+##### `Context extends Record<string, unknown>`
+
+This specifies the type of global context (shared across all extensions) that this extension expects.
+
+#### Methods
+
+##### `proseMirrorToUnistTest(node: ProseMirrorNode): boolean`
+
+This method is used to check whether the extension can translate a given ProseMirror node to a unist node. By default, it checks whether the node name matches `this.proseMirrorNodeName()`.
+
+##### `proseMirrorNodeName(): string | null`
+
+This method should return the type of the ProseMirror node this extension translates or `null` if it doesn't produce any ProseMirror nodes.
+
+##### `proseMirrorNodeSpec(): NodeSpec | null`
+
+This method should return a ProseMirror node spec for the ProseMirror node it produces or `null` if it doesn't produce any ProseMirror nodes.
+
+##### `proseMirrorNodeToUnistNodes(node: ProseMirrorNode, convertedChildren: Array<UnistNode>): Array<UNode>`
+
+This method handles the translation from a ProseMirror node to a unist node. It receives the original ProseMirror node and the already-translated children. It should return an array of unist nodes (usually only one, but you can theoretically convert one ProseMirror node into multiple unist nodes).
+
+##### `createProseMirrorNodeHelper(children: Array<ProseMirrorNode>, attrs: Attrs = {}): Array<ProseMirrorNode>`
+
+A helper function that creates a ProseMirror node based on `this.proseMirrorNodeName()` with the specified children and attributes. You don't need to override this, rather use it in your implementation.
