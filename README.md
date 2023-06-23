@@ -88,6 +88,8 @@ To make up for this difference, prosemirror-unified provides two basic types of 
 
 prosemirror-unified traverses an existing unist AST and creates a matching ProseMirror AST from the leaf nodes to the root. For each node, all extensions are checked to find one that can translate this type of node. Once an applicable extension is found, all the children of the node are translated first. Only after that is the actual node translated, so that it can use the already-prepared children and incorporate them in the ProseMirror tree. This process works the same for `NodeExtension`s and `MarkExtension`s as the extension can decide what the output node will look like and what marks it will have.
 
+As some extensions need to add information after the whole document is parsed, there is a global Context that any extension can modify when translating a node. Additionally, a post-translation hook can be added to any extension.
+
 ### Translating from ProseMirror to unist
 
 prosemirror-unified traverses the existing unist AST and creates a matching unist AST from the leaf nodes to the root. For each node, all extensions are searched to find a `NodeExtension` that can translate this node. Once an applicable `NodeExtension` is found, all the children of the node are translated first. Only after that is the actual node translated, so that it can use the already-prepared children and incorporate then in the unist tree. If the original ProseMirror node had any marks, then for each mark a matching `MarkExtension` is found and that extension can post-process the already-translated unist node. For multiple marks, the order in which they are processes will is not guaranteed.
@@ -131,3 +133,53 @@ class MarkdownExtension extends Extension {
 ```
 
 By default, returns the parameter `processor` as-is.
+
+### The `SyntaxExtension` class
+
+The abstract class `SyntaxExtension` extends the `Extension` class. You should probably never need to extend this class directly. However, as much of the functionality of `NodeExtension` and `MarkExtension` is shared, it is contained in the `SyntaxExtension` class.
+
+#### Generic parameters
+
+If you are using TypeScript, the `SyntaxExtension` class has two generic parameters that you need to specify.
+
+##### `UNode extends UnistNode`
+
+This specifies the unist node type that the extension handles.
+
+##### `Context extends Record<string, unknown>`
+
+This specifies the type of global context (shared across all extensions) that this extension expects.
+
+#### Methods
+
+##### `abstract unistNodeName(): UNode["type"]`
+
+This method should return the type of the unist node this extension translates.
+
+##### `unistToProseMirrorTest(node: UnistNode): boolean`
+
+This method is used to check whether the extension can translate a given unist node to a ProseMirror node. By default, it checks whether the node type matches `this.unistNodeName()`, but it can be overridden.
+
+##### `abstract unistNodeToProseMirrorNode(node: UNode, convertedChildren: Array<ProseMirrorNode>, context: Partial<Context>): Array<ProseMirrorNode>`
+
+This method handles the translation from an unist node to a ProseMirror node. It receives the original unist node, the already-translated children and the global translation context that it can modify. It should return an array of ProseMirror nodes (usually only one, but you can theoretically convert one unist node into multiple ProseMirror nodes).
+
+##### `postUnistToProseMirrorHook(context: Partial<Context>): void`
+
+This method is called during translation from unist to ProseMirror after the whole document has been translated. By default does nothing.
+
+##### `proseMirrorInputRules(): Array<InputRule>`
+
+Override this method to add input rules to the ProseMirror editor.
+
+By default returns `[]`.
+
+##### `proseMirrorKeymap(): Record<string, Command>`
+
+Override this method to add keyboard shortcuts to the ProseMirror editor. Returns an object where the keys are keyboard shortcuts and values are commands to run.
+
+By default returns `{}`.
+
+##### `proseMirrorSchema(): Schema<string, string>`
+
+A helper function that returns the built ProseMirror schema. You don't need to override this, rather use it in your implementations.
