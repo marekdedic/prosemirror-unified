@@ -29,10 +29,12 @@ export abstract class SyntaxExtension<
     return {};
   }
 
+  /* eslint-disable @typescript-eslint/ban-ts-comment, @typescript-eslint/no-empty-function, @typescript-eslint/no-unused-vars */
   public postUnistToProseMirrorHook(
-    _context: Partial<Context>
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
+    // @ts-ignore: TS6133 causes an error because of an unused parameter - however, this method is meant to be overriden
+    context: Partial<Context>
   ): void {}
+  /* eslint-enable */
 
   // TODO: Remove this, it should be done some other way
   protected proseMirrorSchema(): Schema<string, string> {
