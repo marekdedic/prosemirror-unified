@@ -67,7 +67,7 @@ Returns the ProseMirror schema to use for the editor. This schema is constructed
 
 ##### `inputRulesPlugin(): Plugin`
 
-Input rules are rules that govern how ProseMirror replaces what users write with ProseMirror nodes - e.g. for markdown, when a user writes `\*\*Some text\*\*`, then after entering the last \*, the whole text would be replaced by a ProseMirror bold text. This allows users to write markdown, but still get the benefits of ProseMirror. The `inputRulesPlugin()` function returns a ProseMirror plugin that adds all extension input rules to the editor.
+Input rules are rules that govern how ProseMirror replaces what users write with ProseMirror nodes - e.g. for markdown, when a user writes `**Some text**`, then after entering the last \*, the whole text would be replaced by a ProseMirror bold text. This allows users to write markdown, but still get the benefits of ProseMirror. The `inputRulesPlugin()` function returns a ProseMirror plugin that adds all extension input rules to the editor.
 
 ##### `keymapPlugin(): Plugin`
 
