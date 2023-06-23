@@ -72,3 +72,62 @@ Input rules are rules that govern how ProseMirror replaces what users write with
 ##### `keymapPlugin(): Plugin`
 
 A ProseMirror keymap specifiec all the keyboard shortcuts users can use in the editor, for example Ctrl-b for bold text. This function returns a ProseMirror plugin that adds all extension keyboard shortcuts to the editor.
+
+## Creating your own extensions
+
+prosemirror-unified provides several utilities for creating your own extension to support custom unified syntax. Please note that `prosemirror-unified` doesn't aim to extend unified itself, so you either need to take an existing unified plugin (such as remark for GitHub or rehype for HTML) or create your own. prosemirror-unified provides the tools to translate between the unified syntax (called unist) and the ProseMirror syntax.
+
+Documents in unist are represented by an abstract syntax tree (AST) of nodes, starting with a root node representing the whole document. In ProseMirror, things work mostly the same way, with one important difference - ProseMirror has a concept of *marks* that can be applied to a node in the AST. These represent things such as bold text, which in ProseMirror is just a text node with a mark to make it bold. In unist, there are no marks and bold text is represented by a bold node, which contains a text node.
+
+To make up for this difference, prosemirror-unified provides two basic types of extensions:
+
+- A `NodeExtension` is used when translating between a unist node and a ProseMirror node - for example a paragraph. The extension provides functions to translate both ways.
+- A `MarkExtension` is used to translate between a unist node and a ProseMirror mark - for example bold text. This type of extension also provides fnctions to translate both ways.
+
+### Translating from unist to ProseMirror
+
+prosemirror-unified traverses an existing unist AST and creates a matching ProseMirror AST from the leaf nodes to the root. For each node, all extensions are checked to find one that can translate this type of node. Once an applicable extension is found, all the children of the node are translated first. Only after that is the actual node translated, so that it can use the already-prepared children and incorporate them in the ProseMirror tree. This process works the same for `NodeExtension`s and `MarkExtension`s as the extension can decide what the output node will look like and what marks it will have.
+
+### Translating from ProseMirror to unist
+
+prosemirror-unified traverses the existing unist AST and creates a matching unist AST from the leaf nodes to the root. For each node, all extensions are searched to find a `NodeExtension` that can translate this node. Once an applicable `NodeExtension` is found, all the children of the node are translated first. Only after that is the actual node translated, so that it can use the already-prepared children and incorporate then in the unist tree. If the original ProseMirror node had any marks, then for each mark a matching `MarkExtension` is found and that extension can post-process the already-translated unist node. For multiple marks, the order in which they are processes will is not guaranteed.
+
+#### Example
+
+Bold text is represented by a Text node with a Bold mark in ProseMirror. As such, when translating to unist, first a hypothetical `TextExtension` (which is a `NodeExtension`) is called, which translates the node into a unist Text node. This unist node is then post-processed by a `BoldExtension` (which is a `MarkExtension`) and changed into a unist Bold node (which contains the original unist Text node).
+
+### The `Extension` class
+
+This is the root class for all prosemirror-unified extensions. By itself, it cannot do much, except for two things.
+
+#### Methods
+
+##### `dependencies(): Array<Extension>`
+
+By overriding the `dependencies` method, you can specify other extensions that must be present for this extension to work. One example where this can be useful is when creating an extension to handle lists of items, you can specify an extension which handles an individual list item as a dependency. Another example is the `MarkdownExtension` from the prosemirror-remark package, which is a wrapper for all the individual extensions that add various parts of the markdown syntax.
+
+By default returns `[]`.
+
+##### `unifiedInitializationHook(processor: Processor<UnistNode, UnistNode, UnistNode, string>): Processor<UnistNode, UnistNode, UnistNode, string>`
+
+This method is called when creating the unified instance to add support for various unified plugins. For example, to add remark, you would override this method as
+
+```ts
+import { Extension } from "prosemirror-unified";
+import remarkParse from "remark-parse";
+import remarkStringify from "remark-stringify";
+import type { Processor } from "unified";
+import type { Node as UnistNode } from "unist";
+
+class MarkdownExtension extends Extension {
+  public unifiedInitializationHook(
+    processor: Processor<UnistNode, UnistNode, UnistNode, string>
+  ): Processor<UnistNode, UnistNode, UnistNode, string> {
+    return processor
+      .use(remarkParse)
+      .use(remarkStringify);
+  }
+}
+```
+
+By default, returns the parameter `processor` as-is.
