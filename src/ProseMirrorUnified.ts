@@ -38,7 +38,7 @@ export class ProseMirrorUnified {
     this.unified = new UnifiedBuilder(extensionManager).build();
   }
 
-  public parse(source: string): ProseMirrorNode | null {
+  public parse(source: string): ProseMirrorNode {
     const unist = this.unified.runSync(this.unified.parse(source));
     const ret = this.unistToProseMirrorConverter.convert(unist);
     return ret;
