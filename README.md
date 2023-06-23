@@ -148,7 +148,7 @@ This specifies the unist node type that the extension handles.
 
 ##### `Context extends Record<string, unknown>`
 
-This specifies the type of global context (shared across all extensions) that this extension expects.
+This specifies the type of global context (shared across all extensions) that this extension expects. Default `Record<string, unknown>`.
 
 #### Methods
 
@@ -198,7 +198,7 @@ This specifies the unist node type that the extension handles.
 
 ##### `Context extends Record<string, unknown>`
 
-This specifies the type of global context (shared across all extensions) that this extension expects.
+This specifies the type of global context (shared across all extensions) that this extension expects. Default `Record<string, unknown>`.
 
 #### Methods
 
@@ -206,18 +206,52 @@ This specifies the type of global context (shared across all extensions) that th
 
 This method is used to check whether the extension can translate a given ProseMirror node to a unist node. By default, it checks whether the node name matches `this.proseMirrorNodeName()`.
 
-##### `proseMirrorNodeName(): string | null`
+##### `abstract proseMirrorNodeName(): string | null`
 
 This method should return the type of the ProseMirror node this extension translates or `null` if it doesn't produce any ProseMirror nodes.
 
-##### `proseMirrorNodeSpec(): NodeSpec | null`
+##### `abstract proseMirrorNodeSpec(): NodeSpec | null`
 
 This method should return a ProseMirror node spec for the ProseMirror node it produces or `null` if it doesn't produce any ProseMirror nodes.
 
-##### `proseMirrorNodeToUnistNodes(node: ProseMirrorNode, convertedChildren: Array<UnistNode>): Array<UNode>`
+##### `abstract proseMirrorNodeToUnistNodes(node: ProseMirrorNode, convertedChildren: Array<UnistNode>): Array<UNode>`
 
 This method handles the translation from a ProseMirror node to a unist node. It receives the original ProseMirror node and the already-translated children. It should return an array of unist nodes (usually only one, but you can theoretically convert one ProseMirror node into multiple unist nodes).
 
 ##### `createProseMirrorNodeHelper(children: Array<ProseMirrorNode>, attrs: Attrs = {}): Array<ProseMirrorNode>`
 
 A helper function that creates a ProseMirror node based on `this.proseMirrorNodeName()` with the specified children and attributes. You don't need to override this, rather use it in your implementation.
+
+### The `MarkExtension` class
+
+The abstract class `MarkExtension` extends the `SyntaxExtension` class. You should extend this class to provide support for custom ProseMirror marks.
+
+#### Generic parameters
+
+If you are using TypeScript, the `MarkExtension` class has two generic parameters that you need to specify.
+
+##### `UNode extends UnistNode`
+
+This specifies the unist node type that the extension handles.
+
+##### `Context extends Record<string, unknown>`
+
+This specifies the type of global context (shared across all extensions) that this extension expects. Default `Record<string, unknown>`.
+
+#### Methods
+
+##### `proseMirrorToUnistTest(node: UnistNode, mark: Mark): boolean`
+
+This method is used to check whether the extension can post-process a given unist node with a ProseMirror mark. By default, it checks whether the node is a text node and the mark type matches `this.proseMirrorMarkName()`.
+
+##### `abstract proseMirrorMarkName(): string | null`
+
+This method should return the type of the ProseMirror mark this extension handles or `null` if it doesn't produce any ProseMirror marks.
+
+##### `abstract proseMirrorMarkSpec(): MarkSpec | null`
+
+This method should return a ProseMirror mark spec for the ProseMirror mark it produces or `null` if it doesn't produce any ProseMirror marks.
+
+##### `abstract processConvertedUnistNode(convertedNode: UnistNode, originalMark: Mark): UNode`
+
+This method is called when converting from ProseMirror to unist. The ProseMirror node has already been translated using an appropriate `NodeExtension` and the resulting unist node is passed to this method as a parameter, together with the mark that was applied to the original ProseMirror node. This function should post-process the unist node to produce the correct result for the given mark.
