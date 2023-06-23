@@ -255,3 +255,13 @@ This method should return a ProseMirror mark spec for the ProseMirror mark it pr
 ##### `abstract processConvertedUnistNode(convertedNode: UnistNode, originalMark: Mark): UNode`
 
 This method is called when converting from ProseMirror to unist. The ProseMirror node has already been translated using an appropriate `NodeExtension` and the resulting unist node is passed to this method as a parameter, together with the mark that was applied to the original ProseMirror node. This function should post-process the unist node to produce the correct result for the given mark.
+
+### The `MarkInputRule` class
+
+This class extends the `InputRule` class provided by ProseMirror and should be used to create input rules that add marks to the document.
+
+#### Methods
+
+##### `constructor(matcher: RegExp, markType: MarkType)`
+
+Creates a new input rule that adds the mark specified by `markType` if the user input matches the provided `matcher`.
