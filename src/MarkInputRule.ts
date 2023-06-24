@@ -13,8 +13,8 @@ import {
 export class MarkInputRule extends InputRule {
   private readonly markType: MarkType;
 
-  public constructor(match: RegExp, markType: MarkType) {
-    super(match, (state, match, start, end) =>
+  public constructor(matcher: RegExp, markType: MarkType) {
+    super(matcher, (state, match, start, end) =>
       this.markHandler(state, match, start, end)
     );
     this.markType = markType;

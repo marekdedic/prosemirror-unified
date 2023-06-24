@@ -7,10 +7,12 @@ import { Extension } from "./Extension";
 
 export abstract class SyntaxExtension<
   UNode extends UnistNode,
+  // TODO: Rename to UnistToProseMirrorContext?
   Context extends Record<string, unknown> = Record<string, never>
 > extends Extension {
   private schema: Schema<string, string> | undefined;
 
+  // TODO: This is hacky, should be done some other way
   public setProseMirrorSchema(schema: Schema<string, string>): void {
     this.schema = schema;
   }
@@ -27,15 +29,19 @@ export abstract class SyntaxExtension<
     return {};
   }
 
+  /* eslint-disable @typescript-eslint/ban-ts-comment, @typescript-eslint/no-empty-function, @typescript-eslint/no-unused-vars */
   public postUnistToProseMirrorHook(
-    _context: Partial<Context>
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
+    // @ts-ignore: TS6133 causes an error because of an unused parameter - however, this method is meant to be overriden
+    context: Partial<Context>
   ): void {}
+  /* eslint-enable */
 
+  // TODO: Remove this, it should be done some other way
   protected proseMirrorSchema(): Schema<string, string> {
     return this.schema!;
   }
 
+  // TODO: This is actually only used in unistToProseMirrorTest, so it probably should be removed.
   public abstract unistNodeName(): UNode["type"];
 
   public abstract unistNodeToProseMirrorNodes(

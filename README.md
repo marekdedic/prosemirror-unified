@@ -218,10 +218,6 @@ This method should return a ProseMirror node spec for the ProseMirror node it pr
 
 This method handles the translation from a ProseMirror node to a unist node. It receives the original ProseMirror node and the already-translated children. It should return an array of unist nodes (usually only one, but you can theoretically convert one ProseMirror node into multiple unist nodes).
 
-##### `createProseMirrorNodeHelper(children: Array<ProseMirrorNode>, attrs: Attrs = {}): Array<ProseMirrorNode>`
-
-A helper function that creates a ProseMirror node based on `this.proseMirrorNodeName()` with the specified children and attributes. You don't need to override this, rather use it in your implementation.
-
 ### The `MarkExtension` class
 
 The abstract class `MarkExtension` extends the `SyntaxExtension` class. You should extend this class to provide support for custom ProseMirror marks.
@@ -265,3 +261,7 @@ This class extends the `InputRule` class provided by ProseMirror and should be u
 ##### `constructor(matcher: RegExp, markType: MarkType)`
 
 Creates a new input rule that adds the mark specified by `markType` if the user input matches the provided `matcher`.
+
+### `createProseMirrorNode(nodeName: string | null, schema: Schema<string, string>, children: Array<ProseMirrorNode>, attrs: Attrs = {}): Array<ProseMirrorNode>`
+
+A helper function that creates a ProseMirror node based on `nodeName` with the specified children and attributes. Returns `[]` if `nodeName` is `null`. This function is useful when creating `NodeExtension`s
