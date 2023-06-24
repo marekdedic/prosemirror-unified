@@ -46,15 +46,23 @@ export class ProseMirrorToUnistConverter {
       return [];
     }
     return convertedNodes.map((convertedNode) => {
-      // TODO: Warn if no applicable conversions found
       for (const mark of node.marks) {
+        let processed = false;
         for (const extension of this.extensionManager.markExtensions()) {
           if (extension.proseMirrorToUnistTest(convertedNode, mark)) {
             convertedNode = extension.processConvertedUnistNode(
               convertedNode,
               mark
             );
+            processed = true;
           }
+        }
+        if (!processed) {
+          console.warn(
+            "Couldn't find any way to convert ProseMirror mark of type \"" +
+              mark.type.name +
+              '" to a unist node.'
+          );
         }
       }
       return convertedNode;
