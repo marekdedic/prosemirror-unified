@@ -339,3 +339,57 @@ test("Converts a document with invalid children", () => {
     'Couldn\'t find any way to convert ProseMirror node of type "typeTwo" to a unist node.'
   );
 });
+
+test("Converts a document with invalid marks", () => {
+  const typeOneExtension = mocked(new MockNodeExtension());
+  typeOneExtension.proseMirrorNodeName.mockReturnValue("typeOne");
+  const typeOneUnistNode = { type: "one" };
+  typeOneExtension.proseMirrorNodeToUnistNodes.mockReturnValueOnce([
+    typeOneUnistNode,
+  ]);
+
+  const docExtension = mocked(new MockNodeExtension());
+  docExtension.proseMirrorNodeName.mockReturnValueOnce("doc");
+  const rootUnistNode = {
+    type: "root",
+    children: [typeOneUnistNode],
+  };
+  docExtension.proseMirrorNodeToUnistNodes.mockReturnValueOnce([rootUnistNode]);
+
+  const manager = mocked(new ExtensionManager([]));
+  manager.markExtensions.mockReturnValue([]);
+  manager.nodeExtensions.mockReturnValue([docExtension, typeOneExtension]);
+
+  const converter = new ProseMirrorToUnistConverter(manager);
+
+  const schema = new Schema({
+    nodes: {
+      doc: {
+        content: "groupOne*",
+      },
+      typeOne: {
+        group: "groupOne",
+      },
+      text: {},
+    },
+    marks: {
+      typeTwo: {},
+    },
+  });
+  const typeOneProseMirrorNode = schema.nodes["typeOne"]
+    .createAndFill({}, [])!
+    .mark([schema.marks["typeTwo"].create()]);
+  const rootProseMirrorNode = schema.nodes["doc"].createAndFill({}, [
+    typeOneProseMirrorNode,
+  ])!;
+
+  jest.spyOn(console, "warn").mockImplementation();
+  expect(converter.convert(rootProseMirrorNode)).toStrictEqual(rootUnistNode);
+  expect(typeOneExtension.proseMirrorNodeToUnistNodes).toHaveBeenCalledWith(
+    typeOneProseMirrorNode,
+    []
+  );
+  expect(console.warn).toHaveBeenCalledWith(
+    'Couldn\'t find any way to convert ProseMirror mark of type "typeTwo" to a unist node.'
+  );
+});
