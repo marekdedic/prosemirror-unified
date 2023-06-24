@@ -1,4 +1,8 @@
-import type { Node as ProseMirrorNode, NodeSpec } from "prosemirror-model";
+import type {
+  Node as ProseMirrorNode,
+  NodeSpec,
+  Schema,
+} from "prosemirror-model";
 import type { Node as UnistNode } from "unist";
 
 import { NodeExtension } from "../../src/NodeExtension";
@@ -25,8 +29,11 @@ export class TextExtension extends NodeExtension<UnistText> {
     return textSpec;
   }
 
-  public unistNodeToProseMirrorNodes(node: UnistText): Array<ProseMirrorNode> {
-    return [this.proseMirrorSchema().text(node.value)];
+  public unistNodeToProseMirrorNodes(
+    node: UnistText,
+    proseMirrorSchema: Schema<string, string>
+  ): Array<ProseMirrorNode> {
+    return [proseMirrorSchema.text(node.value)];
   }
 
   public proseMirrorNodeToUnistNodes(node: ProseMirrorNode): Array<UnistText> {
