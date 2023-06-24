@@ -1,6 +1,7 @@
 import type { Node as ProseMirrorNode, NodeSpec } from "prosemirror-model";
 import type { Node as UnistNode } from "unist";
 
+import { createProseMirrorNode } from "../../src/createProseMirrorNode";
 import { NodeExtension } from "../../src/NodeExtension";
 import type { UnistParagraph } from "./ParagraphExtension";
 
@@ -29,7 +30,11 @@ export class RootExtension extends NodeExtension<UnistRoot> {
     _: UnistRoot,
     convertedChildren: Array<ProseMirrorNode>
   ): Array<ProseMirrorNode> {
-    return this.createProseMirrorNodeHelper(convertedChildren);
+    return createProseMirrorNode(
+      this.proseMirrorNodeName(),
+      this.proseMirrorSchema(),
+      convertedChildren
+    );
   }
 
   public proseMirrorNodeToUnistNodes(
