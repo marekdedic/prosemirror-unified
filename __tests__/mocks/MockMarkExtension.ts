@@ -2,6 +2,7 @@ import type {
   Mark,
   MarkSpec,
   Node as ProseMirrorNode,
+  Schema,
 } from "prosemirror-model";
 import type { Node as UnistNode } from "unist";
 
@@ -21,6 +22,6 @@ export class MockMarkExtension<
 
   public unistNodeToProseMirrorNodes = jest.fn<
     Array<ProseMirrorNode>,
-    [UNode, Array<ProseMirrorNode>, Partial<Context>]
+    [UNode, Schema<string, string>, Array<ProseMirrorNode>, Partial<Context>]
   >();
 }

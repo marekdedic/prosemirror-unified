@@ -1,4 +1,5 @@
 import { mocked } from "jest-mock";
+import { Schema } from "prosemirror-model";
 import { Plugin } from "prosemirror-state";
 
 import { ExtensionManager } from "../../src/ExtensionManager";
@@ -14,8 +15,9 @@ test("KeymapBuilder creates a plugin", () => {
   textExtension.proseMirrorNodeSpec.mockReturnValueOnce({});
 
   const manager = new ExtensionManager([docExtension, textExtension]);
+  const schema = new Schema<string, string>({ nodes: { doc: {}, text: {} } });
 
-  const builder = new KeymapBuilder(manager);
+  const builder = new KeymapBuilder(manager, schema);
   const rules = builder.build();
 
   expect(rules).toBeInstanceOf(Plugin);

@@ -1,4 +1,4 @@
-import type { Node as ProseMirrorNode } from "prosemirror-model";
+import type { Node as ProseMirrorNode, Schema } from "prosemirror-model";
 import type { Node as UnistNode } from "unist";
 
 import { SyntaxExtension } from "../../src/SyntaxExtension";
@@ -11,6 +11,6 @@ export class MockSyntaxExtension<
 
   public unistNodeToProseMirrorNodes = jest.fn<
     Array<ProseMirrorNode>,
-    [UNode, Array<ProseMirrorNode>, Partial<Context>]
+    [UNode, Schema<string, string>, Array<ProseMirrorNode>, Partial<Context>]
   >();
 }

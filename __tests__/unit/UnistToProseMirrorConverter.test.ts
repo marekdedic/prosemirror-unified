@@ -9,7 +9,7 @@ jest.mock("../../src/ExtensionManager");
 jest.mock("../../src/SyntaxExtension");
 
 test("Converts basic document", () => {
-  const schema = new Schema({
+  const schema = new Schema<string, string>({
     nodes: {
       doc: {},
       text: {},
@@ -26,7 +26,7 @@ test("Converts basic document", () => {
   const manager = mocked(new ExtensionManager([]));
   manager.syntaxExtensions.mockReturnValue([docExtension]);
 
-  const converter = new UnistToProseMirrorConverter(manager);
+  const converter = new UnistToProseMirrorConverter(manager, schema);
 
   const rootUnistNode = { type: "root", children: [] };
 
@@ -37,6 +37,7 @@ test("Converts basic document", () => {
   );
   expect(docExtension.unistNodeToProseMirrorNodes).toHaveBeenCalledWith(
     rootUnistNode,
+    schema,
     [],
     {}
   );
@@ -44,7 +45,7 @@ test("Converts basic document", () => {
 });
 
 test("Converts a document with children", () => {
-  const schema = new Schema({
+  const schema = new Schema<string, string>({
     nodes: {
       doc: {
         content: "text*",
@@ -76,7 +77,7 @@ test("Converts a document with children", () => {
   const manager = mocked(new ExtensionManager([]));
   manager.syntaxExtensions.mockReturnValue([docExtension, textExtension]);
 
-  const converter = new UnistToProseMirrorConverter(manager);
+  const converter = new UnistToProseMirrorConverter(manager, schema);
 
   const textUnistNode = { type: "text", value: "Hello World!" };
   const rootUnistNode = { type: "root", children: [textUnistNode] };
@@ -88,6 +89,7 @@ test("Converts a document with children", () => {
   );
   expect(textExtension.unistNodeToProseMirrorNodes).toHaveBeenCalledWith(
     textUnistNode,
+    schema,
     [],
     {}
   );
@@ -96,6 +98,7 @@ test("Converts a document with children", () => {
   );
   expect(docExtension.unistNodeToProseMirrorNodes).toHaveBeenCalledWith(
     rootUnistNode,
+    schema,
     [textProseMirrorNode],
     {}
   );
@@ -103,7 +106,7 @@ test("Converts a document with children", () => {
 });
 
 test("Converts a document with children of multiple types", () => {
-  const schema = new Schema({
+  const schema = new Schema<string, string>({
     nodes: {
       doc: {
         content: "groupOne*",
@@ -164,7 +167,7 @@ test("Converts a document with children of multiple types", () => {
     typeThreeExtension,
   ]);
 
-  const converter = new UnistToProseMirrorConverter(manager);
+  const converter = new UnistToProseMirrorConverter(manager, schema);
 
   const typeOneUnistNode = { type: "one" };
   const typeTwoUnistNode = { type: "two" };
@@ -181,6 +184,7 @@ test("Converts a document with children of multiple types", () => {
   );
   expect(typeOneExtension.unistNodeToProseMirrorNodes).toHaveBeenCalledWith(
     typeOneUnistNode,
+    schema,
     [],
     {}
   );
@@ -190,6 +194,7 @@ test("Converts a document with children of multiple types", () => {
   );
   expect(typeTwoExtension.unistNodeToProseMirrorNodes).toHaveBeenCalledWith(
     typeTwoUnistNode,
+    schema,
     [],
     {}
   );
@@ -201,6 +206,7 @@ test("Converts a document with children of multiple types", () => {
   );
   expect(docExtension.unistNodeToProseMirrorNodes).toHaveBeenCalledWith(
     rootUnistNode,
+    schema,
     [typeOneProseMirrorNode, typeTwoProseMirrorNode],
     {}
   );
@@ -211,7 +217,9 @@ test("Fails gracefully on no root converter", () => {
   const manager = mocked(new ExtensionManager([]));
   manager.syntaxExtensions.mockReturnValue([]);
 
-  const converter = new UnistToProseMirrorConverter(manager);
+  const schema = new Schema<string, string>({ nodes: { doc: {}, text: {} } });
+
+  const converter = new UnistToProseMirrorConverter(manager, schema);
 
   const rootUnistNode = { type: "root", children: [] };
 
@@ -225,7 +233,7 @@ test("Fails gracefully on no root converter", () => {
 });
 
 test("Converts a document with invalid children", () => {
-  const schema = new Schema({
+  const schema = new Schema<string, string>({
     nodes: {
       doc: {
         content: "groupOne*",
@@ -265,7 +273,7 @@ test("Converts a document with invalid children", () => {
   const manager = mocked(new ExtensionManager([]));
   manager.syntaxExtensions.mockReturnValue([docExtension, typeOneExtension]);
 
-  const converter = new UnistToProseMirrorConverter(manager);
+  const converter = new UnistToProseMirrorConverter(manager, schema);
 
   const typeOneUnistNode = { type: "one" };
   const typeTwoUnistNode = { type: "two" };
@@ -282,6 +290,7 @@ test("Converts a document with invalid children", () => {
   );
   expect(typeOneExtension.unistNodeToProseMirrorNodes).toHaveBeenCalledWith(
     typeOneUnistNode,
+    schema,
     [],
     {}
   );
@@ -291,6 +300,7 @@ test("Converts a document with invalid children", () => {
   );
   expect(docExtension.unistNodeToProseMirrorNodes).toHaveBeenCalledWith(
     rootUnistNode,
+    schema,
     [typeOneProseMirrorNode],
     {}
   );
