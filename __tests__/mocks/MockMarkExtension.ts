@@ -10,8 +10,11 @@ import { MarkExtension } from "../../src/MarkExtension";
 
 export class MockMarkExtension<
   UNode extends UnistNode,
-  Context extends Record<string, unknown> = Record<string, never>
-> extends MarkExtension<UNode, Context> {
+  UnistToProseMirrorContext extends Record<string, unknown> = Record<
+    string,
+    never
+  >
+> extends MarkExtension<UNode, UnistToProseMirrorContext> {
   public proseMirrorMarkName = jest.fn<string | null, []>();
 
   public proseMirrorMarkSpec = jest.fn<MarkSpec | null, []>();
@@ -22,6 +25,11 @@ export class MockMarkExtension<
 
   public unistNodeToProseMirrorNodes = jest.fn<
     Array<ProseMirrorNode>,
-    [UNode, Schema<string, string>, Array<ProseMirrorNode>, Partial<Context>]
+    [
+      UNode,
+      Schema<string, string>,
+      Array<ProseMirrorNode>,
+      Partial<UnistToProseMirrorContext>
+    ]
   >();
 }

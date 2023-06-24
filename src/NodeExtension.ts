@@ -8,8 +8,11 @@ import { SyntaxExtension } from "./SyntaxExtension";
  */
 export abstract class NodeExtension<
   UNode extends UnistNode,
-  Context extends Record<string, unknown> = Record<string, never>
-> extends SyntaxExtension<UNode, Context> {
+  UnistToProseMirrorContext extends Record<string, unknown> = Record<
+    string,
+    never
+  >
+> extends SyntaxExtension<UNode, UnistToProseMirrorContext> {
   public proseMirrorToUnistTest(node: ProseMirrorNode): boolean {
     return this.proseMirrorNodeName() === node.type.name;
   }

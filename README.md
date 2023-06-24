@@ -88,7 +88,7 @@ To make up for this difference, prosemirror-unified provides two basic types of 
 
 prosemirror-unified traverses an existing unist AST and creates a matching ProseMirror AST from the leaf nodes to the root. For each node, all extensions are checked to find one that can translate this type of node. Once an applicable extension is found, all the children of the node are translated first. Only after that is the actual node translated, so that it can use the already-prepared children and incorporate them in the ProseMirror tree. This process works the same for `NodeExtension`s and `MarkExtension`s as the extension can decide what the output node will look like and what marks it will have.
 
-As some extensions need to add information after the whole document is parsed, there is a global Context that any extension can modify when translating a node. Additionally, a post-translation hook can be added to any extension.
+As some extensions need to add information after the whole document is parsed, there is a global context that any extension can modify when translating a node. Additionally, a post-translation hook can be added to any extension.
 
 ### Translating from ProseMirror to unist
 
@@ -146,7 +146,7 @@ If you are using TypeScript, the `SyntaxExtension` class has two generic paramet
 
 This specifies the unist node type that the extension handles.
 
-##### `Context extends Record<string, unknown>`
+##### `UnistToProseMirrorContext extends Record<string, unknown>`
 
 This specifies the type of global context (shared across all extensions) that this extension expects. Default `Record<string, unknown>`.
 
@@ -160,11 +160,11 @@ This method should return the type of the unist node this extension translates.
 
 This method is used to check whether the extension can translate a given unist node to a ProseMirror node. By default, it checks whether the node type matches `this.unistNodeName()`.
 
-##### `abstract unistNodeToProseMirrorNode(node: UNode, proseMirrorSchema: Schema<string, string>, convertedChildren: Array<ProseMirrorNode>, context: Partial<Context>): Array<ProseMirrorNode>`
+##### `abstract unistNodeToProseMirrorNode(node: UNode, proseMirrorSchema: Schema<string, string>, convertedChildren: Array<ProseMirrorNode>, context: Partial<UnistToProseMirrorContext>): Array<ProseMirrorNode>`
 
 This method handles the translation from a unist node to a ProseMirror node. It receives the original unist node, the built ProseMirror schema, the already-translated children and the global translation context that it can modify. It should return an array of ProseMirror nodes (usually only one, but you can theoretically convert one unist node into multiple ProseMirror nodes).
 
-##### `postUnistToProseMirrorHook(context: Partial<Context>): void`
+##### `postUnistToProseMirrorHook(context: Partial<UnistToProseMirrorContext>): void`
 
 This method is called during translation from unist to ProseMirror after the whole document has been translated. By default does nothing.
 
@@ -192,7 +192,7 @@ If you are using TypeScript, the `NodeExtension` class has two generic parameter
 
 This specifies the unist node type that the extension handles.
 
-##### `Context extends Record<string, unknown>`
+##### `UnistToProseMirrorContext extends Record<string, unknown>`
 
 This specifies the type of global context (shared across all extensions) that this extension expects. Default `Record<string, unknown>`.
 
@@ -226,7 +226,7 @@ If you are using TypeScript, the `MarkExtension` class has two generic parameter
 
 This specifies the unist node type that the extension handles.
 
-##### `Context extends Record<string, unknown>`
+##### `UnistToProseMirrorContext extends Record<string, unknown>`
 
 This specifies the type of global context (shared across all extensions) that this extension expects. Default `Record<string, unknown>`.
 
