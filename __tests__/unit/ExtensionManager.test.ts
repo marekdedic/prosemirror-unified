@@ -1,5 +1,4 @@
 import { mocked } from "jest-mock";
-import { Schema } from "prosemirror-model";
 import type { Node as UnistNode } from "unist";
 
 import { Extension } from "../../src/Extension";
@@ -156,24 +155,4 @@ test("ExtensionManager manages extensions with dependencies", () => {
     markExtension1,
     markExtension2,
   ]);
-});
-
-test("ExtensionManager sets the schema", () => {
-  const extension = mocked(new MockNodeExtension());
-  extension.dependencies.mockReturnValueOnce([]);
-  const manager = new ExtensionManager([extension]);
-  const schema = new Schema<string, string>({
-    nodes: {
-      doc: {},
-      text: {},
-      myNode1: {},
-    },
-    marks: {
-      myMark1: {},
-    },
-  });
-  manager.setSchema(schema);
-
-  expect(extension.setProseMirrorSchema.mock.calls).toHaveLength(1);
-  expect(extension.setProseMirrorSchema.mock.calls[0][0]).toBe(schema);
 });

@@ -1,5 +1,6 @@
 import { baseKeymap, chainCommands } from "prosemirror-commands";
 import { keymap } from "prosemirror-keymap";
+import type { Schema } from "prosemirror-model";
 import type { Command, Plugin } from "prosemirror-state";
 
 import type { ExtensionManager } from "./ExtensionManager";
@@ -7,10 +8,13 @@ import type { ExtensionManager } from "./ExtensionManager";
 export class KeymapBuilder {
   private readonly keymap: Map<string, Array<Command>>;
 
-  public constructor(extensionManager: ExtensionManager) {
+  public constructor(
+    extensionManager: ExtensionManager,
+    proseMirrorSchema: Schema<string, string>
+  ) {
     this.keymap = new Map();
     for (const extension of extensionManager.syntaxExtensions()) {
-      this.addKeymap(extension.proseMirrorKeymap());
+      this.addKeymap(extension.proseMirrorKeymap(proseMirrorSchema));
     }
     this.addKeymap(baseKeymap);
   }

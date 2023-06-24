@@ -26,11 +26,14 @@ export class ProseMirrorUnified {
   public constructor(extensions: Array<Extension> = []) {
     const extensionManager = new ExtensionManager(extensions);
     this.builtSchema = new SchemaBuilder(extensionManager).build();
-    extensionManager.setSchema(this.schema());
-    this.inputRulesBuilder = new InputRulesBuilder(extensionManager);
-    this.keymapBuilder = new KeymapBuilder(extensionManager);
+    this.inputRulesBuilder = new InputRulesBuilder(
+      extensionManager,
+      this.builtSchema
+    );
+    this.keymapBuilder = new KeymapBuilder(extensionManager, this.builtSchema);
     this.unistToProseMirrorConverter = new UnistToProseMirrorConverter(
-      extensionManager
+      extensionManager,
+      this.builtSchema
     );
     this.proseMirrorToUnistConverter = new ProseMirrorToUnistConverter(
       extensionManager
