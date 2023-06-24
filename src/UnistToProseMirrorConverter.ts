@@ -1,13 +1,18 @@
-import type { Node as ProseMirrorNode } from "prosemirror-model";
+import type { Node as ProseMirrorNode, Schema } from "prosemirror-model";
 import type { Node as UnistNode, Parent } from "unist";
 
 import type { ExtensionManager } from "./ExtensionManager";
 
 export class UnistToProseMirrorConverter {
   private readonly extensionManager: ExtensionManager;
+  private readonly proseMirrorSchema: Schema<string, string>;
 
-  public constructor(extensionManager: ExtensionManager) {
+  public constructor(
+    extensionManager: ExtensionManager,
+    proseMirrorSchema: Schema<string, string>
+  ) {
     this.extensionManager = extensionManager;
+    this.proseMirrorSchema = proseMirrorSchema;
   }
 
   private static unistNodeIsParent(node: UnistNode): node is Parent {
@@ -42,6 +47,7 @@ export class UnistToProseMirrorConverter {
       }
       return extension.unistNodeToProseMirrorNodes(
         node,
+        this.proseMirrorSchema,
         convertedChildren,
         context
       );

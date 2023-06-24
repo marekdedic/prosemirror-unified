@@ -1,4 +1,3 @@
-import type { Schema } from "prosemirror-model";
 import type { Node as UnistNode } from "unist";
 
 import type { Extension } from "./Extension";
@@ -30,12 +29,6 @@ export class ExtensionManager {
 
     for (const extension of extensions) {
       this.add(extension);
-    }
-  }
-
-  public setSchema(schema: Schema<string, string>): void {
-    for (const extension of this.syntaxExtensions()) {
-      extension.setProseMirrorSchema(schema);
     }
   }
 

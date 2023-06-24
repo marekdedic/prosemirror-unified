@@ -160,29 +160,25 @@ This method should return the type of the unist node this extension translates.
 
 This method is used to check whether the extension can translate a given unist node to a ProseMirror node. By default, it checks whether the node type matches `this.unistNodeName()`.
 
-##### `abstract unistNodeToProseMirrorNode(node: UNode, convertedChildren: Array<ProseMirrorNode>, context: Partial<Context>): Array<ProseMirrorNode>`
+##### `abstract unistNodeToProseMirrorNode(node: UNode, proseMirrorSchema: Schema<string, string>, convertedChildren: Array<ProseMirrorNode>, context: Partial<Context>): Array<ProseMirrorNode>`
 
-This method handles the translation from a unist node to a ProseMirror node. It receives the original unist node, the already-translated children and the global translation context that it can modify. It should return an array of ProseMirror nodes (usually only one, but you can theoretically convert one unist node into multiple ProseMirror nodes).
+This method handles the translation from a unist node to a ProseMirror node. It receives the original unist node, the built ProseMirror schema, the already-translated children and the global translation context that it can modify. It should return an array of ProseMirror nodes (usually only one, but you can theoretically convert one unist node into multiple ProseMirror nodes).
 
 ##### `postUnistToProseMirrorHook(context: Partial<Context>): void`
 
 This method is called during translation from unist to ProseMirror after the whole document has been translated. By default does nothing.
 
-##### `proseMirrorInputRules(): Array<InputRule>`
+##### `proseMirrorInputRules(proseMirrorSchema: Schema<string, string>): Array<InputRule>`
 
-Override this method to add input rules to the ProseMirror editor.
+Override this method to add input rules to the ProseMirror editor. The built ProseMirror schema is provided as a parameter.
 
 By default returns `[]`.
 
-##### `proseMirrorKeymap(): Record<string, Command>`
+##### `proseMirrorKeymap(proseMirrorSchema: Schema<string, string>): Record<string, Command>`
 
-Override this method to add keyboard shortcuts to the ProseMirror editor. Returns an object where the keys are keyboard shortcuts and values are commands to run.
+Override this method to add keyboard shortcuts to the ProseMirror editor. Returns an object where the keys are keyboard shortcuts and values are commands to run. The built ProseMirror schema is provided as a parameter.
 
 By default returns `{}`.
-
-##### `proseMirrorSchema(): Schema<string, string>`
-
-A helper function that returns the built ProseMirror schema. You don't need to override this, rather use it in your implementation.
 
 ### The `NodeExtension` class
 
