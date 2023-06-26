@@ -13,7 +13,7 @@ import { TextExtension, textSpec } from "./TextExtension";
 jest.mock("unified");
 
 test("Parsing a document with a paragraph", () => {
-  expect.assertions(30);
+  expect.assertions(14);
 
   const source = "Hello <b>World</b>!";
   const unistTree: UnistRoot = {
@@ -61,6 +61,22 @@ test("Parsing a document with a paragraph", () => {
 
   const proseMirrorRoot = pmu.parse(source)!;
 
+  const proseMirrorTree = pmu
+    .schema()
+    .nodes["doc"].createAndFill(
+      {},
+      pmu
+        .schema()
+        .nodes["paragraph"].createAndFill({}, [
+          pmu.schema().text("Hello "),
+          pmu
+            .schema()
+            .text("World")
+            .mark([pmu.schema().marks["bold"].create()]),
+          pmu.schema().text("!"),
+        ])
+    )!;
+
   jest.spyOn(console, "warn").mockImplementation();
   createEditor(proseMirrorRoot).callback((content) => {
     expect(content.schema.spec.marks.size).toBe(1);
@@ -69,39 +85,7 @@ test("Parsing a document with a paragraph", () => {
     expect(content.schema.spec.nodes.get("doc")).toBe(rootSpec);
     expect(content.schema.spec.nodes.get("paragraph")).toBe(paragraphSpec);
     expect(content.schema.spec.nodes.get("text")).toBe(textSpec);
-    expect(content.doc.type.name).toBe("doc");
-    expect(content.doc.content.childCount).toBe(1);
-    expect(content.doc.content.firstChild).not.toBeNull();
-    expect(content.doc.content.firstChild!.type.name).toBe("paragraph");
-    expect(content.doc.content.firstChild!.content.childCount).toBe(3);
-    expect(content.doc.content.firstChild!.content.firstChild).not.toBeNull();
-    expect(content.doc.content.firstChild!.content.firstChild!.type.name).toBe(
-      "text"
-    );
-    expect(content.doc.content.firstChild!.content.firstChild!.text).toBe(
-      "Hello "
-    );
-    expect(
-      content.doc.content.firstChild!.content.firstChild!.marks
-    ).toHaveLength(0);
-    expect(content.doc.content.firstChild!.content.child(1).type.name).toBe(
-      "text"
-    );
-    expect(content.doc.content.firstChild!.content.child(1).text).toBe("World");
-    expect(content.doc.content.firstChild!.content.child(1).marks).toHaveLength(
-      1
-    );
-    expect(
-      content.doc.content.firstChild!.content.child(1).marks[0].type.name
-    ).toBe("bold");
-    expect(content.doc.content.firstChild!.content.lastChild).not.toBeNull();
-    expect(content.doc.content.firstChild!.content.lastChild!.type.name).toBe(
-      "text"
-    );
-    expect(content.doc.content.firstChild!.content.lastChild!.text).toBe("!");
-    expect(
-      content.doc.content.firstChild!.content.lastChild!.marks
-    ).toHaveLength(0);
+    expect(content.doc).toEqualProsemirrorNode(proseMirrorTree);
     expect(unifiedMock.parse).toHaveBeenCalledTimes(1);
     expect(unifiedMock.parse).toHaveBeenCalledWith(source);
     expect(unifiedMock.runSync).toHaveBeenCalledTimes(1);
@@ -115,7 +99,7 @@ test("Parsing a document with a paragraph", () => {
 });
 
 test("Adding a mark with an input rule", () => {
-  expect.assertions(30);
+  expect.assertions(14);
 
   const source = "Hello ";
   const target = "Hello <b>World</b>!";
@@ -178,6 +162,22 @@ test("Adding a mark with an input rule", () => {
 
   const proseMirrorRoot = pmu.parse(source)!;
 
+  const proseMirrorTree = pmu
+    .schema()
+    .nodes["doc"].createAndFill(
+      {},
+      pmu
+        .schema()
+        .nodes["paragraph"].createAndFill({}, [
+          pmu.schema().text("Hello "),
+          pmu
+            .schema()
+            .text("World")
+            .mark([pmu.schema().marks["bold"].create()]),
+          pmu.schema().text("!"),
+        ])
+    )!;
+
   jest.spyOn(console, "warn").mockImplementation();
   createEditor(proseMirrorRoot, {
     plugins: [pmu.inputRulesPlugin()],
@@ -191,41 +191,7 @@ test("Adding a mark with an input rule", () => {
       expect(content.schema.spec.nodes.get("doc")).toBe(rootSpec);
       expect(content.schema.spec.nodes.get("paragraph")).toBe(paragraphSpec);
       expect(content.schema.spec.nodes.get("text")).toBe(textSpec);
-      expect(content.doc.type.name).toBe("doc");
-      expect(content.doc.content.childCount).toBe(1);
-      expect(content.doc.content.firstChild).not.toBeNull();
-      expect(content.doc.content.firstChild!.type.name).toBe("paragraph");
-      expect(content.doc.content.firstChild!.content.childCount).toBe(3);
-      expect(content.doc.content.firstChild!.content.firstChild).not.toBeNull();
-      expect(
-        content.doc.content.firstChild!.content.firstChild!.type.name
-      ).toBe("text");
-      expect(content.doc.content.firstChild!.content.firstChild!.text).toBe(
-        "Hello "
-      );
-      expect(
-        content.doc.content.firstChild!.content.firstChild!.marks
-      ).toHaveLength(0);
-      expect(content.doc.content.firstChild!.content.child(1).type.name).toBe(
-        "text"
-      );
-      expect(content.doc.content.firstChild!.content.child(1).text).toBe(
-        "World"
-      );
-      expect(
-        content.doc.content.firstChild!.content.child(1).marks
-      ).toHaveLength(1);
-      expect(
-        content.doc.content.firstChild!.content.child(1).marks[0].type.name
-      ).toBe("bold");
-      expect(content.doc.content.firstChild!.content.lastChild).not.toBeNull();
-      expect(content.doc.content.firstChild!.content.lastChild!.type.name).toBe(
-        "text"
-      );
-      expect(content.doc.content.firstChild!.content.lastChild!.text).toBe("!");
-      expect(
-        content.doc.content.firstChild!.content.lastChild!.marks
-      ).toHaveLength(0);
+      expect(content.doc).toEqualProsemirrorNode(proseMirrorTree);
       expect(unifiedMock.parse).toHaveBeenCalledTimes(1);
       expect(unifiedMock.parse).toHaveBeenCalledWith(source);
       expect(unifiedMock.runSync).toHaveBeenCalledTimes(1);

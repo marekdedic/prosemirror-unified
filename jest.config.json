@@ -37,6 +37,7 @@
       "transformIgnorePatterns": [
         "node_modules/(?!unified)/"
       ],
+      "setupFilesAfterEnv": ["jest-prosemirror/environment"],
       "testEnvironment": "jsdom"
     }
   ]
