@@ -19,7 +19,7 @@ class SetExtension extends Extension {
 }
 
 test("Parsing a document with an extension set", () => {
-  expect.assertions(20);
+  expect.assertions(13);
 
   const source = "<p>Hello World!</p>";
   const unistTree: UnistRoot = {
@@ -47,6 +47,15 @@ test("Parsing a document with an extension set", () => {
 
   const pmu = new ProseMirrorUnified([new SetExtension()]);
 
+  const proseMirrorTree = pmu
+    .schema()
+    .nodes["doc"].createAndFill(
+      {},
+      pmu
+        .schema()
+        .nodes["paragraph"].createAndFill({}, pmu.schema().text("Hello World!"))
+    )!;
+
   jest.spyOn(console, "warn").mockImplementation();
   const proseMirrorRoot = pmu.parse(source)!;
   createEditor(proseMirrorRoot).callback((content) => {
@@ -55,18 +64,7 @@ test("Parsing a document with an extension set", () => {
     expect(content.schema.spec.nodes.get("doc")).toBe(rootSpec);
     expect(content.schema.spec.nodes.get("paragraph")).toBe(paragraphSpec);
     expect(content.schema.spec.nodes.get("text")).toBe(textSpec);
-    expect(content.doc.type.name).toBe("doc");
-    expect(content.doc.content.childCount).toBe(1);
-    expect(content.doc.content.firstChild).not.toBeNull();
-    expect(content.doc.content.firstChild!.type.name).toBe("paragraph");
-    expect(content.doc.content.firstChild!.content.childCount).toBe(1);
-    expect(content.doc.content.firstChild!.content.firstChild).not.toBeNull();
-    expect(content.doc.content.firstChild!.content.firstChild!.type.name).toBe(
-      "text"
-    );
-    expect(content.doc.content.firstChild!.content.firstChild!.text).toBe(
-      "Hello World!"
-    );
+    expect(content.doc).toEqualProsemirrorNode(proseMirrorTree);
     expect(unifiedMock.parse).toHaveBeenCalledTimes(1);
     expect(unifiedMock.parse).toHaveBeenCalledWith(source);
     expect(unifiedMock.runSync).toHaveBeenCalledTimes(1);
