@@ -13,7 +13,7 @@ export class MockMarkExtension<
   UnistToProseMirrorContext extends Record<string, unknown> = Record<
     string,
     never
-  >
+  >,
 > extends MarkExtension<UNode, UnistToProseMirrorContext> {
   public proseMirrorMarkName = jest.fn<string | null, []>();
 
@@ -29,7 +29,7 @@ export class MockMarkExtension<
       UNode,
       Schema<string, string>,
       Array<ProseMirrorNode>,
-      Partial<UnistToProseMirrorContext>
+      Partial<UnistToProseMirrorContext>,
     ]
   >();
 }

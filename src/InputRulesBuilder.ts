@@ -9,12 +9,12 @@ export class InputRulesBuilder {
 
   public constructor(
     extensionManager: ExtensionManager,
-    proseMirrorSchema: Schema<string, string>
+    proseMirrorSchema: Schema<string, string>,
   ) {
     this.rules = extensionManager
       .syntaxExtensions()
       .flatMap((extension) =>
-        extension.proseMirrorInputRules(proseMirrorSchema)
+        extension.proseMirrorInputRules(proseMirrorSchema),
       );
   }
 

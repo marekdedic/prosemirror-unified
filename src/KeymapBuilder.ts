@@ -10,7 +10,7 @@ export class KeymapBuilder {
 
   public constructor(
     extensionManager: ExtensionManager,
-    proseMirrorSchema: Schema<string, string>
+    proseMirrorSchema: Schema<string, string>,
   ) {
     this.keymap = new Map();
     for (const extension of extensionManager.syntaxExtensions()) {

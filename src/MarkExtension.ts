@@ -11,7 +11,7 @@ export abstract class MarkExtension<
   UnistToProseMirrorContext extends Record<string, unknown> = Record<
     string,
     never
-  >
+  >,
 > extends SyntaxExtension<UNode, UnistToProseMirrorContext> {
   public proseMirrorToUnistTest(node: UnistNode, mark: Mark): boolean {
     return (
@@ -25,6 +25,6 @@ export abstract class MarkExtension<
 
   public abstract processConvertedUnistNode(
     convertedNode: UnistNode,
-    originalMark: Mark
+    originalMark: Mark,
   ): UNode;
 }

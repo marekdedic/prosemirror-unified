@@ -9,7 +9,7 @@ export class UnistToProseMirrorConverter {
 
   public constructor(
     extensionManager: ExtensionManager,
-    proseMirrorSchema: Schema<string, string>
+    proseMirrorSchema: Schema<string, string>,
   ) {
     this.extensionManager = extensionManager;
     this.proseMirrorSchema = proseMirrorSchema;
@@ -33,7 +33,7 @@ export class UnistToProseMirrorConverter {
 
   private convertNode(
     node: UnistNode,
-    context: Partial<unknown>
+    context: Partial<unknown>,
   ): Array<ProseMirrorNode> {
     for (const extension of this.extensionManager.syntaxExtensions()) {
       if (!extension.unistToProseMirrorTest(node)) {
@@ -42,20 +42,20 @@ export class UnistToProseMirrorConverter {
       let convertedChildren: Array<ProseMirrorNode> = [];
       if (UnistToProseMirrorConverter.unistNodeIsParent(node)) {
         convertedChildren = node.children.flatMap((child) =>
-          this.convertNode(child, context)
+          this.convertNode(child, context),
         );
       }
       return extension.unistNodeToProseMirrorNodes(
         node,
         this.proseMirrorSchema,
         convertedChildren,
-        context
+        context,
       );
     }
     console.warn(
       "Couldn't find any way to convert unist node of type \"" +
         node.type +
-        '" to a ProseMirror node.'
+        '" to a ProseMirror node.',
     );
     return [];
   }

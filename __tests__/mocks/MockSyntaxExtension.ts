@@ -8,7 +8,7 @@ export class MockSyntaxExtension<
   UnistToProseMirrorContext extends Record<string, unknown> = Record<
     string,
     never
-  >
+  >,
 > extends SyntaxExtension<UNode, UnistToProseMirrorContext> {
   public unistNodeName = jest.fn<UNode["type"], []>();
 
@@ -18,7 +18,7 @@ export class MockSyntaxExtension<
       UNode,
       Schema<string, string>,
       Array<ProseMirrorNode>,
-      Partial<UnistToProseMirrorContext>
+      Partial<UnistToProseMirrorContext>,
     ]
   >();
 }

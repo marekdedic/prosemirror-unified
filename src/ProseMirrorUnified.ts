@@ -28,15 +28,15 @@ export class ProseMirrorUnified {
     this.builtSchema = new SchemaBuilder(extensionManager).build();
     this.inputRulesBuilder = new InputRulesBuilder(
       extensionManager,
-      this.builtSchema
+      this.builtSchema,
     );
     this.keymapBuilder = new KeymapBuilder(extensionManager, this.builtSchema);
     this.unistToProseMirrorConverter = new UnistToProseMirrorConverter(
       extensionManager,
-      this.builtSchema
+      this.builtSchema,
     );
     this.proseMirrorToUnistConverter = new ProseMirrorToUnistConverter(
-      extensionManager
+      extensionManager,
     );
     this.unified = new UnifiedBuilder(extensionManager).build();
   }

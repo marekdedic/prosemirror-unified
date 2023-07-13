@@ -33,18 +33,18 @@ export class RootExtension extends NodeExtension<UnistRoot> {
   public unistNodeToProseMirrorNodes(
     _: UnistRoot,
     proseMirrorSchema: Schema<string, string>,
-    convertedChildren: Array<ProseMirrorNode>
+    convertedChildren: Array<ProseMirrorNode>,
   ): Array<ProseMirrorNode> {
     return createProseMirrorNode(
       this.proseMirrorNodeName(),
       proseMirrorSchema,
-      convertedChildren
+      convertedChildren,
     );
   }
 
   public proseMirrorNodeToUnistNodes(
     _: ProseMirrorNode,
-    convertedChildren: Array<UnistNode>
+    convertedChildren: Array<UnistNode>,
   ): Array<UnistRoot> {
     return [
       {

@@ -6,13 +6,13 @@ import { NodeExtension } from "./NodeExtension";
 import type { SyntaxExtension } from "./SyntaxExtension";
 
 function isNodeExtension(
-  extension: Extension
+  extension: Extension,
 ): extension is NodeExtension<UnistNode> {
   return extension instanceof NodeExtension;
 }
 
 function isMarkExtension(
-  extension: Extension
+  extension: Extension,
 ): extension is MarkExtension<UnistNode> {
   return extension instanceof MarkExtension;
 }
@@ -34,7 +34,7 @@ export class ExtensionManager {
 
   public extensions(): Array<Extension> {
     return (this.syntaxExtensions() as Array<Extension>).concat(
-      Array.from(this.otherExtensionList.values())
+      Array.from(this.otherExtensionList.values()),
     );
   }
 
@@ -48,7 +48,7 @@ export class ExtensionManager {
 
   public syntaxExtensions(): Array<SyntaxExtension<UnistNode>> {
     return (this.nodeExtensions() as Array<SyntaxExtension<UnistNode>>).concat(
-      this.markExtensions()
+      this.markExtensions(),
     );
   }
 

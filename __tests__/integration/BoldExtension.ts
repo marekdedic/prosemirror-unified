@@ -38,10 +38,12 @@ export class BoldExtension extends MarkExtension<UnistBold> {
   public unistNodeToProseMirrorNodes(
     _: UnistBold,
     proseMirrorSchema: Schema<string, string>,
-    convertedChildren: Array<ProseMirrorNode>
+    convertedChildren: Array<ProseMirrorNode>,
   ): Array<ProseMirrorNode> {
     return convertedChildren.map((child) =>
-      child.mark([proseMirrorSchema.marks[this.proseMirrorMarkName()].create()])
+      child.mark([
+        proseMirrorSchema.marks[this.proseMirrorMarkName()].create(),
+      ]),
     );
   }
 
@@ -50,12 +52,12 @@ export class BoldExtension extends MarkExtension<UnistBold> {
   }
 
   public proseMirrorInputRules(
-    proseMirrorSchema: Schema<string, string>
+    proseMirrorSchema: Schema<string, string>,
   ): Array<InputRule> {
     return [
       new MarkInputRule(
         /<b>([^\s](?:.*[^\s])?)<\/b>(.)$/,
-        proseMirrorSchema.marks[this.proseMirrorMarkName()]
+        proseMirrorSchema.marks[this.proseMirrorMarkName()],
       ),
     ];
   }

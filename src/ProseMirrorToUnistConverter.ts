@@ -14,7 +14,7 @@ export class ProseMirrorToUnistConverter {
     const rootNode = this.convertNode(node);
     if (rootNode.length !== 1) {
       throw new Error(
-        "Couldn't find any way to convert the root ProseMirror node."
+        "Couldn't find any way to convert the root ProseMirror node.",
       );
     }
     return rootNode[0];
@@ -29,19 +29,19 @@ export class ProseMirrorToUnistConverter {
       let convertedChildren: Array<UnistNode> = [];
       for (let i = 0; i < node.childCount; ++i) {
         convertedChildren = convertedChildren.concat(
-          this.convertNode(node.child(i))
+          this.convertNode(node.child(i)),
         );
       }
       convertedNodes = extension.proseMirrorNodeToUnistNodes(
         node,
-        convertedChildren
+        convertedChildren,
       );
     }
     if (convertedNodes === null) {
       console.warn(
         "Couldn't find any way to convert ProseMirror node of type \"" +
           node.type.name +
-          '" to a unist node.'
+          '" to a unist node.',
       );
       return [];
     }
@@ -52,7 +52,7 @@ export class ProseMirrorToUnistConverter {
           if (extension.proseMirrorToUnistTest(convertedNode, mark)) {
             convertedNode = extension.processConvertedUnistNode(
               convertedNode,
-              mark
+              mark,
             );
             processed = true;
           }
@@ -61,7 +61,7 @@ export class ProseMirrorToUnistConverter {
           console.warn(
             "Couldn't find any way to convert ProseMirror mark of type \"" +
               mark.type.name +
-              '" to a unist node.'
+              '" to a unist node.',
           );
         }
       }

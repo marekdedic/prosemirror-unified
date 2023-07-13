@@ -45,16 +45,16 @@ test("ExtensionManager manages other extensions", () => {
 
 test("ExtensionManager manages mark and node extensions", () => {
   class MarkExtension1<
-    UNode extends UnistNode
+    UNode extends UnistNode,
   > extends MockMarkExtension<UNode> {}
   class MarkExtension2<
-    UNode extends UnistNode
+    UNode extends UnistNode,
   > extends MockMarkExtension<UNode> {}
   class NodeExtension1<
-    UNode extends UnistNode
+    UNode extends UnistNode,
   > extends MockNodeExtension<UNode> {}
   class NodeExtension2<
-    UNode extends UnistNode
+    UNode extends UnistNode,
   > extends MockNodeExtension<UNode> {}
   class MockExtension1 extends Extension {}
   class MockExtension2 extends Extension {}
@@ -105,16 +105,16 @@ test("ExtensionManager manages mark and node extensions", () => {
 
 test("ExtensionManager manages extensions with dependencies", () => {
   class MarkExtension1<
-    UNode extends UnistNode
+    UNode extends UnistNode,
   > extends MockMarkExtension<UNode> {}
   class MarkExtension2<
-    UNode extends UnistNode
+    UNode extends UnistNode,
   > extends MockMarkExtension<UNode> {}
   class NodeExtension1<
-    UNode extends UnistNode
+    UNode extends UnistNode,
   > extends MockNodeExtension<UNode> {}
   class NodeExtension2<
-    UNode extends UnistNode
+    UNode extends UnistNode,
   > extends MockNodeExtension<UNode> {}
   class MockExtension1 extends Extension {}
   const markExtension1 = mocked(new MarkExtension1());
