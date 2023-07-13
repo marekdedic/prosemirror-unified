@@ -85,7 +85,7 @@ test("ProseMirrorUnified parses a string", () => {
 
   mocked(UnifiedBuilder).prototype.build.mockReturnValueOnce(unifiedMock);
   mocked(UnistToProseMirrorConverter).prototype.convert.mockReturnValueOnce(
-    rootProseMirrorNode
+    rootProseMirrorNode,
   );
 
   const pmu = new ProseMirrorUnified();
@@ -94,7 +94,7 @@ test("ProseMirrorUnified parses a string", () => {
   expect(unifiedMock.parse).toHaveBeenCalledWith("SOURCE INPUT");
   expect(unifiedMock.runSync).toHaveBeenCalledWith(parsedRoot);
   expect(UnistToProseMirrorConverter.prototype.convert).toHaveBeenCalledWith(
-    processedRoot
+    processedRoot,
   );
 });
 
@@ -114,14 +114,14 @@ test("ProseMirrorUnified stringifies an AST", () => {
 
   mocked(UnifiedBuilder).prototype.build.mockReturnValue(unifiedMock);
   mocked(ProseMirrorToUnistConverter).prototype.convert.mockReturnValueOnce(
-    rootUnistNode
+    rootUnistNode,
   );
 
   const pmu = new ProseMirrorUnified();
 
   expect(pmu.serialize(rootProseMirrorNode)).toBe("SOURCE INPUT");
   expect(ProseMirrorToUnistConverter.prototype.convert).toHaveBeenCalledWith(
-    rootProseMirrorNode
+    rootProseMirrorNode,
   );
   expect(unifiedMock.stringify).toHaveBeenCalledWith(rootUnistNode);
 });

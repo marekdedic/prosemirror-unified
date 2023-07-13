@@ -61,7 +61,7 @@ describe("createProseMirrorNode works", () => {
 
   test("works with invalid children", () => {
     expect(
-      createProseMirrorNode("node1", schema, [schema.nodes["node4"].create()])
+      createProseMirrorNode("node1", schema, [schema.nodes["node4"].create()]),
     ).toHaveLength(0);
   });
 

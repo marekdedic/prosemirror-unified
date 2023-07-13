@@ -27,10 +27,10 @@ test("MarkExtension.proseMirrorToUnistTest has a default implementation", () => 
 
   expect(extension.proseMirrorToUnistTest({ type: "text" }, mark1)).toBe(true);
   expect(extension.proseMirrorToUnistTest({ type: "other" }, mark1)).toBe(
-    false
+    false,
   );
   expect(extension.proseMirrorToUnistTest({ type: "text" }, mark2)).toBe(false);
   expect(extension.proseMirrorToUnistTest({ type: "other" }, mark2)).toBe(
-    false
+    false,
   );
 });

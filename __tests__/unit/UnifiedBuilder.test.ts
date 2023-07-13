@@ -22,7 +22,7 @@ test("UnifiedBuilder uses extension hooks", () => {
 
   const extension = mocked(new MockExtension());
   extension.unifiedInitializationHook.mockImplementationOnce(
-    (processor) => processor
+    (processor) => processor,
   );
 
   const manager = mocked(new ExtensionManager([]));

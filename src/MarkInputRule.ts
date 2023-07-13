@@ -15,7 +15,7 @@ export class MarkInputRule extends InputRule {
 
   public constructor(matcher: RegExp, markType: MarkType) {
     super(matcher, (state, match, start, end) =>
-      this.markHandler(state, match, start, end)
+      this.markHandler(state, match, start, end),
     );
     this.markType = markType;
   }
@@ -24,7 +24,7 @@ export class MarkInputRule extends InputRule {
     state: EditorState,
     match: RegExpMatchArray,
     start: number,
-    end: number
+    end: number,
   ): Transaction | null {
     if (!(state.selection instanceof TextSelection)) {
       return null;
@@ -43,13 +43,13 @@ export class MarkInputRule extends InputRule {
     const tr = state.tr.replaceWith(
       start,
       end,
-      this.markType.schema.text(match[1])
+      this.markType.schema.text(match[1]),
     );
     return tr
       .addMark(
         tr.mapping.map(start),
         tr.mapping.map(end),
-        this.markType.create(null)
+        this.markType.create(null),
       )
       .removeStoredMark(this.markType)
       .insertText(match[2]);
@@ -58,7 +58,7 @@ export class MarkInputRule extends InputRule {
   private markApplies(
     doc: ProseMirrorNode,
     ranges: Array<SelectionRange>,
-    type: MarkType
+    type: MarkType,
   ): boolean {
     for (const range of ranges) {
       const { $from, $to } = range;

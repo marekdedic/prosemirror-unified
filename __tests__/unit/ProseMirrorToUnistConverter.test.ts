@@ -32,7 +32,7 @@ test("Converts basic document", () => {
   expect(converter.convert(rootProseMirrorNode)).toStrictEqual(rootUnistNode);
   expect(docExtension.proseMirrorNodeToUnistNodes).toHaveBeenCalledWith(
     rootProseMirrorNode,
-    []
+    [],
   );
   expect(console.warn).not.toHaveBeenCalled();
 });
@@ -72,11 +72,11 @@ test("Converts a document with children", () => {
   expect(converter.convert(rootProseMirrorNode)).toStrictEqual(rootUnistNode);
   expect(textExtension.proseMirrorNodeToUnistNodes).toHaveBeenCalledWith(
     textProseMirrorNode,
-    []
+    [],
   );
   expect(docExtension.proseMirrorNodeToUnistNodes).toHaveBeenCalledWith(
     rootProseMirrorNode,
-    [textUnistNode]
+    [textUnistNode],
   );
   expect(console.warn).not.toHaveBeenCalled();
 });
@@ -138,15 +138,15 @@ test("Converts a document with children of multiple types", () => {
   expect(converter.convert(rootProseMirrorNode)).toStrictEqual(rootUnistNode);
   expect(typeOneExtension.proseMirrorNodeToUnistNodes).toHaveBeenCalledWith(
     typeOneProseMirrorNode,
-    []
+    [],
   );
   expect(typeTwoExtension.proseMirrorNodeToUnistNodes).toHaveBeenCalledWith(
     typeTwoProseMirrorNode,
-    []
+    [],
   );
   expect(docExtension.proseMirrorNodeToUnistNodes).toHaveBeenCalledWith(
     rootProseMirrorNode,
-    [typeOneUnistNode, typeTwoUnistNode]
+    [typeOneUnistNode, typeTwoUnistNode],
   );
   expect(console.warn).not.toHaveBeenCalled();
 });
@@ -170,7 +170,7 @@ test("Converts a document with marks", () => {
     markTwo: true,
   };
   markOneExtension.processConvertedUnistNode.mockReturnValueOnce(
-    bothMarksUnistNode
+    bothMarksUnistNode,
   );
 
   const markTwoExtension = mocked(new MockMarkExtension());
@@ -183,7 +183,7 @@ test("Converts a document with marks", () => {
     markTwo: true,
   };
   markTwoExtension.processConvertedUnistNode.mockReturnValueOnce(
-    markTwoUnistNode
+    markTwoUnistNode,
   );
 
   const docExtension = mocked(new MockNodeExtension());
@@ -223,40 +223,40 @@ test("Converts a document with marks", () => {
   expect(converter.convert(rootProseMirrorNode)).toStrictEqual(rootUnistNode);
   expect(textExtension.proseMirrorNodeToUnistNodes).toHaveBeenCalledWith(
     textProseMirrorNode,
-    []
+    [],
   );
 
   expect(markOneExtension.proseMirrorToUnistTest.mock.calls).toHaveLength(2);
   expect(markOneExtension.proseMirrorToUnistTest).toHaveBeenCalledWith(
     textUnistNode,
-    textProseMirrorNode.marks[0]
+    textProseMirrorNode.marks[0],
   );
   expect(markOneExtension.proseMirrorToUnistTest).toHaveBeenCalledWith(
     markTwoUnistNode,
-    textProseMirrorNode.marks[1]
+    textProseMirrorNode.marks[1],
   );
   expect(markOneExtension.processConvertedUnistNode).toHaveBeenCalledWith(
     markTwoUnistNode,
-    textProseMirrorNode.marks[1]
+    textProseMirrorNode.marks[1],
   );
 
   expect(markTwoExtension.proseMirrorToUnistTest.mock.calls).toHaveLength(2);
   expect(markTwoExtension.proseMirrorToUnistTest).toHaveBeenCalledWith(
     textUnistNode,
-    textProseMirrorNode.marks[0]
+    textProseMirrorNode.marks[0],
   );
   expect(markTwoExtension.proseMirrorToUnistTest).toHaveBeenCalledWith(
     bothMarksUnistNode,
-    textProseMirrorNode.marks[1]
+    textProseMirrorNode.marks[1],
   );
   expect(markTwoExtension.processConvertedUnistNode).toHaveBeenCalledWith(
     textUnistNode,
-    textProseMirrorNode.marks[0]
+    textProseMirrorNode.marks[0],
   );
 
   expect(docExtension.proseMirrorNodeToUnistNodes).toHaveBeenCalledWith(
     rootProseMirrorNode,
-    [bothMarksUnistNode]
+    [bothMarksUnistNode],
   );
   expect(console.warn).not.toHaveBeenCalled();
 });
@@ -277,10 +277,10 @@ test("Fails gracefully on no root converter", () => {
 
   jest.spyOn(console, "warn").mockImplementation();
   expect(() => converter.convert(rootNode)).toThrow(
-    "Couldn't find any way to convert the root ProseMirror node."
+    "Couldn't find any way to convert the root ProseMirror node.",
   );
   expect(console.warn).toHaveBeenCalledWith(
-    'Couldn\'t find any way to convert ProseMirror node of type "doc" to a unist node.'
+    'Couldn\'t find any way to convert ProseMirror node of type "doc" to a unist node.',
   );
 });
 
@@ -333,10 +333,10 @@ test("Converts a document with invalid children", () => {
   expect(converter.convert(rootProseMirrorNode)).toStrictEqual(rootUnistNode);
   expect(typeOneExtension.proseMirrorNodeToUnistNodes).toHaveBeenCalledWith(
     typeOneProseMirrorNode,
-    []
+    [],
   );
   expect(console.warn).toHaveBeenCalledWith(
-    'Couldn\'t find any way to convert ProseMirror node of type "typeTwo" to a unist node.'
+    'Couldn\'t find any way to convert ProseMirror node of type "typeTwo" to a unist node.',
   );
 });
 
@@ -387,9 +387,9 @@ test("Converts a document with invalid marks", () => {
   expect(converter.convert(rootProseMirrorNode)).toStrictEqual(rootUnistNode);
   expect(typeOneExtension.proseMirrorNodeToUnistNodes).toHaveBeenCalledWith(
     typeOneProseMirrorNode,
-    []
+    [],
   );
   expect(console.warn).toHaveBeenCalledWith(
-    'Couldn\'t find any way to convert ProseMirror mark of type "typeTwo" to a unist node.'
+    'Couldn\'t find any way to convert ProseMirror mark of type "typeTwo" to a unist node.',
   );
 });

@@ -53,7 +53,10 @@ test("Parsing a document with an extension set", () => {
       {},
       pmu
         .schema()
-        .nodes["paragraph"].createAndFill({}, pmu.schema().text("Hello World!"))
+        .nodes["paragraph"].createAndFill(
+          {},
+          pmu.schema().text("Hello World!"),
+        ),
     )!;
 
   jest.spyOn(console, "warn").mockImplementation();

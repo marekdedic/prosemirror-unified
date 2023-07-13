@@ -33,13 +33,13 @@ test("Converts basic document", () => {
   jest.spyOn(console, "warn").mockImplementation();
   expect(converter.convert(rootUnistNode)).toBe(rootProseMirrorNode);
   expect(docExtension.unistToProseMirrorTest).toHaveBeenCalledWith(
-    rootUnistNode
+    rootUnistNode,
   );
   expect(docExtension.unistNodeToProseMirrorNodes).toHaveBeenCalledWith(
     rootUnistNode,
     schema,
     [],
-    {}
+    {},
   );
   expect(console.warn).not.toHaveBeenCalled();
 });
@@ -60,7 +60,7 @@ test("Converts a document with children", () => {
 
   const textExtension = mocked(new MockSyntaxExtension());
   textExtension.unistToProseMirrorTest.mockImplementation(
-    (node) => node.type === "text"
+    (node) => node.type === "text",
   );
   textExtension.unistNodeToProseMirrorNodes.mockReturnValueOnce([
     textProseMirrorNode,
@@ -68,7 +68,7 @@ test("Converts a document with children", () => {
 
   const docExtension = mocked(new MockSyntaxExtension());
   docExtension.unistToProseMirrorTest.mockImplementation(
-    (node) => node.type === "root"
+    (node) => node.type === "root",
   );
   docExtension.unistNodeToProseMirrorNodes.mockReturnValueOnce([
     rootProseMirrorNode,
@@ -85,22 +85,22 @@ test("Converts a document with children", () => {
   jest.spyOn(console, "warn").mockImplementation();
   expect(converter.convert(rootUnistNode)).toBe(rootProseMirrorNode);
   expect(textExtension.unistToProseMirrorTest).toHaveBeenCalledWith(
-    textUnistNode
+    textUnistNode,
   );
   expect(textExtension.unistNodeToProseMirrorNodes).toHaveBeenCalledWith(
     textUnistNode,
     schema,
     [],
-    {}
+    {},
   );
   expect(docExtension.unistToProseMirrorTest).toHaveBeenCalledWith(
-    rootUnistNode
+    rootUnistNode,
   );
   expect(docExtension.unistNodeToProseMirrorNodes).toHaveBeenCalledWith(
     rootUnistNode,
     schema,
     [textProseMirrorNode],
-    {}
+    {},
   );
   expect(console.warn).not.toHaveBeenCalled();
 });
@@ -132,7 +132,7 @@ test("Converts a document with children of multiple types", () => {
 
   const typeOneExtension = mocked(new MockSyntaxExtension());
   typeOneExtension.unistToProseMirrorTest.mockImplementation(
-    (node) => node.type === "one"
+    (node) => node.type === "one",
   );
   typeOneExtension.unistNodeToProseMirrorNodes.mockReturnValueOnce([
     typeOneProseMirrorNode,
@@ -140,7 +140,7 @@ test("Converts a document with children of multiple types", () => {
 
   const typeTwoExtension = mocked(new MockSyntaxExtension());
   typeTwoExtension.unistToProseMirrorTest.mockImplementation(
-    (node) => node.type === "two"
+    (node) => node.type === "two",
   );
   typeTwoExtension.unistNodeToProseMirrorNodes.mockReturnValueOnce([
     typeTwoProseMirrorNode,
@@ -148,12 +148,12 @@ test("Converts a document with children of multiple types", () => {
 
   const typeThreeExtension = mocked(new MockSyntaxExtension());
   typeThreeExtension.unistToProseMirrorTest.mockImplementation(
-    (node) => node.type === "three"
+    (node) => node.type === "three",
   );
 
   const docExtension = mocked(new MockSyntaxExtension());
   docExtension.unistToProseMirrorTest.mockImplementation(
-    (node) => node.type === "root"
+    (node) => node.type === "root",
   );
   docExtension.unistNodeToProseMirrorNodes.mockReturnValueOnce([
     rootProseMirrorNode,
@@ -180,35 +180,35 @@ test("Converts a document with children of multiple types", () => {
   expect(converter.convert(rootUnistNode)).toBe(rootProseMirrorNode);
 
   expect(typeOneExtension.unistToProseMirrorTest).toHaveBeenCalledWith(
-    typeOneUnistNode
+    typeOneUnistNode,
   );
   expect(typeOneExtension.unistNodeToProseMirrorNodes).toHaveBeenCalledWith(
     typeOneUnistNode,
     schema,
     [],
-    {}
+    {},
   );
 
   expect(typeTwoExtension.unistToProseMirrorTest).toHaveBeenCalledWith(
-    typeTwoUnistNode
+    typeTwoUnistNode,
   );
   expect(typeTwoExtension.unistNodeToProseMirrorNodes).toHaveBeenCalledWith(
     typeTwoUnistNode,
     schema,
     [],
-    {}
+    {},
   );
 
   expect(typeThreeExtension.unistNodeToProseMirrorNodes).not.toHaveBeenCalled();
 
   expect(docExtension.unistToProseMirrorTest).toHaveBeenCalledWith(
-    rootUnistNode
+    rootUnistNode,
   );
   expect(docExtension.unistNodeToProseMirrorNodes).toHaveBeenCalledWith(
     rootUnistNode,
     schema,
     [typeOneProseMirrorNode, typeTwoProseMirrorNode],
-    {}
+    {},
   );
   expect(console.warn).not.toHaveBeenCalled();
 });
@@ -225,10 +225,10 @@ test("Fails gracefully on no root converter", () => {
 
   jest.spyOn(console, "warn").mockImplementation();
   expect(() => converter.convert(rootUnistNode)).toThrow(
-    "Couldn't find any way to convert the root unist node."
+    "Couldn't find any way to convert the root unist node.",
   );
   expect(console.warn).toHaveBeenCalledWith(
-    'Couldn\'t find any way to convert unist node of type "root" to a ProseMirror node.'
+    'Couldn\'t find any way to convert unist node of type "root" to a ProseMirror node.',
   );
 });
 
@@ -256,7 +256,7 @@ test("Converts a document with invalid children", () => {
 
   const typeOneExtension = mocked(new MockSyntaxExtension());
   typeOneExtension.unistToProseMirrorTest.mockImplementation(
-    (node) => node.type === "one"
+    (node) => node.type === "one",
   );
   typeOneExtension.unistNodeToProseMirrorNodes.mockReturnValueOnce([
     typeOneProseMirrorNode,
@@ -264,7 +264,7 @@ test("Converts a document with invalid children", () => {
 
   const docExtension = mocked(new MockSyntaxExtension());
   docExtension.unistToProseMirrorTest.mockImplementation(
-    (node) => node.type === "root"
+    (node) => node.type === "root",
   );
   docExtension.unistNodeToProseMirrorNodes.mockReturnValueOnce([
     rootProseMirrorNode,
@@ -286,25 +286,25 @@ test("Converts a document with invalid children", () => {
   expect(converter.convert(rootUnistNode)).toBe(rootProseMirrorNode);
 
   expect(typeOneExtension.unistToProseMirrorTest).toHaveBeenCalledWith(
-    typeOneUnistNode
+    typeOneUnistNode,
   );
   expect(typeOneExtension.unistNodeToProseMirrorNodes).toHaveBeenCalledWith(
     typeOneUnistNode,
     schema,
     [],
-    {}
+    {},
   );
 
   expect(docExtension.unistToProseMirrorTest).toHaveBeenCalledWith(
-    rootUnistNode
+    rootUnistNode,
   );
   expect(docExtension.unistNodeToProseMirrorNodes).toHaveBeenCalledWith(
     rootUnistNode,
     schema,
     [typeOneProseMirrorNode],
-    {}
+    {},
   );
   expect(console.warn).toHaveBeenCalledWith(
-    'Couldn\'t find any way to convert unist node of type "two" to a ProseMirror node.'
+    'Couldn\'t find any way to convert unist node of type "two" to a ProseMirror node.',
   );
 });

@@ -52,7 +52,10 @@ test("Parsing a document with a paragraph", () => {
       {},
       pmu
         .schema()
-        .nodes["paragraph"].createAndFill({}, pmu.schema().text("Hello World!"))
+        .nodes["paragraph"].createAndFill(
+          {},
+          pmu.schema().text("Hello World!"),
+        ),
     )!;
 
   jest.spyOn(console, "warn").mockImplementation();
@@ -80,7 +83,7 @@ test("Parsing a document with no root node", () => {
 
   expect(
     () =>
-      new ProseMirrorUnified([new TextExtension(), new ParagraphExtension()])
+      new ProseMirrorUnified([new TextExtension(), new ParagraphExtension()]),
   ).toThrow("Schema is missing its top node type ('doc')");
   expect(console.warn).not.toHaveBeenCalled();
 });
@@ -90,7 +93,7 @@ test("Parsing a document with no text node", () => {
 
   expect(
     () =>
-      new ProseMirrorUnified([new ParagraphExtension(), new RootExtension()])
+      new ProseMirrorUnified([new ParagraphExtension(), new RootExtension()]),
   ).toThrow("Every schema needs a 'text' type");
   expect(console.warn).not.toHaveBeenCalled();
 });
@@ -157,7 +160,7 @@ test("Parsing a document with no link node", () => {
       {},
       pmu
         .schema()
-        .nodes["paragraph"].createAndFill({}, pmu.schema().text("Hello !"))
+        .nodes["paragraph"].createAndFill({}, pmu.schema().text("Hello !")),
     )!;
 
   jest.spyOn(console, "warn").mockImplementation();
@@ -179,6 +182,6 @@ test("Parsing a document with no link node", () => {
     expect(unifiedMock.stringify).toHaveBeenCalledWith(targetUnistTree);
   });
   expect(console.warn).toHaveBeenCalledWith(
-    'Couldn\'t find any way to convert unist node of type "link" to a ProseMirror node.'
+    'Couldn\'t find any way to convert unist node of type "link" to a ProseMirror node.',
   );
 });

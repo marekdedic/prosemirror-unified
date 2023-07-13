@@ -11,7 +11,7 @@ export abstract class NodeExtension<
   UnistToProseMirrorContext extends Record<string, unknown> = Record<
     string,
     never
-  >
+  >,
 > extends SyntaxExtension<UNode, UnistToProseMirrorContext> {
   public proseMirrorToUnistTest(node: ProseMirrorNode): boolean {
     return this.proseMirrorNodeName() === node.type.name;
@@ -23,6 +23,6 @@ export abstract class NodeExtension<
 
   public abstract proseMirrorNodeToUnistNodes(
     node: ProseMirrorNode,
-    convertedChildren: Array<UnistNode>
+    convertedChildren: Array<UnistNode>,
   ): Array<UNode>;
 }

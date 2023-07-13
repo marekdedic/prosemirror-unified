@@ -13,7 +13,7 @@ export abstract class SyntaxExtension<
   UnistToProseMirrorContext extends Record<string, unknown> = Record<
     string,
     never
-  >
+  >,
 > extends Extension {
   public unistToProseMirrorTest(node: UnistNode): boolean {
     return node.type === this.unistNodeName();
@@ -22,14 +22,14 @@ export abstract class SyntaxExtension<
   /* eslint-disable @typescript-eslint/ban-ts-comment, @typescript-eslint/no-unused-vars */
   public proseMirrorInputRules(
     // @ts-ignore: TS6133 causes an error because of an unused parameter - however, this method is meant to be overriden
-    proseMirrorSchema: Schema<string, string>
+    proseMirrorSchema: Schema<string, string>,
   ): Array<InputRule> {
     return [];
   }
 
   public proseMirrorKeymap(
     // @ts-ignore: TS6133 causes an error because of an unused parameter - however, this method is meant to be overriden
-    proseMirrorSchema: Schema<string, string>
+    proseMirrorSchema: Schema<string, string>,
   ): Record<string, Command> {
     return {};
   }
@@ -37,7 +37,7 @@ export abstract class SyntaxExtension<
   /* eslint-disable @typescript-eslint/no-empty-function */
   public postUnistToProseMirrorHook(
     // @ts-ignore: TS6133 causes an error because of an unused parameter - however, this method is meant to be overriden
-    context: Partial<UnistToProseMirrorContext>
+    context: Partial<UnistToProseMirrorContext>,
   ): void {}
   /* eslint-enable */
 
@@ -47,6 +47,6 @@ export abstract class SyntaxExtension<
     node: UNode,
     schema: Schema<string, string>,
     convertedChildren: Array<ProseMirrorNode>,
-    context: Partial<UnistToProseMirrorContext>
+    context: Partial<UnistToProseMirrorContext>,
   ): Array<ProseMirrorNode>;
 }

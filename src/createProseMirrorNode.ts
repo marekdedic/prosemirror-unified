@@ -7,7 +7,7 @@ export function createProseMirrorNode(
   nodeName: string | null,
   schema: Schema<string, string>,
   children: Array<ProseMirrorNode>,
-  attrs: Attrs = {}
+  attrs: Attrs = {},
 ): Array<ProseMirrorNode> {
   if (nodeName === null) {
     return [];

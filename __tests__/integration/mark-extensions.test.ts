@@ -74,7 +74,7 @@ test("Parsing a document with a paragraph", () => {
             .text("World")
             .mark([pmu.schema().marks["bold"].create()]),
           pmu.schema().text("!"),
-        ])
+        ]),
     )!;
 
   jest.spyOn(console, "warn").mockImplementation();
@@ -175,7 +175,7 @@ test("Adding a mark with an input rule", () => {
             .text("World")
             .mark([pmu.schema().marks["bold"].create()]),
           pmu.schema().text("!"),
-        ])
+        ]),
     )!;
 
   jest.spyOn(console, "warn").mockImplementation();
