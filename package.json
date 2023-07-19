@@ -39,9 +39,11 @@
     "prosemirror-commands": "^1.5.1",
     "prosemirror-inputrules": "^1.2.0",
     "prosemirror-keymap": "^1.2.1",
-    "prosemirror-model": "^1.19.0",
     "prosemirror-state": "^1.4.2",
     "unified": "^10.1.2"
+  },
+  "peerDependencies": {
+    "prosemirror-model": "=1.19.3"
   },
   "devDependencies": {
     "@microsoft/api-extractor": "^7.34.9",
