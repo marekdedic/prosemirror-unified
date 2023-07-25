@@ -1,6 +1,6 @@
 {
   "parserOptions": {
-    "project": "./tsconfig.json",
+    "project": "./tsconfig.json"
   },
   "env": {
     "browser": true,
@@ -11,7 +11,7 @@
     "eslint:recommended",
     "plugin:@typescript-eslint/recommended",
     "plugin:@typescript-eslint/recommended-requiring-type-checking",
-    "plugin:prettier/recommended",
+    "plugin:prettier/recommended"
   ],
   "rules": {
     "deprecation/deprecation": "warn",
@@ -109,7 +109,7 @@
     },
     {
       "files": [
-        "__tests__/**/*.ts",
+        "__tests__/**/*.ts"
       ],
       "extends": ["plugin:jest/recommended", "plugin:jest/style"],
       "rules": {
