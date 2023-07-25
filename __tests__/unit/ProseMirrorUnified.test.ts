@@ -74,7 +74,7 @@ test("ProseMirrorUnified parses a string", () => {
       text: {},
     },
   });
-  const rootProseMirrorNode = schema.nodes["doc"].createAndFill({}, [])!;
+  const rootProseMirrorNode = schema.nodes.doc.createAndFill({}, [])!;
   const parsedRoot = { type: "root" };
   const processedRoot = { type: "root", additional: "value" };
 
@@ -105,7 +105,7 @@ test("ProseMirrorUnified stringifies an AST", () => {
       text: {},
     },
   });
-  const rootProseMirrorNode = schema.nodes["doc"].createAndFill({}, [])!;
+  const rootProseMirrorNode = schema.nodes.doc.createAndFill({}, [])!;
   const rootUnistNode = { type: "root" };
 
   const unifiedMock = {

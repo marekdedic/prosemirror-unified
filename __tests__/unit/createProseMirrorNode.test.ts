@@ -30,21 +30,21 @@ describe("createProseMirrorNode works", () => {
     expect(result[0]).toBeInstanceOf(ProseMirrorNode);
     expect(result[0].type.name).toBe("node1");
     expect(result[0].childCount).toBe(0);
-    expect(result[0].attrs["attr1"]).toBe("attr1_default");
-    expect(result[0].attrs["attr2"]).toBeUndefined();
+    expect(result[0].attrs.attr1).toBe("attr1_default");
+    expect(result[0].attrs.attr2).toBeUndefined();
   });
 
   test("works with children", () => {
     const result = createProseMirrorNode("node1", schema, [
-      schema.nodes["node2"].create(),
-      schema.nodes["node3"].create(),
+      schema.nodes.node2.create(),
+      schema.nodes.node3.create(),
     ]);
     expect(result).toHaveLength(1);
     expect(result[0]).toBeInstanceOf(ProseMirrorNode);
     expect(result[0].type.name).toBe("node1");
     expect(result[0].childCount).toBe(2);
-    expect(result[0].attrs["attr1"]).toBe("attr1_default");
-    expect(result[0].attrs["attr2"]).toBeUndefined();
+    expect(result[0].attrs.attr1).toBe("attr1_default");
+    expect(result[0].attrs.attr2).toBeUndefined();
   });
 
   test("works with attributes", () => {
@@ -55,13 +55,13 @@ describe("createProseMirrorNode works", () => {
     expect(result[0]).toBeInstanceOf(ProseMirrorNode);
     expect(result[0].type.name).toBe("node1");
     expect(result[0].childCount).toBe(0);
-    expect(result[0].attrs["attr1"]).toBe("value1");
-    expect(result[0].attrs["attr2"]).toBeUndefined();
+    expect(result[0].attrs.attr1).toBe("value1");
+    expect(result[0].attrs.attr2).toBeUndefined();
   });
 
   test("works with invalid children", () => {
     expect(
-      createProseMirrorNode("node1", schema, [schema.nodes["node4"].create()]),
+      createProseMirrorNode("node1", schema, [schema.nodes.node4.create()]),
     ).toHaveLength(0);
   });
 
@@ -73,8 +73,8 @@ describe("createProseMirrorNode works", () => {
     expect(result[0]).toBeInstanceOf(ProseMirrorNode);
     expect(result[0].type.name).toBe("node1");
     expect(result[0].childCount).toBe(0);
-    expect(result[0].attrs["attr1"]).toBe("attr1_default");
-    expect(result[0].attrs["attr2"]).toBeUndefined();
+    expect(result[0].attrs.attr1).toBe("attr1_default");
+    expect(result[0].attrs.attr2).toBeUndefined();
   });
 
   test("works with null node", () => {

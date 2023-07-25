@@ -63,16 +63,13 @@ test("Parsing a document with a paragraph", () => {
 
   const proseMirrorTree = pmu
     .schema()
-    .nodes["doc"].createAndFill(
+    .nodes.doc.createAndFill(
       {},
       pmu
         .schema()
-        .nodes["paragraph"].createAndFill({}, [
+        .nodes.paragraph.createAndFill({}, [
           pmu.schema().text("Hello "),
-          pmu
-            .schema()
-            .text("World")
-            .mark([pmu.schema().marks["bold"].create()]),
+          pmu.schema().text("World").mark([pmu.schema().marks.bold.create()]),
           pmu.schema().text("!"),
         ]),
     )!;
@@ -164,16 +161,13 @@ test("Adding a mark with an input rule", () => {
 
   const proseMirrorTree = pmu
     .schema()
-    .nodes["doc"].createAndFill(
+    .nodes.doc.createAndFill(
       {},
       pmu
         .schema()
-        .nodes["paragraph"].createAndFill({}, [
+        .nodes.paragraph.createAndFill({}, [
           pmu.schema().text("Hello "),
-          pmu
-            .schema()
-            .text("World")
-            .mark([pmu.schema().marks["bold"].create()]),
+          pmu.schema().text("World").mark([pmu.schema().marks.bold.create()]),
           pmu.schema().text("!"),
         ]),
     )!;

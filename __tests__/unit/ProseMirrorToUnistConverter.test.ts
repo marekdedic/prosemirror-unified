@@ -26,7 +26,7 @@ test("Converts basic document", () => {
       text: {},
     },
   });
-  const rootProseMirrorNode = schema.nodes["doc"].createAndFill({}, [])!;
+  const rootProseMirrorNode = schema.nodes.doc.createAndFill({}, [])!;
 
   jest.spyOn(console, "warn").mockImplementation();
   expect(converter.convert(rootProseMirrorNode)).toStrictEqual(rootUnistNode);
@@ -64,7 +64,7 @@ test("Converts a document with children", () => {
     },
   });
   const textProseMirrorNode = schema.text("Hello World!");
-  const rootProseMirrorNode = schema.nodes["doc"].createAndFill({}, [
+  const rootProseMirrorNode = schema.nodes.doc.createAndFill({}, [
     textProseMirrorNode,
   ])!;
 
@@ -127,9 +127,9 @@ test("Converts a document with children of multiple types", () => {
       text: {},
     },
   });
-  const typeOneProseMirrorNode = schema.nodes["typeOne"].createAndFill({}, [])!;
-  const typeTwoProseMirrorNode = schema.nodes["typeTwo"].createAndFill({}, [])!;
-  const rootProseMirrorNode = schema.nodes["doc"].createAndFill({}, [
+  const typeOneProseMirrorNode = schema.nodes.typeOne.createAndFill({}, [])!;
+  const typeTwoProseMirrorNode = schema.nodes.typeTwo.createAndFill({}, [])!;
+  const rootProseMirrorNode = schema.nodes.doc.createAndFill({}, [
     typeOneProseMirrorNode,
     typeTwoProseMirrorNode,
   ])!;
@@ -214,8 +214,8 @@ test("Converts a document with marks", () => {
   });
   const textProseMirrorNode = schema
     .text("Hello World!")
-    .mark([schema.marks["markTwo"].create(), schema.marks["markOne"].create()]);
-  const rootProseMirrorNode = schema.nodes["doc"].createAndFill({}, [
+    .mark([schema.marks.markTwo.create(), schema.marks.markOne.create()]);
+  const rootProseMirrorNode = schema.nodes.doc.createAndFill({}, [
     textProseMirrorNode,
   ])!;
 
@@ -273,7 +273,7 @@ test("Fails gracefully on no root converter", () => {
       text: {},
     },
   });
-  const rootNode = schema.nodes["doc"].createAndFill({}, [])!;
+  const rootNode = schema.nodes.doc.createAndFill({}, [])!;
 
   jest.spyOn(console, "warn").mockImplementation();
   expect(() => converter.convert(rootNode)).toThrow(
@@ -322,9 +322,9 @@ test("Converts a document with invalid children", () => {
       text: {},
     },
   });
-  const typeOneProseMirrorNode = schema.nodes["typeOne"].createAndFill({}, [])!;
-  const typeTwoProseMirrorNode = schema.nodes["typeTwo"].createAndFill({}, [])!;
-  const rootProseMirrorNode = schema.nodes["doc"].createAndFill({}, [
+  const typeOneProseMirrorNode = schema.nodes.typeOne.createAndFill({}, [])!;
+  const typeTwoProseMirrorNode = schema.nodes.typeTwo.createAndFill({}, [])!;
+  const rootProseMirrorNode = schema.nodes.doc.createAndFill({}, [
     typeOneProseMirrorNode,
     typeTwoProseMirrorNode,
   ])!;
@@ -376,10 +376,10 @@ test("Converts a document with invalid marks", () => {
       typeTwo: {},
     },
   });
-  const typeOneProseMirrorNode = schema.nodes["typeOne"]
+  const typeOneProseMirrorNode = schema.nodes.typeOne
     .createAndFill({}, [])!
-    .mark([schema.marks["typeTwo"].create()]);
-  const rootProseMirrorNode = schema.nodes["doc"].createAndFill({}, [
+    .mark([schema.marks.typeTwo.create()]);
+  const rootProseMirrorNode = schema.nodes.doc.createAndFill({}, [
     typeOneProseMirrorNode,
   ])!;
 
