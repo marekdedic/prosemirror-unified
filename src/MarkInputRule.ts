@@ -39,7 +39,7 @@ export class MarkInputRule extends InputRule {
       return null;
     }
 
-    // apply mark
+    // Replace the affected range with the matched text - this removes e.g. the asterisks around italic
     const tr = state.tr.replaceWith(
       start,
       end,
