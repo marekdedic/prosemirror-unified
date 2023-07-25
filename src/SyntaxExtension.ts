@@ -21,14 +21,14 @@ export abstract class SyntaxExtension<
 
   /* eslint-disable @typescript-eslint/ban-ts-comment, @typescript-eslint/no-unused-vars */
   public proseMirrorInputRules(
-    // @ts-ignore: TS6133 causes an error because of an unused parameter - however, this method is meant to be overriden
+    // @ts-expect-error: TS6133 causes an error because of an unused parameter - however, this method is meant to be overriden
     proseMirrorSchema: Schema<string, string>,
   ): Array<InputRule> {
     return [];
   }
 
   public proseMirrorKeymap(
-    // @ts-ignore: TS6133 causes an error because of an unused parameter - however, this method is meant to be overriden
+    // @ts-expect-error: TS6133 causes an error because of an unused parameter - however, this method is meant to be overriden
     proseMirrorSchema: Schema<string, string>,
   ): Record<string, Command> {
     return {};
@@ -36,7 +36,7 @@ export abstract class SyntaxExtension<
 
   /* eslint-disable @typescript-eslint/no-empty-function */
   public postUnistToProseMirrorHook(
-    // @ts-ignore: TS6133 causes an error because of an unused parameter - however, this method is meant to be overriden
+    // @ts-expect-error: TS6133 causes an error because of an unused parameter - however, this method is meant to be overriden
     context: Partial<UnistToProseMirrorContext>,
   ): void {}
   /* eslint-enable */

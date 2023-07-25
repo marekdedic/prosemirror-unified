@@ -18,8 +18,8 @@ test("MarkExtension.proseMirrorToUnistTest has a default implementation", () => 
       mark2: {},
     },
   });
-  const mark1 = schema.marks["mark1"].create();
-  const mark2 = schema.marks["mark2"].create();
+  const mark1 = schema.marks.mark1.create();
+  const mark2 = schema.marks.mark2.create();
 
   expect(extension).toBeInstanceOf(MarkExtension);
   expect(extension).toBeInstanceOf(SyntaxExtension);

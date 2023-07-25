@@ -48,14 +48,11 @@ test("Parsing a document with a paragraph", () => {
 
   const proseMirrorTree = pmu
     .schema()
-    .nodes["doc"].createAndFill(
+    .nodes.doc.createAndFill(
       {},
       pmu
         .schema()
-        .nodes["paragraph"].createAndFill(
-          {},
-          pmu.schema().text("Hello World!"),
-        ),
+        .nodes.paragraph.createAndFill({}, pmu.schema().text("Hello World!")),
     )!;
 
   jest.spyOn(console, "warn").mockImplementation();
@@ -156,11 +153,11 @@ test("Parsing a document with no link node", () => {
 
   const targetProseMirrorTree = pmu
     .schema()
-    .nodes["doc"].createAndFill(
+    .nodes.doc.createAndFill(
       {},
       pmu
         .schema()
-        .nodes["paragraph"].createAndFill({}, pmu.schema().text("Hello !")),
+        .nodes.paragraph.createAndFill({}, pmu.schema().text("Hello !")),
     )!;
 
   jest.spyOn(console, "warn").mockImplementation();

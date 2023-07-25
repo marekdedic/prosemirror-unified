@@ -17,8 +17,8 @@ test("NodeExtension.proseMirrorToUnistTest has a default implementation", () => 
     },
     marks: {},
   });
-  const node1 = schema.nodes["node1"].create();
-  const node2 = schema.nodes["node2"].create();
+  const node1 = schema.nodes.node1.create();
+  const node2 = schema.nodes.node2.create();
 
   expect(extension).toBeInstanceOf(NodeExtension);
   expect(extension).toBeInstanceOf(SyntaxExtension);
