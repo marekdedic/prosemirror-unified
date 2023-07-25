@@ -39,20 +39,34 @@ export class MarkInputRule extends InputRule {
       return null;
     }
 
+    // List all existing marks and add the new one
+    const newMarks =
+      state.doc.nodeAt(start)?.marks.map((mark) => mark.type) ?? [];
+    newMarks.push(this.markType);
+
     // Replace the affected range with the matched text - this removes e.g. the asterisks around italic
     const tr = state.tr.replaceWith(
       start,
       end,
       this.markType.schema.text(match[1]),
     );
-    return tr
-      .addMark(
+
+    // Add back all marks, including the new one
+    for (const markType of newMarks) {
+      tr.addMark(
         tr.mapping.map(start),
         tr.mapping.map(end),
-        this.markType.create(null),
-      )
-      .removeStoredMark(this.markType)
-      .insertText(match[2]);
+        markType.create(null),
+      );
+    }
+
+    // Make the text editor insert clean text with no marks on next input
+    for (const markType of newMarks) {
+      tr.removeStoredMark(markType);
+    }
+
+    // Add back the last character
+    return tr.insertText(match[2]);
   }
 
   private markApplies(
