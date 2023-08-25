@@ -2,7 +2,6 @@ import type { Mocked } from "jest-mock";
 import { mocked } from "jest-mock";
 import { createEditor } from "jest-prosemirror";
 import { type Processor, unified } from "unified";
-import type { Node as UnistNode } from "unist";
 
 import { Extension } from "../../src/Extension";
 import { ProseMirrorUnified } from "../../src/ProseMirrorUnified";
@@ -41,7 +40,7 @@ test("Parsing a document with an extension set", () => {
     parse: jest.fn().mockReturnValueOnce(unistTree),
     runSync: jest.fn().mockImplementation((root: UnistRoot) => root),
     stringify: jest.fn().mockReturnValueOnce(source),
-  } as unknown as Mocked<Processor<UnistNode, UnistNode, UnistNode, string>>;
+  } as unknown as Mocked<Processor>;
 
   mocked(unified).mockReturnValueOnce(unifiedMock);
 
