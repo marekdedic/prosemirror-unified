@@ -11,11 +11,12 @@ export class InputRulesBuilder {
     extensionManager: ExtensionManager,
     proseMirrorSchema: Schema<string, string>,
   ) {
-    this.rules = extensionManager
-      .syntaxExtensions()
-      .flatMap((extension) =>
-        extension.proseMirrorInputRules(proseMirrorSchema),
-      );
+    this.rules = ([] as Array<InputRule>).concat.apply(
+      [],
+      extensionManager
+        .syntaxExtensions()
+        .map((extension) => extension.proseMirrorInputRules(proseMirrorSchema)),
+    );
   }
 
   public build(): Plugin {
