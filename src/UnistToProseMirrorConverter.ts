@@ -41,8 +41,9 @@ export class UnistToProseMirrorConverter {
       }
       let convertedChildren: Array<ProseMirrorNode> = [];
       if (UnistToProseMirrorConverter.unistNodeIsParent(node)) {
-        convertedChildren = node.children.flatMap((child) =>
-          this.convertNode(child, context),
+        convertedChildren = ([] as Array<ProseMirrorNode>).concat.apply(
+          [],
+          node.children.map((child) => this.convertNode(child, context)),
         );
       }
       return extension.unistNodeToProseMirrorNodes(
