@@ -20,6 +20,7 @@
   "main": "dist/prosemirror-unified.cjs",
   "module": "dist/prosemirror-unified.js",
   "types": "dist/prosemirror-unified.d.ts",
+  "sideEffects": false,
   "files": [
     "dist",
     "LICENSE",
