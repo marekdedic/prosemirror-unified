@@ -18,7 +18,8 @@ test("Extension.unifiedInitializationHook has a default implementation", () => {
 
   expect(extension).toBeInstanceOf(Extension);
 
-  const processor = unified() as Processor<
+  const processor = unified() as unknown as Processor<
+    UnistNode,
     UnistNode,
     UnistNode,
     UnistNode,
