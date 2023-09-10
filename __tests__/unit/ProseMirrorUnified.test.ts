@@ -81,9 +81,7 @@ test("ProseMirrorUnified parses a string", () => {
   const unifiedMock = {
     parse: jest.fn().mockReturnValueOnce(parsedRoot),
     runSync: jest.fn().mockReturnValueOnce(processedRoot),
-  } as unknown as Mocked<
-    Processor<UnistNode, UnistNode, UnistNode, UnistNode, string>
-  >;
+  } as unknown as Mocked<Processor<UnistNode, UnistNode, UnistNode, string>>;
 
   mocked(UnifiedBuilder).prototype.build.mockReturnValueOnce(unifiedMock);
   mocked(UnistToProseMirrorConverter).prototype.convert.mockReturnValueOnce(
@@ -112,9 +110,7 @@ test("ProseMirrorUnified stringifies an AST", () => {
 
   const unifiedMock = {
     stringify: jest.fn().mockReturnValueOnce("SOURCE INPUT"),
-  } as unknown as Mocked<
-    Processor<UnistNode, UnistNode, UnistNode, UnistNode, string>
-  >;
+  } as unknown as Mocked<Processor<UnistNode, UnistNode, UnistNode, string>>;
 
   mocked(UnifiedBuilder).prototype.build.mockReturnValue(unifiedMock);
   mocked(ProseMirrorToUnistConverter).prototype.convert.mockReturnValueOnce(

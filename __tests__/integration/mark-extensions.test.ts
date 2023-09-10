@@ -2,6 +2,7 @@ import type { Mocked } from "jest-mock";
 import { mocked } from "jest-mock";
 import { createEditor } from "jest-prosemirror";
 import { type Processor, unified } from "unified";
+import type { Node as UnistNode } from "unist";
 
 import { ProseMirrorUnified } from "../../src/ProseMirrorUnified";
 import { BoldExtension, boldSpec } from "./BoldExtension";
@@ -47,7 +48,7 @@ test("Parsing a document with a paragraph", () => {
     parse: jest.fn().mockReturnValueOnce(unistTree),
     runSync: jest.fn().mockImplementation((root: UnistRoot) => root),
     stringify: jest.fn().mockReturnValueOnce(source),
-  } as unknown as Mocked<Processor>;
+  } as unknown as Mocked<Processor<UnistNode, UnistNode, UnistNode, string>>;
 
   mocked(unified).mockReturnValueOnce(unifiedMock);
 
@@ -145,7 +146,7 @@ test("Adding a mark with an input rule", () => {
     parse: jest.fn().mockReturnValueOnce(sourceUnistTree),
     runSync: jest.fn().mockImplementation((root: UnistRoot) => root),
     stringify: jest.fn().mockReturnValueOnce(target),
-  } as unknown as Mocked<Processor>;
+  } as unknown as Mocked<Processor<UnistNode, UnistNode, UnistNode, string>>;
 
   mocked(unified).mockReturnValueOnce(unifiedMock);
 
