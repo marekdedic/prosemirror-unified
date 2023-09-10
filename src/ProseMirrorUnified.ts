@@ -21,13 +21,7 @@ export class ProseMirrorUnified {
   private readonly keymapBuilder: KeymapBuilder;
   private readonly unistToProseMirrorConverter: UnistToProseMirrorConverter;
   private readonly proseMirrorToUnistConverter: ProseMirrorToUnistConverter;
-  private readonly unified: Processor<
-    UnistNode,
-    UnistNode,
-    UnistNode,
-    UnistNode,
-    string
-  >;
+  private readonly unified: Processor<UnistNode, UnistNode, UnistNode, string>;
 
   public constructor(extensions: Array<Extension> = []) {
     const extensionManager = new ExtensionManager(extensions);

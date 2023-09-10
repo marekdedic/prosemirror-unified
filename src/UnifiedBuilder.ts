@@ -10,15 +10,8 @@ export class UnifiedBuilder {
     this.extensionManager = extensionManager;
   }
 
-  public build(): Processor<
-    UnistNode,
-    UnistNode,
-    UnistNode,
-    UnistNode,
-    string
-  > {
-    let processor = unified() as unknown as Processor<
-      UnistNode,
+  public build(): Processor<UnistNode, UnistNode, UnistNode, string> {
+    let processor = unified() as Processor<
       UnistNode,
       UnistNode,
       UnistNode,
