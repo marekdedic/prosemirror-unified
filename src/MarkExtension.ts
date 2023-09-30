@@ -13,12 +13,6 @@ export abstract class MarkExtension<
     never
   >,
 > extends SyntaxExtension<UNode, UnistToProseMirrorContext> {
-  public proseMirrorToUnistTest(node: UnistNode, mark: Mark): boolean {
-    return (
-      node.type === "text" && mark.type.name === this.proseMirrorMarkName()
-    );
-  }
-
   public abstract proseMirrorMarkName(): string | null;
 
   public abstract proseMirrorMarkSpec(): MarkSpec | null;
