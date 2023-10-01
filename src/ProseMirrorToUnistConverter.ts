@@ -49,7 +49,7 @@ export class ProseMirrorToUnistConverter {
       for (const mark of node.marks) {
         let processed = false;
         for (const extension of this.extensionManager.markExtensions()) {
-          if (extension.proseMirrorToUnistTest(convertedNode, mark)) {
+          if (mark.type.name === extension.proseMirrorMarkName()) {
             convertedNode = extension.processConvertedUnistNode(
               convertedNode,
               mark,

@@ -160,9 +160,7 @@ test("Converts a document with marks", () => {
   ]);
 
   const markOneExtension = mocked(new MockMarkExtension());
-  markOneExtension.proseMirrorToUnistTest
-    .mockReturnValueOnce(false)
-    .mockReturnValueOnce(true);
+  markOneExtension.proseMirrorMarkName.mockReturnValue("markOne");
   const bothMarksUnistNode = {
     type: "text",
     value: "Hello World!",
@@ -174,9 +172,7 @@ test("Converts a document with marks", () => {
   );
 
   const markTwoExtension = mocked(new MockMarkExtension());
-  markTwoExtension.proseMirrorToUnistTest
-    .mockReturnValueOnce(true)
-    .mockReturnValueOnce(false);
+  markTwoExtension.proseMirrorMarkName.mockReturnValue("markTwo");
   const markTwoUnistNode = {
     type: "text",
     value: "Hello World!",
@@ -226,29 +222,13 @@ test("Converts a document with marks", () => {
     [],
   );
 
-  expect(markOneExtension.proseMirrorToUnistTest.mock.calls).toHaveLength(2);
-  expect(markOneExtension.proseMirrorToUnistTest).toHaveBeenCalledWith(
-    textUnistNode,
-    textProseMirrorNode.marks[0],
-  );
-  expect(markOneExtension.proseMirrorToUnistTest).toHaveBeenCalledWith(
-    markTwoUnistNode,
-    textProseMirrorNode.marks[1],
-  );
+  expect(markOneExtension.proseMirrorMarkName.mock.calls).toHaveLength(2);
   expect(markOneExtension.processConvertedUnistNode).toHaveBeenCalledWith(
     markTwoUnistNode,
     textProseMirrorNode.marks[1],
   );
 
-  expect(markTwoExtension.proseMirrorToUnistTest.mock.calls).toHaveLength(2);
-  expect(markTwoExtension.proseMirrorToUnistTest).toHaveBeenCalledWith(
-    textUnistNode,
-    textProseMirrorNode.marks[0],
-  );
-  expect(markTwoExtension.proseMirrorToUnistTest).toHaveBeenCalledWith(
-    bothMarksUnistNode,
-    textProseMirrorNode.marks[1],
-  );
+  expect(markTwoExtension.proseMirrorMarkName.mock.calls).toHaveLength(2);
   expect(markTwoExtension.processConvertedUnistNode).toHaveBeenCalledWith(
     textUnistNode,
     textProseMirrorNode.marks[0],
