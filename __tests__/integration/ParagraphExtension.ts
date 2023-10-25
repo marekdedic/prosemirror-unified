@@ -19,9 +19,7 @@ export interface UnistParagraph extends UnistNode {
 
 export const paragraphSpec: NodeSpec = {
   content: "inline*",
-  toDOM(): DOMOutputSpec {
-    return ["p", 0];
-  },
+  toDOM: (): DOMOutputSpec => ["p", 0],
 };
 
 export class ParagraphExtension extends NodeExtension<UnistParagraph> {

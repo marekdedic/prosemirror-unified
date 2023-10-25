@@ -17,9 +17,7 @@ export interface UnistBold extends UnistNode {
 }
 
 export const boldSpec: MarkSpec = {
-  toDOM(): DOMOutputSpec {
-    return ["bold"];
-  },
+  toDOM: (): DOMOutputSpec => ["bold"],
 };
 
 export class BoldExtension extends MarkExtension<UnistBold> {
