@@ -73,9 +73,7 @@ test("SchemaBuilder works with complex specs", () => {
     defining: true,
     marks: "",
     parseDOM: [{ tag: "pre" }],
-    toDOM(): DOMOutputSpec {
-      return ["pre", ["code", 0]];
-    },
+    toDOM: (): DOMOutputSpec => ["pre", ["code", 0]],
   };
   docExtension.proseMirrorNodeSpec.mockReturnValueOnce(docSpec);
   const textExtension = mocked(new MockNodeExtension());
@@ -89,18 +87,16 @@ test("SchemaBuilder works with complex specs", () => {
     parseDOM: [
       {
         tag: "a[href]",
-        getAttrs(dom: Node | string): {
+        getAttrs: (
+          dom: Node | string,
+        ): {
           href: string | null;
-        } {
-          return {
-            href: (dom as HTMLElement).getAttribute("href"),
-          };
-        },
+        } => ({
+          href: (dom as HTMLElement).getAttribute("href"),
+        }),
       },
     ],
-    toDOM(node: Mark): DOMOutputSpec {
-      return ["a", node.attrs];
-    },
+    toDOM: (node: Mark): DOMOutputSpec => ["a", node.attrs],
   };
   markExtension1.proseMirrorMarkSpec.mockReturnValueOnce(markSpec);
 
