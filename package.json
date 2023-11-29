@@ -36,11 +36,11 @@
     "test": "jest"
   },
   "dependencies": {
-    "@types/unist": "^2.0.6",
+    "@types/unist": "^3.0.0",
     "prosemirror-commands": "^1.5.1",
     "prosemirror-inputrules": "^1.2.0",
     "prosemirror-keymap": "^1.2.1",
-    "unified": "^10.1.2"
+    "unified": "^11.0.2"
   },
   "peerDependencies": {
     "prosemirror-model": "^1.19.3",
