@@ -1,4 +1,5 @@
 import type { Node as ProseMirrorNode, NodeSpec } from "prosemirror-model";
+import type { NodeViewConstructor } from "prosemirror-view";
 import type { Node as UnistNode } from "unist";
 
 import { SyntaxExtension } from "./SyntaxExtension";
@@ -15,6 +16,10 @@ export abstract class NodeExtension<
 > extends SyntaxExtension<UNode, UnistToProseMirrorContext> {
   public proseMirrorToUnistTest(node: ProseMirrorNode): boolean {
     return this.proseMirrorNodeName() === node.type.name;
+  }
+
+  public proseMirrorNodeView(): NodeViewConstructor | null {
+    return null;
   }
 
   public abstract proseMirrorNodeName(): string | null;
