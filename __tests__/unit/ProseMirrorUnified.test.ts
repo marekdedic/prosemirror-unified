@@ -19,6 +19,7 @@ import { UnistToProseMirrorConverter } from "../../src/UnistToProseMirrorConvert
 jest.mock("../../src/ExtensionManager");
 jest.mock("../../src/InputRulesBuilder");
 jest.mock("../../src/KeymapBuilder");
+jest.mock("../../src/NodeViewBuilder");
 jest.mock("../../src/ProseMirrorToUnistConverter");
 jest.mock("../../src/SchemaBuilder");
 jest.mock("../../src/UnifiedBuilder");
