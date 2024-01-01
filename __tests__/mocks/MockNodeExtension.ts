@@ -3,6 +3,7 @@ import type {
   NodeSpec,
   Schema,
 } from "prosemirror-model";
+import type { NodeViewConstructor } from "prosemirror-view";
 import type { Node as UnistNode } from "unist";
 
 import { NodeExtension } from "../../src/NodeExtension";
@@ -14,6 +15,8 @@ export class MockNodeExtension<
     never
   >,
 > extends NodeExtension<UNode, UnistToProseMirrorContext> {
+  public proseMirrorNodeView = jest.fn<NodeViewConstructor | null, []>();
+
   public proseMirrorNodeName = jest.fn<string | null, []>();
 
   public proseMirrorNodeSpec = jest.fn<NodeSpec | null, []>();
