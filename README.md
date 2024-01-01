@@ -34,6 +34,8 @@ const view = new EditorView(
       plugins: [pmu.inputRulesPlugin(), pmu.keymapPlugin()],
       schema: pmu.schema(),
     }),
+    // Add interactive elements (task lists etc.)
+    nodeViews: adapter.nodeViews(),
     // Log (in the browser console) the current content in markdown on every update
     dispatchTransaction: (tr): void => {
       view.updateState(view.state.apply(tr));
@@ -72,6 +74,10 @@ Input rules are rules that govern how ProseMirror replaces what users write with
 ##### `keymapPlugin(): Plugin`
 
 A ProseMirror keymap specifiec all the keyboard shortcuts users can use in the editor, for example Ctrl-b for bold text. This function returns a ProseMirror plugin that adds all extension keyboard shortcuts to the editor.
+
+##### `nodeViews(): Record<string, NodeViewConstructor>`
+
+A list of Node views to use in the prose mirror editor. Node views are a way to provide more complex and often interactive elements in the editor, such as clickable task lists. This function returns a list of ProseMirror node views registered by all available extensions.
 
 ## Creating your own extensions
 
@@ -201,6 +207,10 @@ This specifies the type of global context (shared across all extensions) that th
 ##### `proseMirrorToUnistTest(node: ProseMirrorNode): boolean`
 
 This method is used to check whether the extension can translate a given ProseMirror node to a unist node. By default, it checks whether the node name matches `this.proseMirrorNodeName()`.
+
+##### `prosemirrorNodeView(): NodeViewConstructor | null`
+
+This method should return a constructor of a node view associated with the ProseMirror node this extension translates or `null` if it doesn't provide one. By default, it returns `null`.
 
 ##### `abstract proseMirrorNodeName(): string | null`
 
