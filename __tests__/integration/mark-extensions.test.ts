@@ -58,7 +58,7 @@ test("Parsing a document with a paragraph", () => {
     new ParagraphExtension(),
   ]);
 
-  const proseMirrorRoot = pmu.parse(source)!;
+  const proseMirrorRoot = pmu.parse(source);
 
   const proseMirrorTree = pmu
     .schema()
@@ -156,7 +156,7 @@ test("Adding a mark with an input rule", () => {
     new ParagraphExtension(),
   ]);
 
-  const proseMirrorRoot = pmu.parse(source)!;
+  const proseMirrorRoot = pmu.parse(source);
 
   const proseMirrorTree = pmu
     .schema()

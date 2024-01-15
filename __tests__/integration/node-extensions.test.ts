@@ -43,7 +43,7 @@ test("Parsing a document with a paragraph", () => {
     new ParagraphExtension(),
   ]);
 
-  const proseMirrorRoot = pmu.parse(source)!;
+  const proseMirrorRoot = pmu.parse(source);
 
   const proseMirrorTree = pmu
     .schema()
@@ -160,7 +160,7 @@ test("Parsing a document with no link node", () => {
     )!;
 
   jest.spyOn(console, "warn").mockImplementation();
-  const proseMirrorRoot = pmu.parse(source)!;
+  const proseMirrorRoot = pmu.parse(source);
   createEditor(proseMirrorRoot).callback((content) => {
     expect(content.schema.spec.marks.size).toBe(0);
     expect(content.schema.spec.nodes.size).toBe(3);

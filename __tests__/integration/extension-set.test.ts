@@ -56,7 +56,7 @@ test("Parsing a document with an extension set", () => {
     )!;
 
   jest.spyOn(console, "warn").mockImplementation();
-  const proseMirrorRoot = pmu.parse(source)!;
+  const proseMirrorRoot = pmu.parse(source);
   createEditor(proseMirrorRoot).callback((content) => {
     expect(content.schema.spec.marks.size).toBe(0);
     expect(content.schema.spec.nodes.size).toBe(3);
