@@ -198,7 +198,7 @@ test("Adding a mark with an input rule", () => {
 });
 
 test("Adding a mark with a key binding", () => {
-  expect.assertions(29);
+  expect.assertions(13);
 
   const source = "Hello World!";
   const target = "Hello <b>World</b>!";
@@ -260,6 +260,20 @@ test("Adding a mark with a key binding", () => {
   ]);
 
   const proseMirrorRoot = pmu.parse(source);
+
+  const proseMirrorTree = pmu
+    .schema()
+    .nodes.doc.createAndFill(
+      {},
+      pmu
+        .schema()
+        .nodes.paragraph.createAndFill({}, [
+          pmu.schema().text("Hello "),
+          pmu.schema().text("World").mark([pmu.schema().marks.bold.create()]),
+          pmu.schema().text("!"),
+        ]),
+    )!;
+
   createEditor(proseMirrorRoot, {
     plugins: [pmu.keymapPlugin()],
   })
@@ -272,42 +286,7 @@ test("Adding a mark with a key binding", () => {
       expect(content.schema.spec.nodes.get("doc")).toBe(rootSpec);
       expect(content.schema.spec.nodes.get("paragraph")).toBe(paragraphSpec);
       expect(content.schema.spec.nodes.get("text")).toBe(textSpec);
-      expect(content.doc.type.name).toBe("doc");
-      expect(content.doc.content.childCount).toBe(1);
-      expect(content.doc.content.firstChild).not.toBeNull();
-      expect(content.doc.content.firstChild!.type.name).toBe("paragraph");
-      expect(content.doc.content.firstChild!.content).toBeNull();
-      expect(content.doc.content.firstChild!.content.childCount).toBe(3);
-      expect(content.doc.content.firstChild!.content.firstChild).not.toBeNull();
-      expect(
-        content.doc.content.firstChild!.content.firstChild!.type.name,
-      ).toBe("text");
-      expect(content.doc.content.firstChild!.content.firstChild!.text).toBe(
-        "Hello ",
-      );
-      expect(
-        content.doc.content.firstChild!.content.firstChild!.marks,
-      ).toHaveLength(0);
-      expect(content.doc.content.firstChild!.content.child(1).type.name).toBe(
-        "text",
-      );
-      expect(content.doc.content.firstChild!.content.child(1).text).toBe(
-        "World",
-      );
-      expect(
-        content.doc.content.firstChild!.content.child(1).marks,
-      ).toHaveLength(1);
-      expect(
-        content.doc.content.firstChild!.content.child(1).marks[0].type.name,
-      ).toBe("bold");
-      expect(content.doc.content.firstChild!.content.lastChild).not.toBeNull();
-      expect(content.doc.content.firstChild!.content.lastChild!.type.name).toBe(
-        "text",
-      );
-      expect(content.doc.content.firstChild!.content.lastChild!.text).toBe("!");
-      expect(
-        content.doc.content.firstChild!.content.lastChild!.marks,
-      ).toHaveLength(0);
+      expect(content.doc).toEqualProsemirrorNode(proseMirrorTree);
       expect(unifiedMock.parse).toHaveBeenCalledTimes(1);
       expect(unifiedMock.parse).toHaveBeenCalledWith(source);
       expect(unifiedMock.runSync).toHaveBeenCalledTimes(1);
