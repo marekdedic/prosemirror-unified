@@ -196,3 +196,104 @@ test("Adding a mark with an input rule", () => {
     });
   expect(console.warn).not.toHaveBeenCalled();
 });
+
+test("Adding a mark with a key binding", () => {
+  expect.assertions(13);
+
+  const source = "Hello World!";
+  const target = "Hello <b>World</b>!";
+  const sourceUnistTree: UnistRoot = {
+    type: "root",
+    children: [
+      {
+        type: "paragraph",
+        children: [
+          {
+            type: "text",
+            value: "Hello World!",
+          },
+        ],
+      },
+    ],
+  };
+  const targetUnistTree: UnistRoot = {
+    type: "root",
+    children: [
+      {
+        type: "paragraph",
+        children: [
+          {
+            type: "text",
+            value: "Hello ",
+          },
+          {
+            type: "bold",
+            children: [
+              {
+                type: "text",
+                value: "World",
+              },
+            ],
+          },
+          {
+            type: "text",
+            value: "!",
+          },
+        ],
+      },
+    ],
+  };
+
+  const unifiedMock = {
+    parse: jest.fn().mockReturnValueOnce(sourceUnistTree),
+    runSync: jest.fn().mockImplementation((root: UnistRoot) => root),
+    stringify: jest.fn().mockReturnValueOnce(target),
+  } as unknown as Mocked<Processor>;
+
+  mocked(unified).mockReturnValueOnce(unifiedMock);
+
+  const pmu = new ProseMirrorUnified([
+    new BoldExtension(),
+    new RootExtension(),
+    new TextExtension(),
+    new ParagraphExtension(),
+  ]);
+
+  const proseMirrorRoot = pmu.parse(source);
+
+  const proseMirrorTree = pmu
+    .schema()
+    .nodes.doc.createAndFill(
+      {},
+      pmu
+        .schema()
+        .nodes.paragraph.createAndFill({}, [
+          pmu.schema().text("Hello "),
+          pmu.schema().text("World").mark([pmu.schema().marks.bold.create()]),
+          pmu.schema().text("!"),
+        ]),
+    )!;
+
+  createEditor(proseMirrorRoot, {
+    plugins: [pmu.keymapPlugin()],
+  })
+    .selectText({ from: 7, to: 12 })
+    .shortcut("Mod-b")
+    .callback((content) => {
+      expect(content.schema.spec.marks.size).toBe(1);
+      expect(content.schema.spec.marks.get("bold")).toBe(boldSpec);
+      expect(content.schema.spec.nodes.size).toBe(3);
+      expect(content.schema.spec.nodes.get("doc")).toBe(rootSpec);
+      expect(content.schema.spec.nodes.get("paragraph")).toBe(paragraphSpec);
+      expect(content.schema.spec.nodes.get("text")).toBe(textSpec);
+      expect(content.doc).toEqualProsemirrorNode(proseMirrorTree);
+      expect(unifiedMock.parse).toHaveBeenCalledTimes(1);
+      expect(unifiedMock.parse).toHaveBeenCalledWith(source);
+      expect(unifiedMock.runSync).toHaveBeenCalledTimes(1);
+
+      expect(pmu.serialize(content.doc)).toBe(target);
+
+      expect(unifiedMock.stringify).toHaveBeenCalledTimes(1);
+      expect(unifiedMock.stringify).toHaveBeenCalledWith(targetUnistTree);
+    });
+});
