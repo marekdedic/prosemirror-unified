@@ -92,4 +92,5 @@ jobs:
         uses: codecov/codecov-action@v4.0.1
         with:
           flags: integration
+          token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: true
