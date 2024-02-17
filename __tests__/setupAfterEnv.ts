@@ -24,5 +24,5 @@ function supportRangeDOMRect(): void {
   };
 }
 
-// eslint-disable-next-line jest/require-hook
+// eslint-disable-next-line jest/require-hook -- Setup function for all tests
 supportRangeDOMRect();
