@@ -19,7 +19,7 @@ export abstract class SyntaxExtension<
     return node.type === this.unistNodeName();
   }
 
-  /* eslint-disable  @typescript-eslint/no-empty-function, @typescript-eslint/no-unused-vars -- These are invalid for interfaces */
+  /* eslint-disable @typescript-eslint/class-methods-use-this, @typescript-eslint/no-empty-function, @typescript-eslint/no-unused-vars -- These are invalid for interfaces */
   public proseMirrorInputRules(
     // @ts-expect-error: TS6133 causes an error because of an unused parameter - however, this method is meant to be overriden
     proseMirrorSchema: Schema<string, string>,

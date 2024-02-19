@@ -23,19 +23,19 @@ export const boldSpec: MarkSpec = {
 };
 
 export class BoldExtension extends MarkExtension<UnistBold> {
-  public unistNodeName(): "bold" {
+  public override unistNodeName(): "bold" {
     return "bold";
   }
 
-  public proseMirrorMarkName(): string {
+  public override proseMirrorMarkName(): string {
     return "bold";
   }
 
-  public proseMirrorMarkSpec(): MarkSpec {
+  public override proseMirrorMarkSpec(): MarkSpec {
     return boldSpec;
   }
 
-  public unistNodeToProseMirrorNodes(
+  public override unistNodeToProseMirrorNodes(
     _: UnistBold,
     proseMirrorSchema: Schema<string, string>,
     convertedChildren: Array<ProseMirrorNode>,
@@ -47,11 +47,13 @@ export class BoldExtension extends MarkExtension<UnistBold> {
     );
   }
 
-  public processConvertedUnistNode(convertedNode: UnistText): UnistBold {
+  public override processConvertedUnistNode(
+    convertedNode: UnistText,
+  ): UnistBold {
     return { type: this.unistNodeName(), children: [convertedNode] };
   }
 
-  public proseMirrorInputRules(
+  public override proseMirrorInputRules(
     proseMirrorSchema: Schema<string, string>,
   ): Array<InputRule> {
     return [
@@ -62,7 +64,7 @@ export class BoldExtension extends MarkExtension<UnistBold> {
     ];
   }
 
-  public proseMirrorKeymap(
+  public override proseMirrorKeymap(
     proseMirrorSchema: Schema<string, string>,
   ): Record<string, Command> {
     return {

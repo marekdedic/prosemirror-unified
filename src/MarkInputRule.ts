@@ -20,6 +20,28 @@ export class MarkInputRule extends InputRule {
     this.markType = markType;
   }
 
+  private static markApplies(
+    doc: ProseMirrorNode,
+    ranges: Array<SelectionRange>,
+    type: MarkType,
+  ): boolean {
+    for (const range of ranges) {
+      const { $from, $to } = range;
+      let applies = $from.depth == 0 ? doc.type.allowsMarkType(type) : false;
+      doc.nodesBetween($from.pos, $to.pos, (node) => {
+        if (applies) {
+          return false;
+        }
+        applies = node.inlineContent && node.type.allowsMarkType(type);
+        return true;
+      });
+      if (applies) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   private markHandler(
     state: EditorState,
     match: RegExpMatchArray,
@@ -35,7 +57,7 @@ export class MarkInputRule extends InputRule {
     const $end = state.doc.resolve(end);
     const range = [new SelectionRange($start, $end)];
 
-    if (!this.markApplies(state.doc, range, this.markType)) {
+    if (!MarkInputRule.markApplies(state.doc, range, this.markType)) {
       return null;
     }
 
@@ -67,27 +89,5 @@ export class MarkInputRule extends InputRule {
 
     // Add back the last character
     return tr.insertText(match[2]);
-  }
-
-  private markApplies(
-    doc: ProseMirrorNode,
-    ranges: Array<SelectionRange>,
-    type: MarkType,
-  ): boolean {
-    for (const range of ranges) {
-      const { $from, $to } = range;
-      let applies = $from.depth == 0 ? doc.type.allowsMarkType(type) : false;
-      doc.nodesBetween($from.pos, $to.pos, (node) => {
-        if (applies) {
-          return false;
-        }
-        applies = node.inlineContent && node.type.allowsMarkType(type);
-        return true;
-      });
-      if (applies) {
-        return true;
-      }
-    }
-    return false;
   }
 }

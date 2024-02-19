@@ -5,6 +5,7 @@ import type { Node as UnistNode } from "unist";
  * @public
  */
 export abstract class Extension {
+  /* eslint-disable @typescript-eslint/class-methods-use-this -- Invalid for interfaces */
   public dependencies(): Array<Extension> {
     return [];
   }
@@ -14,4 +15,5 @@ export abstract class Extension {
   ): Processor<UnistNode, UnistNode, UnistNode, UnistNode, string> {
     return processor;
   }
+  /* eslint-enable */
 }
