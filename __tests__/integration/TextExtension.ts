@@ -17,26 +17,28 @@ export const textSpec: NodeSpec = {
 };
 
 export class TextExtension extends NodeExtension<UnistText> {
-  public unistNodeName(): "text" {
+  public override unistNodeName(): "text" {
     return "text";
   }
 
-  public proseMirrorNodeName(): string {
+  public override proseMirrorNodeName(): string {
     return "text";
   }
 
-  public proseMirrorNodeSpec(): NodeSpec {
+  public override proseMirrorNodeSpec(): NodeSpec {
     return textSpec;
   }
 
-  public unistNodeToProseMirrorNodes(
+  public override unistNodeToProseMirrorNodes(
     node: UnistText,
     proseMirrorSchema: Schema<string, string>,
   ): Array<ProseMirrorNode> {
     return [proseMirrorSchema.text(node.value)];
   }
 
-  public proseMirrorNodeToUnistNodes(node: ProseMirrorNode): Array<UnistText> {
+  public override proseMirrorNodeToUnistNodes(
+    node: ProseMirrorNode,
+  ): Array<UnistText> {
     return [{ type: "text", value: node.text ?? "" }];
   }
 }

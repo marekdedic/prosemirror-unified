@@ -18,6 +18,7 @@ export abstract class NodeExtension<
     return this.proseMirrorNodeName() === node.type.name;
   }
 
+  // eslint-disable-next-line @typescript-eslint/class-methods-use-this -- Inalid for an interface
   public proseMirrorNodeView(): NodeViewConstructor | null {
     return null;
   }

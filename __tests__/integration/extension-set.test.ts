@@ -12,7 +12,7 @@ import { TextExtension, textSpec } from "./TextExtension";
 jest.mock("unified");
 
 class SetExtension extends Extension {
-  public dependencies(): Array<Extension> {
+  public override dependencies(): Array<Extension> {
     return [new RootExtension(), new TextExtension(), new ParagraphExtension()];
   }
 }

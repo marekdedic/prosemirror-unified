@@ -19,18 +19,18 @@ export const rootSpec: NodeSpec = {
 };
 
 export class RootExtension extends NodeExtension<UnistRoot> {
-  public unistNodeName(): "root" {
+  public override unistNodeName(): "root" {
     return "root";
   }
-  public proseMirrorNodeName(): "doc" {
+  public override proseMirrorNodeName(): "doc" {
     return "doc";
   }
 
-  public proseMirrorNodeSpec(): NodeSpec {
+  public override proseMirrorNodeSpec(): NodeSpec {
     return rootSpec;
   }
 
-  public unistNodeToProseMirrorNodes(
+  public override unistNodeToProseMirrorNodes(
     _: UnistRoot,
     proseMirrorSchema: Schema<string, string>,
     convertedChildren: Array<ProseMirrorNode>,
@@ -42,7 +42,7 @@ export class RootExtension extends NodeExtension<UnistRoot> {
     );
   }
 
-  public proseMirrorNodeToUnistNodes(
+  public override proseMirrorNodeToUnistNodes(
     _: ProseMirrorNode,
     convertedChildren: Array<UnistNode>,
   ): Array<UnistRoot> {

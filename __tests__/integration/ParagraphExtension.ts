@@ -23,19 +23,19 @@ export const paragraphSpec: NodeSpec = {
 };
 
 export class ParagraphExtension extends NodeExtension<UnistParagraph> {
-  public unistNodeName(): "paragraph" {
+  public override unistNodeName(): "paragraph" {
     return "paragraph";
   }
 
-  public proseMirrorNodeName(): string {
+  public override proseMirrorNodeName(): string {
     return "paragraph";
   }
 
-  public proseMirrorNodeSpec(): NodeSpec {
+  public override proseMirrorNodeSpec(): NodeSpec {
     return paragraphSpec;
   }
 
-  public unistNodeToProseMirrorNodes(
+  public override unistNodeToProseMirrorNodes(
     _: UnistParagraph,
     proseMirrorSchema: Schema<string, string>,
     convertedChildren: Array<ProseMirrorNode>,
@@ -47,7 +47,7 @@ export class ParagraphExtension extends NodeExtension<UnistParagraph> {
     );
   }
 
-  public proseMirrorNodeToUnistNodes(
+  public override proseMirrorNodeToUnistNodes(
     _: ProseMirrorNode,
     convertedChildren: Array<UnistNode>,
   ): Array<UnistParagraph> {
