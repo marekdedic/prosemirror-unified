@@ -80,7 +80,7 @@ jobs:
           npm run test unit
 
       - name: "Upload coverage results"
-        uses: codecov/codecov-action@v4.1.1
+        uses: codecov/codecov-action@v4.2.0
         with:
           flags: unit
 
@@ -89,7 +89,7 @@ jobs:
           npm run test integration
 
       - name: "Upload coverage results"
-        uses: codecov/codecov-action@v4.1.1
+        uses: codecov/codecov-action@v4.2.0
         with:
           flags: integration
           token: ${{ secrets.CODECOV_TOKEN }}
