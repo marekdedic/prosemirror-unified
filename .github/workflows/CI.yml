@@ -80,17 +80,15 @@ jobs:
           npm run test unit
 
       - name: "Upload coverage results"
-        uses: codecov/codecov-action@v4.3.0
+        uses: coverallsapp/github-action@v2.2.3
         with:
-          flags: unit
+          flag-name: unit
 
       - name: "Run integration tests"
         run: |
           npm run test integration
 
       - name: "Upload coverage results"
-        uses: codecov/codecov-action@v4.3.0
+        uses: coverallsapp/github-action@v2.2.3
         with:
-          flags: integration
-          token: ${{ secrets.CODECOV_TOKEN }}
-          fail_ci_if_error: true
+          flag-name: integration
