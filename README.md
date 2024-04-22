@@ -2,7 +2,7 @@
 
 ![GitHub](https://img.shields.io/github/license/marekdedic/prosemirror-unified)
 ![GitHub CI](https://img.shields.io/github/actions/workflow/status/marekdedic/prosemirror-unified/CI.yml?logo=github)
-![Codecov](https://img.shields.io/codecov/c/github/marekdedic/prosemirror-unified/master?logo=codecov)
+![Coveralls](https://img.shields.io/coverallsCoverage/github/marekdedic/prosemirror-unified)
 ![npm downloads](https://img.shields.io/npm/dm/prosemirror-unified?logo=npm)
 
 This package provides support for using the [unified](https://github.com/unifiedjs/unified) ecosystem of parsers and other packages (for example, [remark](https://github.com/remarkjs/remark), the markdown parser) in [ProseMirror](https://prosemirror.net/).
