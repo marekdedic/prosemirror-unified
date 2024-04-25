@@ -46,7 +46,4 @@ function createConfig(libraryType, extension) {
   };
 }
 
-module.exports = [
-  createConfig("module", "js"),
-  createConfig("commonjs2", "cjs"),
-];
+export default [createConfig("module", "js"), createConfig("commonjs2", "cjs")];
