@@ -208,7 +208,7 @@ This specifies the type of global context (shared across all extensions) that th
 
 This method is used to check whether the extension can translate a given ProseMirror node to a unist node. By default, it checks whether the node name matches `this.proseMirrorNodeName()`.
 
-##### `prosemirrorNodeView(): NodeViewConstructor | null`
+##### `proseMirrorNodeView(): NodeViewConstructor | null`
 
 This method should return a constructor of a node view associated with the ProseMirror node this extension translates or `null` if it doesn't provide one. By default, it returns `null`.
 
