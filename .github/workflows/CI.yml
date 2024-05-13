@@ -82,6 +82,7 @@ jobs:
       - name: "Upload coverage results"
         uses: coverallsapp/github-action@v2.3.0
         with:
+          debug: true
           parallel: true
           flag-name: unit
 
@@ -92,10 +93,12 @@ jobs:
       - name: "Upload coverage results"
         uses: coverallsapp/github-action@v2.3.0
         with:
+          debug: true
           parallel: true
           flag-name: integration
 
       - name: "Close coverage report"
         uses: coverallsapp/github-action@v2.3.0
         with:
+          debug: true
           parallel-finished: true
