@@ -1,9 +1,10 @@
 # prosemirror-unified
 
-![GitHub](https://img.shields.io/github/license/marekdedic/prosemirror-unified)
-![GitHub CI](https://img.shields.io/github/actions/workflow/status/marekdedic/prosemirror-unified/CI.yml?logo=github)
-![Coveralls](https://img.shields.io/coverallsCoverage/github/marekdedic/prosemirror-unified)
-![npm downloads](https://img.shields.io/npm/dm/prosemirror-unified?logo=npm)
+[![NPM Version](https://img.shields.io/npm/v/prosemirror-unified?logo=npm)](https://www.npmjs.com/package/prosemirror-unified)
+[![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/marekdedic/prosemirror-unified/CI.yml?branch=master&logo=github)](https://github.com/marekdedic/prosemirror-unified/actions/workflows/CI.yml)
+[![Coveralls](https://img.shields.io/coverallsCoverage/github/marekdedic/prosemirror-unified?branch=master&logo=coveralls)](https://coveralls.io/github/marekdedic/prosemirror-unified)
+[![NPM Downloads](https://img.shields.io/npm/dm/prosemirror-unified?logo=npm)](https://www.npmjs.com/package/prosemirror-unified)
+[![NPM License](https://img.shields.io/npm/l/prosemirror-unified)](https://github.com/marekdedic/prosemirror-unified/blob/master/LICENSE)
 
 This package provides support for using the [unified](https://github.com/unifiedjs/unified) ecosystem of parsers and other packages (for example, [remark](https://github.com/remarkjs/remark), the markdown parser) in [ProseMirror](https://prosemirror.net/).
 
