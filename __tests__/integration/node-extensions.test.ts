@@ -71,6 +71,7 @@ test("Parsing a document with a paragraph", () => {
     expect(unifiedMock.stringify).toHaveBeenCalledTimes(1);
     expect(unifiedMock.stringify).toHaveBeenCalledWith(unistTree);
   });
+
   expect(console.warn).not.toHaveBeenCalled();
 });
 
@@ -177,6 +178,7 @@ test("Parsing a document with no link node", () => {
     expect(unifiedMock.stringify).toHaveBeenCalledTimes(1);
     expect(unifiedMock.stringify).toHaveBeenCalledWith(targetUnistTree);
   });
+
   expect(console.warn).toHaveBeenCalledWith(
     'Couldn\'t find any way to convert unist node of type "link" to a ProseMirror node.',
   );

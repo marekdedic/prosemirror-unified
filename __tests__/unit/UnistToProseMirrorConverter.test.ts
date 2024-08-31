@@ -31,6 +31,7 @@ test("Converts basic document", () => {
   const rootUnistNode = { type: "root", children: [] };
 
   jest.spyOn(console, "warn").mockImplementation();
+
   expect(converter.convert(rootUnistNode)).toBe(rootProseMirrorNode);
   expect(docExtension.unistToProseMirrorTest).toHaveBeenCalledWith(
     rootUnistNode,
@@ -83,6 +84,7 @@ test("Converts a document with children", () => {
   const rootUnistNode = { type: "root", children: [textUnistNode] };
 
   jest.spyOn(console, "warn").mockImplementation();
+
   expect(converter.convert(rootUnistNode)).toBe(rootProseMirrorNode);
   expect(textExtension.unistToProseMirrorTest).toHaveBeenCalledWith(
     textUnistNode,
@@ -177,6 +179,7 @@ test("Converts a document with children of multiple types", () => {
   };
 
   jest.spyOn(console, "warn").mockImplementation();
+
   expect(converter.convert(rootUnistNode)).toBe(rootProseMirrorNode);
 
   expect(typeOneExtension.unistToProseMirrorTest).toHaveBeenCalledWith(
@@ -224,6 +227,7 @@ test("Fails gracefully on no root converter", () => {
   const rootUnistNode = { type: "root", children: [] };
 
   jest.spyOn(console, "warn").mockImplementation();
+
   expect(() => converter.convert(rootUnistNode)).toThrow(
     "Couldn't find any way to convert the root unist node.",
   );
@@ -283,6 +287,7 @@ test("Converts a document with invalid children", () => {
   };
 
   jest.spyOn(console, "warn").mockImplementation();
+
   expect(converter.convert(rootUnistNode)).toBe(rootProseMirrorNode);
 
   expect(typeOneExtension.unistToProseMirrorTest).toHaveBeenCalledWith(

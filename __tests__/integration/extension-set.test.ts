@@ -73,5 +73,6 @@ test("Parsing a document with an extension set", () => {
     expect(unifiedMock.stringify).toHaveBeenCalledTimes(1);
     expect(unifiedMock.stringify).toHaveBeenCalledWith(unistTree);
   });
+
   expect(console.warn).not.toHaveBeenCalled();
 });

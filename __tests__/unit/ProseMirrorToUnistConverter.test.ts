@@ -29,6 +29,7 @@ test("Converts basic document", () => {
   const rootProseMirrorNode = schema.nodes.doc.createAndFill({}, [])!;
 
   jest.spyOn(console, "warn").mockImplementation();
+
   expect(converter.convert(rootProseMirrorNode)).toStrictEqual(rootUnistNode);
   expect(docExtension.proseMirrorNodeToUnistNodes).toHaveBeenCalledWith(
     rootProseMirrorNode,
@@ -69,6 +70,7 @@ test("Converts a document with children", () => {
   ])!;
 
   jest.spyOn(console, "warn").mockImplementation();
+
   expect(converter.convert(rootProseMirrorNode)).toStrictEqual(rootUnistNode);
   expect(textExtension.proseMirrorNodeToUnistNodes).toHaveBeenCalledWith(
     textProseMirrorNode,
@@ -135,6 +137,7 @@ test("Converts a document with children of multiple types", () => {
   ])!;
 
   jest.spyOn(console, "warn").mockImplementation();
+
   expect(converter.convert(rootProseMirrorNode)).toStrictEqual(rootUnistNode);
   expect(typeOneExtension.proseMirrorNodeToUnistNodes).toHaveBeenCalledWith(
     typeOneProseMirrorNode,
@@ -216,6 +219,7 @@ test("Converts a document with marks", () => {
   ])!;
 
   jest.spyOn(console, "warn").mockImplementation();
+
   expect(converter.convert(rootProseMirrorNode)).toStrictEqual(rootUnistNode);
   expect(textExtension.proseMirrorNodeToUnistNodes).toHaveBeenCalledWith(
     textProseMirrorNode,
@@ -256,6 +260,7 @@ test("Fails gracefully on no root converter", () => {
   const rootNode = schema.nodes.doc.createAndFill({}, [])!;
 
   jest.spyOn(console, "warn").mockImplementation();
+
   expect(() => converter.convert(rootNode)).toThrow(
     "Couldn't find any way to convert the root ProseMirror node.",
   );
@@ -310,6 +315,7 @@ test("Converts a document with invalid children", () => {
   ])!;
 
   jest.spyOn(console, "warn").mockImplementation();
+
   expect(converter.convert(rootProseMirrorNode)).toStrictEqual(rootUnistNode);
   expect(typeOneExtension.proseMirrorNodeToUnistNodes).toHaveBeenCalledWith(
     typeOneProseMirrorNode,
@@ -364,6 +370,7 @@ test("Converts a document with invalid marks", () => {
   ])!;
 
   jest.spyOn(console, "warn").mockImplementation();
+
   expect(converter.convert(rootProseMirrorNode)).toStrictEqual(rootUnistNode);
   expect(typeOneExtension.proseMirrorNodeToUnistNodes).toHaveBeenCalledWith(
     typeOneProseMirrorNode,

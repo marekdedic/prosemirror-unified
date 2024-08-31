@@ -91,6 +91,7 @@ test("Parsing a document with a paragraph", () => {
     expect(unifiedMock.stringify).toHaveBeenCalledTimes(1);
     expect(unifiedMock.stringify).toHaveBeenCalledWith(unistTree);
   });
+
   expect(console.warn).not.toHaveBeenCalled();
 });
 
@@ -194,6 +195,7 @@ test("Adding a mark with an input rule", () => {
       expect(unifiedMock.stringify).toHaveBeenCalledTimes(1);
       expect(unifiedMock.stringify).toHaveBeenCalledWith(targetUnistTree);
     });
+
   expect(console.warn).not.toHaveBeenCalled();
 });
 
