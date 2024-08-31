@@ -27,7 +27,7 @@ export class MarkInputRule extends InputRule {
   ): boolean {
     for (const range of ranges) {
       const { $from, $to } = range;
-      let applies = $from.depth == 0 ? doc.type.allowsMarkType(type) : false;
+      let applies = $from.depth === 0 ? doc.type.allowsMarkType(type) : false;
       doc.nodesBetween($from.pos, $to.pos, (node) => {
         if (applies) {
           return false;
