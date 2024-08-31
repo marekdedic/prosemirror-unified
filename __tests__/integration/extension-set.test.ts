@@ -1,5 +1,4 @@
-import type { Mocked } from "jest-mock";
-import { mocked } from "jest-mock";
+import { type Mocked, mocked } from "jest-mock";
 import { createEditor } from "jest-prosemirror";
 import { type Processor, unified } from "unified";
 
