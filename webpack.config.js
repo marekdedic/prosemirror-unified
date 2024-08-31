@@ -22,7 +22,7 @@ function createConfig(libraryType, extension) {
       "prosemirror-unified": "./src/index.ts",
     },
     output: {
-      filename: "[name]." + extension,
+      filename: `[name].${extension}`,
       library: {
         type: libraryType,
       },

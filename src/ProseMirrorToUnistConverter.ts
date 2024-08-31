@@ -39,9 +39,7 @@ export class ProseMirrorToUnistConverter {
     }
     if (convertedNodes === null) {
       console.warn(
-        "Couldn't find any way to convert ProseMirror node of type \"" +
-          node.type.name +
-          '" to a unist node.',
+        `Couldn't find any way to convert ProseMirror node of type "${node.type.name}" to a unist node.`,
       );
       return [];
     }
@@ -59,9 +57,7 @@ export class ProseMirrorToUnistConverter {
         }
         if (!processed) {
           console.warn(
-            "Couldn't find any way to convert ProseMirror mark of type \"" +
-              mark.type.name +
-              '" to a unist node.',
+            `Couldn't find any way to convert ProseMirror mark of type "${mark.type.name}" to a unist node.`,
           );
         }
       }

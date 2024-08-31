@@ -54,9 +54,7 @@ export class UnistToProseMirrorConverter {
       );
     }
     console.warn(
-      "Couldn't find any way to convert unist node of type \"" +
-        node.type +
-        '" to a ProseMirror node.',
+      `Couldn't find any way to convert unist node of type "${node.type}" to a ProseMirror node.`,
     );
     return [];
   }
