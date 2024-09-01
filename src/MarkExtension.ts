@@ -13,12 +13,12 @@ export abstract class MarkExtension<
     never
   >,
 > extends SyntaxExtension<UNode, UnistToProseMirrorContext> {
-  public abstract proseMirrorMarkName(): string | null;
-
-  public abstract proseMirrorMarkSpec(): MarkSpec | null;
-
   public abstract processConvertedUnistNode(
     convertedNode: UnistNode,
     originalMark: Mark,
   ): UNode;
+
+  public abstract proseMirrorMarkName(): string | null;
+
+  public abstract proseMirrorMarkSpec(): MarkSpec | null;
 }

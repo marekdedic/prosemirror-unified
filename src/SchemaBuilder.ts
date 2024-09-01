@@ -3,8 +3,8 @@ import { type MarkSpec, type NodeSpec, Schema } from "prosemirror-model";
 import type { ExtensionManager } from "./ExtensionManager";
 
 export class SchemaBuilder {
-  private readonly nodes: Record<string, NodeSpec> = {};
   private readonly marks: Record<string, MarkSpec> = {};
+  private readonly nodes: Record<string, NodeSpec> = {};
 
   public constructor(extensionManager: ExtensionManager) {
     for (const extension of extensionManager.nodeExtensions()) {

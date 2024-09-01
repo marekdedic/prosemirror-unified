@@ -20,14 +20,6 @@ export class KeymapBuilder {
     this.addKeymap(baseKeymap);
   }
 
-  public build(): Plugin {
-    const chainedKeymap: Record<string, Command> = {};
-    this.keymap.forEach((commands, key) => {
-      chainedKeymap[key] = chainCommands(...commands);
-    });
-    return keymap(chainedKeymap);
-  }
-
   private addKeymap(map: Record<string, Command>): void {
     for (const key in map) {
       if (!Object.prototype.hasOwnProperty.call(map, key)) {
@@ -38,5 +30,13 @@ export class KeymapBuilder {
       }
       this.keymap.get(key)!.push(map[key]);
     }
+  }
+
+  public build(): Plugin {
+    const chainedKeymap: Record<string, Command> = {};
+    this.keymap.forEach((commands, key) => {
+      chainedKeymap[key] = chainCommands(...commands);
+    });
+    return keymap(chainedKeymap);
   }
 }

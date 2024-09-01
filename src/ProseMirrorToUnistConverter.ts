@@ -10,16 +10,6 @@ export class ProseMirrorToUnistConverter {
     this.extensionManager = extensionManager;
   }
 
-  public convert(node: ProseMirrorNode): UnistNode {
-    const rootNode = this.convertNode(node);
-    if (rootNode.length !== 1) {
-      throw new Error(
-        "Couldn't find any way to convert the root ProseMirror node.",
-      );
-    }
-    return rootNode[0];
-  }
-
   private convertNode(node: ProseMirrorNode): Array<UnistNode> {
     let convertedNodes: Array<UnistNode> | null = null;
     for (const extension of this.extensionManager.nodeExtensions()) {
@@ -66,5 +56,15 @@ export class ProseMirrorToUnistConverter {
       }
       return postProcessedNode;
     });
+  }
+
+  public convert(node: ProseMirrorNode): UnistNode {
+    const rootNode = this.convertNode(node);
+    if (rootNode.length !== 1) {
+      throw new Error(
+        "Couldn't find any way to convert the root ProseMirror node.",
+      );
+    }
+    return rootNode[0];
   }
 }

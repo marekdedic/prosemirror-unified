@@ -15,11 +15,11 @@ export class MockMarkExtension<
     never
   >,
 > extends MarkExtension<UNode, UnistToProseMirrorContext> {
+  public processConvertedUnistNode = jest.fn<UNode, [UnistNode, Mark]>();
+
   public proseMirrorMarkName = jest.fn<string | null, []>();
 
   public proseMirrorMarkSpec = jest.fn<MarkSpec | null, []>();
-
-  public processConvertedUnistNode = jest.fn<UNode, [UnistNode, Mark]>();
 
   public unistNodeName = jest.fn<UNode["type"], []>();
 

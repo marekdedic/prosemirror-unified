@@ -25,30 +25,6 @@ export const boldSpec: MarkSpec = {
 };
 
 export class BoldExtension extends MarkExtension<UnistBold> {
-  public override unistNodeName(): "bold" {
-    return "bold";
-  }
-
-  public override proseMirrorMarkName(): string {
-    return "bold";
-  }
-
-  public override proseMirrorMarkSpec(): MarkSpec {
-    return boldSpec;
-  }
-
-  public override unistNodeToProseMirrorNodes(
-    _: UnistBold,
-    proseMirrorSchema: Schema<string, string>,
-    convertedChildren: Array<ProseMirrorNode>,
-  ): Array<ProseMirrorNode> {
-    return convertedChildren.map((child) =>
-      child.mark([
-        proseMirrorSchema.marks[this.proseMirrorMarkName()].create(),
-      ]),
-    );
-  }
-
   public override processConvertedUnistNode(
     convertedNode: UnistText,
   ): UnistBold {
@@ -73,5 +49,29 @@ export class BoldExtension extends MarkExtension<UnistBold> {
       // eslint-disable-next-line @typescript-eslint/naming-convention -- This is a key combination
       "Mod-b": toggleMark(proseMirrorSchema.marks[this.proseMirrorMarkName()]),
     };
+  }
+
+  public override proseMirrorMarkName(): string {
+    return "bold";
+  }
+
+  public override proseMirrorMarkSpec(): MarkSpec {
+    return boldSpec;
+  }
+
+  public override unistNodeName(): "bold" {
+    return "bold";
+  }
+
+  public override unistNodeToProseMirrorNodes(
+    _: UnistBold,
+    proseMirrorSchema: Schema<string, string>,
+    convertedChildren: Array<ProseMirrorNode>,
+  ): Array<ProseMirrorNode> {
+    return convertedChildren.map((child) =>
+      child.mark([
+        proseMirrorSchema.marks[this.proseMirrorMarkName()].create(),
+      ]),
+    );
   }
 }
