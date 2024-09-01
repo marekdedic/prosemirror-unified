@@ -53,6 +53,7 @@ export class UnistToProseMirrorConverter {
         context,
       );
     }
+    // eslint-disable-next-line no-console -- Intended console warning
     console.warn(
       `Couldn't find any way to convert unist node of type "${node.type}" to a ProseMirror node.`,
     );

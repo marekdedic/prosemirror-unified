@@ -38,6 +38,7 @@ export class ProseMirrorToUnistConverter {
       );
     }
     if (convertedNodes === null) {
+      // eslint-disable-next-line no-console -- Intended console warning
       console.warn(
         `Couldn't find any way to convert ProseMirror node of type "${node.type.name}" to a unist node.`,
       );
@@ -57,6 +58,7 @@ export class ProseMirrorToUnistConverter {
           }
         }
         if (!processed) {
+          // eslint-disable-next-line no-console -- Intended console warning
           console.warn(
             `Couldn't find any way to convert ProseMirror mark of type "${mark.type.name}" to a unist node.`,
           );
