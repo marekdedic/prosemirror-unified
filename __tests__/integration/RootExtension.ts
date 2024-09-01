@@ -11,8 +11,8 @@ import { createProseMirrorNode } from "../../src/createProseMirrorNode";
 import { NodeExtension } from "../../src/NodeExtension";
 
 export interface UnistRoot extends UnistNode {
-  type: "root";
   children: Array<UnistParagraph>;
+  type: "root";
 }
 
 export const rootSpec: NodeSpec = {

@@ -16,8 +16,8 @@ import { MarkInputRule } from "../../src";
 import { MarkExtension } from "../../src/MarkExtension";
 
 export interface UnistBold extends UnistNode {
-  type: "bold";
   children: Array<UnistText>;
+  type: "bold";
 }
 
 export const boldSpec: MarkSpec = {

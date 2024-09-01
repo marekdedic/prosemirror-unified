@@ -14,8 +14,8 @@ import { createProseMirrorNode } from "../../src/createProseMirrorNode";
 import { NodeExtension } from "../../src/NodeExtension";
 
 export interface UnistParagraph extends UnistNode {
-  type: "paragraph";
   children: Array<UnistBold | UnistLink | UnistText>;
+  type: "paragraph";
 }
 
 export const paragraphSpec: NodeSpec = {
