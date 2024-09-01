@@ -43,5 +43,5 @@ test("NodeViewBuilder creates a plugin", () => {
   const builder = new NodeViewBuilder(manager);
   const nodeViews = builder.build();
 
-  expect(nodeViews).toStrictEqual({ text: textNodeView, node1: node1NodeView });
+  expect(nodeViews).toStrictEqual({ node1: node1NodeView, text: textNodeView });
 });

@@ -2,8 +2,22 @@
 
 function createConfig(libraryType, extension) {
   return {
-    mode: "production",
     devtool: "source-map",
+    entry: {
+      "prosemirror-unified": "./src/index.ts",
+    },
+    experiments: {
+      outputModule: true,
+    },
+    externals: {
+      "prosemirror-commands": "module prosemirror-commands",
+      "prosemirror-inputrules": "module prosemirror-inputrules",
+      "prosemirror-keymap": "module prosemirror-keymap",
+      "prosemirror-model": "module prosemirror-model",
+      "prosemirror-state": "module prosemirror-state",
+      unified: "module unified",
+    },
+    mode: "production",
     module: {
       rules: [
         {
@@ -17,11 +31,8 @@ function createConfig(libraryType, extension) {
         },
       ],
     },
-    resolve: {
-      extensions: [".ts", ".js"],
-    },
-    entry: {
-      "prosemirror-unified": "./src/index.ts",
+    optimization: {
+      minimize: false,
     },
     output: {
       filename: `[name].${extension}`,
@@ -29,19 +40,8 @@ function createConfig(libraryType, extension) {
         type: libraryType,
       },
     },
-    externals: {
-      "prosemirror-commands": "module prosemirror-commands",
-      "prosemirror-inputrules": "module prosemirror-inputrules",
-      "prosemirror-keymap": "module prosemirror-keymap",
-      "prosemirror-model": "module prosemirror-model",
-      "prosemirror-state": "module prosemirror-state",
-      unified: "module unified",
-    },
-    optimization: {
-      minimize: false,
-    },
-    experiments: {
-      outputModule: true,
+    resolve: {
+      extensions: [".ts", ".js"],
     },
   };
 }

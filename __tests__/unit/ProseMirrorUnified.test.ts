@@ -91,7 +91,7 @@ test("ProseMirrorUnified parses a string", () => {
   });
   const rootProseMirrorNode = schema.nodes.doc.createAndFill({}, [])!;
   const parsedRoot = { type: "root" };
-  const processedRoot = { type: "root", additional: "value" };
+  const processedRoot = { additional: "value", type: "root" };
 
   const unifiedMock = {
     parse: jest.fn().mockReturnValueOnce(parsedRoot),

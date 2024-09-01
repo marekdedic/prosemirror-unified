@@ -4,14 +4,14 @@ import { createProseMirrorNode } from "../../src/createProseMirrorNode";
 
 describe("createProseMirrorNode works", () => {
   const schema = new Schema({
+    marks: {},
     nodes: {
       doc: {},
-      text: {},
       node1: {
-        content: "group1*",
         attrs: {
           attr1: { default: "attr1_default" },
         },
+        content: "group1*",
       },
       node2: {
         group: "group1",
@@ -20,8 +20,8 @@ describe("createProseMirrorNode works", () => {
         group: "group1",
       },
       node4: {},
+      text: {},
     },
-    marks: {},
   });
 
   test("works with a basic node", () => {

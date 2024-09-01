@@ -15,31 +15,31 @@ test("Parsing a document with a paragraph", () => {
 
   const source = "Hello <b>World</b>!";
   const unistTree: UnistRoot = {
-    type: "root",
     children: [
       {
-        type: "paragraph",
         children: [
           {
             type: "text",
             value: "Hello ",
           },
           {
-            type: "bold",
             children: [
               {
                 type: "text",
                 value: "World",
               },
             ],
+            type: "bold",
           },
           {
             type: "text",
             value: "!",
           },
         ],
+        type: "paragraph",
       },
     ],
+    type: "root",
   };
 
   const unifiedMock = {
@@ -100,45 +100,45 @@ test("Adding a mark with an input rule", () => {
   const source = "Hello ";
   const target = "Hello <b>World</b>!";
   const sourceUnistTree: UnistRoot = {
-    type: "root",
     children: [
       {
-        type: "paragraph",
         children: [
           {
             type: "text",
             value: "Hello ",
           },
         ],
+        type: "paragraph",
       },
     ],
+    type: "root",
   };
   const targetUnistTree: UnistRoot = {
-    type: "root",
     children: [
       {
-        type: "paragraph",
         children: [
           {
             type: "text",
             value: "Hello ",
           },
           {
-            type: "bold",
             children: [
               {
                 type: "text",
                 value: "World",
               },
             ],
+            type: "bold",
           },
           {
             type: "text",
             value: "!",
           },
         ],
+        type: "paragraph",
       },
     ],
+    type: "root",
   };
 
   const unifiedMock = {
@@ -204,45 +204,45 @@ test("Adding a mark with a key binding", () => {
   const source = "Hello World!";
   const target = "Hello <b>World</b>!";
   const sourceUnistTree: UnistRoot = {
-    type: "root",
     children: [
       {
-        type: "paragraph",
         children: [
           {
             type: "text",
             value: "Hello World!",
           },
         ],
+        type: "paragraph",
       },
     ],
+    type: "root",
   };
   const targetUnistTree: UnistRoot = {
-    type: "root",
     children: [
       {
-        type: "paragraph",
         children: [
           {
             type: "text",
             value: "Hello ",
           },
           {
-            type: "bold",
             children: [
               {
                 type: "text",
                 value: "World",
               },
             ],
+            type: "bold",
           },
           {
             type: "text",
             value: "!",
           },
         ],
+        type: "paragraph",
       },
     ],
+    type: "root",
   };
 
   const unifiedMock = {

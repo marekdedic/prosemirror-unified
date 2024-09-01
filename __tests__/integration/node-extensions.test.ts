@@ -14,18 +14,18 @@ test("Parsing a document with a paragraph", () => {
 
   const source = "<p>Hello World!</p>";
   const unistTree: UnistRoot = {
-    type: "root",
     children: [
       {
-        type: "paragraph",
         children: [
           {
             type: "text",
             value: "Hello World!",
           },
         ],
+        type: "paragraph",
       },
     ],
+    type: "root",
   };
 
   const unifiedMock = {
@@ -100,40 +100,40 @@ test("Parsing a document with no link node", () => {
   const source = "<p>Hello <a>World</a>!</p>";
   const target = "<p>Hello !</p>";
   const sourceUnistTree: UnistRoot = {
-    type: "root",
     children: [
       {
-        type: "paragraph",
         children: [
           {
             type: "text",
             value: "Hello ",
           },
           {
-            type: "link",
             children: [{ type: "text", value: "World" }],
+            type: "link",
           },
           {
             type: "text",
             value: "!",
           },
         ],
+        type: "paragraph",
       },
     ],
+    type: "root",
   };
   const targetUnistTree: UnistRoot = {
-    type: "root",
     children: [
       {
-        type: "paragraph",
         children: [
           {
             type: "text",
             value: "Hello !",
           },
         ],
+        type: "paragraph",
       },
     ],
+    type: "root",
   };
 
   const unifiedMock = {

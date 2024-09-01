@@ -21,18 +21,18 @@ test("Parsing a document with an extension set", () => {
 
   const source = "<p>Hello World!</p>";
   const unistTree: UnistRoot = {
-    type: "root",
     children: [
       {
-        type: "paragraph",
         children: [
           {
             type: "text",
             value: "Hello World!",
           },
         ],
+        type: "paragraph",
       },
     ],
+    type: "root",
   };
 
   const unifiedMock = {

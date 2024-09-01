@@ -25,8 +25,8 @@ export class SchemaBuilder {
 
   public build(): Schema<string, string> {
     return new Schema<string, string>({
-      nodes: this.nodes,
       marks: this.marks,
+      nodes: this.nodes,
     });
   }
 }

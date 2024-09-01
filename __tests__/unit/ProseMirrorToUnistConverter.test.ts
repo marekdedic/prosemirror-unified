@@ -12,7 +12,7 @@ jest.mock("../../src/MarkExtension");
 test("Converts basic document", () => {
   const docExtension = mocked(new MockNodeExtension());
   docExtension.proseMirrorNodeName.mockReturnValueOnce("doc");
-  const rootUnistNode = { type: "root", children: [] };
+  const rootUnistNode = { children: [], type: "root" };
   docExtension.proseMirrorNodeToUnistNodes.mockReturnValueOnce([rootUnistNode]);
 
   const manager = mocked(new ExtensionManager([]));
@@ -48,7 +48,7 @@ test("Converts a document with children", () => {
 
   const docExtension = mocked(new MockNodeExtension());
   docExtension.proseMirrorNodeName.mockReturnValueOnce("doc");
-  const rootUnistNode = { type: "root", children: [textUnistNode] };
+  const rootUnistNode = { children: [textUnistNode], type: "root" };
   docExtension.proseMirrorNodeToUnistNodes.mockReturnValueOnce([rootUnistNode]);
 
   const manager = mocked(new ExtensionManager([]));
@@ -101,8 +101,8 @@ test("Converts a document with children of multiple types", () => {
   const docExtension = mocked(new MockNodeExtension());
   docExtension.proseMirrorNodeName.mockReturnValueOnce("doc");
   const rootUnistNode = {
-    type: "root",
     children: [typeOneUnistNode, typeTwoUnistNode],
+    type: "root",
   };
   docExtension.proseMirrorNodeToUnistNodes.mockReturnValueOnce([rootUnistNode]);
 
@@ -120,13 +120,13 @@ test("Converts a document with children of multiple types", () => {
       doc: {
         content: "groupOne*",
       },
+      text: {},
       typeOne: {
         group: "groupOne",
       },
       typeTwo: {
         group: "groupOne",
       },
-      text: {},
     },
   });
   const typeOneProseMirrorNode = schema.nodes.typeOne.createAndFill({}, [])!;
@@ -165,10 +165,10 @@ test("Converts a document with marks", () => {
   const markOneExtension = mocked(new MockMarkExtension());
   markOneExtension.proseMirrorMarkName.mockReturnValue("markOne");
   const bothMarksUnistNode = {
-    type: "text",
-    value: "Hello World!",
     markOne: true,
     markTwo: true,
+    type: "text",
+    value: "Hello World!",
   };
   markOneExtension.processConvertedUnistNode.mockReturnValueOnce(
     bothMarksUnistNode,
@@ -177,9 +177,9 @@ test("Converts a document with marks", () => {
   const markTwoExtension = mocked(new MockMarkExtension());
   markTwoExtension.proseMirrorMarkName.mockReturnValue("markTwo");
   const markTwoUnistNode = {
+    markTwo: true,
     type: "text",
     value: "Hello World!",
-    markTwo: true,
   };
   markTwoExtension.processConvertedUnistNode.mockReturnValueOnce(
     markTwoUnistNode,
@@ -188,8 +188,8 @@ test("Converts a document with marks", () => {
   const docExtension = mocked(new MockNodeExtension());
   docExtension.proseMirrorNodeName.mockReturnValueOnce("doc");
   const rootUnistNode = {
-    type: "root",
     children: [textUnistNode],
+    type: "root",
   };
   docExtension.proseMirrorNodeToUnistNodes.mockReturnValueOnce([rootUnistNode]);
 
@@ -200,15 +200,15 @@ test("Converts a document with marks", () => {
   const converter = new ProseMirrorToUnistConverter(manager);
 
   const schema = new Schema({
+    marks: {
+      markOne: {},
+      markTwo: {},
+    },
     nodes: {
       doc: {
         content: "text*",
       },
       text: {},
-    },
-    marks: {
-      markOne: {},
-      markTwo: {},
     },
   });
   const textProseMirrorNode = schema
@@ -280,8 +280,8 @@ test("Converts a document with invalid children", () => {
   const docExtension = mocked(new MockNodeExtension());
   docExtension.proseMirrorNodeName.mockReturnValueOnce("doc");
   const rootUnistNode = {
-    type: "root",
     children: [typeOneUnistNode],
+    type: "root",
   };
   docExtension.proseMirrorNodeToUnistNodes.mockReturnValueOnce([rootUnistNode]);
 
@@ -295,16 +295,16 @@ test("Converts a document with invalid children", () => {
       doc: {
         content: "groupOne*",
       },
+      text: {},
       typeOne: {
-        group: "groupOne",
-      },
-      typeTwo: {
         group: "groupOne",
       },
       typeThree: {
         group: "groupOne",
       },
-      text: {},
+      typeTwo: {
+        group: "groupOne",
+      },
     },
   });
   const typeOneProseMirrorNode = schema.nodes.typeOne.createAndFill({}, [])!;
@@ -337,8 +337,8 @@ test("Converts a document with invalid marks", () => {
   const docExtension = mocked(new MockNodeExtension());
   docExtension.proseMirrorNodeName.mockReturnValueOnce("doc");
   const rootUnistNode = {
-    type: "root",
     children: [typeOneUnistNode],
+    type: "root",
   };
   docExtension.proseMirrorNodeToUnistNodes.mockReturnValueOnce([rootUnistNode]);
 
@@ -349,17 +349,17 @@ test("Converts a document with invalid marks", () => {
   const converter = new ProseMirrorToUnistConverter(manager);
 
   const schema = new Schema({
+    marks: {
+      typeTwo: {},
+    },
     nodes: {
       doc: {
         content: "groupOne*",
       },
+      text: {},
       typeOne: {
         group: "groupOne",
       },
-      text: {},
-    },
-    marks: {
-      typeTwo: {},
     },
   });
   const typeOneProseMirrorNode = schema.nodes.typeOne

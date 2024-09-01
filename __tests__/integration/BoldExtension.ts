@@ -28,7 +28,7 @@ export class BoldExtension extends MarkExtension<UnistBold> {
   public override processConvertedUnistNode(
     convertedNode: UnistText,
   ): UnistBold {
-    return { type: this.unistNodeName(), children: [convertedNode] };
+    return { children: [convertedNode], type: this.unistNodeName() };
   }
 
   public override proseMirrorInputRules(

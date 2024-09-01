@@ -37,7 +37,7 @@ export class ParagraphExtension extends NodeExtension<UnistParagraph> {
     convertedChildren: Array<UnistNode>,
   ): Array<UnistParagraph> {
     return [
-      { type: "paragraph", children: convertedChildren as Array<UnistText> },
+      { children: convertedChildren as Array<UnistText>, type: "paragraph" },
     ];
   }
 

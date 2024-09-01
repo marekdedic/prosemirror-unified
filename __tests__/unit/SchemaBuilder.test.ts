@@ -67,10 +67,10 @@ test("SchemaBuilder works with complex specs", () => {
   const docExtension = mocked(new MockNodeExtension());
   docExtension.proseMirrorNodeName.mockReturnValueOnce("doc");
   const docSpec = {
-    content: "text*",
-    group: "block",
     code: true,
+    content: "text*",
     defining: true,
+    group: "block",
     marks: "",
     parseDOM: [{ tag: "pre" }],
     toDOM: (): DOMOutputSpec => ["pre", ["code", 0]],
@@ -86,7 +86,6 @@ test("SchemaBuilder works with complex specs", () => {
     inclusive: false,
     parseDOM: [
       {
-        tag: "a[href]",
         getAttrs: (
           dom: Node | string,
         ): {
@@ -94,6 +93,7 @@ test("SchemaBuilder works with complex specs", () => {
         } => ({
           href: (dom as HTMLElement).getAttribute("href"),
         }),
+        tag: "a[href]",
       },
     ],
     toDOM: (node: Mark): DOMOutputSpec => ["a", node.attrs],
