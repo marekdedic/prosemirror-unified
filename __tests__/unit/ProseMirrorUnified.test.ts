@@ -1,10 +1,11 @@
+import type { NodeView } from "prosemirror-view";
+import type { Processor } from "unified";
+import type { Node as UnistNode } from "unist";
+
 import { type Mocked, mocked } from "jest-mock";
 import { inputRules } from "prosemirror-inputrules";
 import { keymap } from "prosemirror-keymap";
 import { Schema } from "prosemirror-model";
-import type { NodeView } from "prosemirror-view";
-import type { Processor } from "unified";
-import type { Node as UnistNode } from "unist";
 
 import { Extension } from "../../src";
 import { ExtensionManager } from "../../src/ExtensionManager";

@@ -1,9 +1,10 @@
 import type { Node as UnistNode } from "unist";
 
 import type { Extension } from "./Extension";
+import type { SyntaxExtension } from "./SyntaxExtension";
+
 import { MarkExtension } from "./MarkExtension";
 import { NodeExtension } from "./NodeExtension";
-import type { SyntaxExtension } from "./SyntaxExtension";
 
 function isNodeExtension(
   extension: Extension,

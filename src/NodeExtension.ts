@@ -1,4 +1,4 @@
-import type { Node as ProseMirrorNode, NodeSpec } from "prosemirror-model";
+import type { NodeSpec, Node as ProseMirrorNode } from "prosemirror-model";
 import type { NodeViewConstructor } from "prosemirror-view";
 import type { Node as UnistNode } from "unist";
 

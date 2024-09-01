@@ -5,6 +5,7 @@ import type { Processor } from "unified";
 import type { Node as UnistNode } from "unist";
 
 import type { Extension } from "./Extension";
+
 import { ExtensionManager } from "./ExtensionManager";
 import { InputRulesBuilder } from "./InputRulesBuilder";
 import { KeymapBuilder } from "./KeymapBuilder";

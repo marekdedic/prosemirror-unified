@@ -1,7 +1,8 @@
-import { baseKeymap, chainCommands } from "prosemirror-commands";
-import { keymap } from "prosemirror-keymap";
 import type { Schema } from "prosemirror-model";
 import type { Command, Plugin } from "prosemirror-state";
+
+import { baseKeymap, chainCommands } from "prosemirror-commands";
+import { keymap } from "prosemirror-keymap";
 
 import type { ExtensionManager } from "./ExtensionManager";
 

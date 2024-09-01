@@ -1,16 +1,17 @@
 import type {
   DOMOutputSpec,
-  Node as ProseMirrorNode,
   NodeSpec,
+  Node as ProseMirrorNode,
   Schema,
 } from "prosemirror-model";
 import type { Node as UnistNode } from "unist";
 
-import { createProseMirrorNode } from "../../src/createProseMirrorNode";
-import { NodeExtension } from "../../src/NodeExtension";
 import type { UnistBold } from "./BoldExtension";
 import type { UnistLink } from "./LinkExtension";
 import type { UnistText } from "./TextExtension";
+
+import { createProseMirrorNode } from "../../src/createProseMirrorNode";
+import { NodeExtension } from "../../src/NodeExtension";
 
 export interface UnistParagraph extends UnistNode {
   type: "paragraph";

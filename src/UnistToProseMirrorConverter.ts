@@ -1,5 +1,5 @@
 import type { Node as ProseMirrorNode, Schema } from "prosemirror-model";
-import type { Node as UnistNode, Parent } from "unist";
+import type { Parent, Node as UnistNode } from "unist";
 
 import type { ExtensionManager } from "./ExtensionManager";
 

@@ -1,13 +1,14 @@
 import type {
-  Node as ProseMirrorNode,
   NodeSpec,
+  Node as ProseMirrorNode,
   Schema,
 } from "prosemirror-model";
 import type { Node as UnistNode } from "unist";
 
+import type { UnistParagraph } from "./ParagraphExtension";
+
 import { createProseMirrorNode } from "../../src/createProseMirrorNode";
 import { NodeExtension } from "../../src/NodeExtension";
-import type { UnistParagraph } from "./ParagraphExtension";
 
 export interface UnistRoot extends UnistNode {
   type: "root";

@@ -1,4 +1,3 @@
-import { toggleMark } from "prosemirror-commands";
 import type { InputRule } from "prosemirror-inputrules";
 import type {
   DOMOutputSpec,
@@ -9,9 +8,12 @@ import type {
 import type { Command } from "prosemirror-state";
 import type { Node as UnistNode } from "unist";
 
+import { toggleMark } from "prosemirror-commands";
+
+import type { UnistText } from "./TextExtension";
+
 import { MarkInputRule } from "../../src";
 import { MarkExtension } from "../../src/MarkExtension";
-import type { UnistText } from "./TextExtension";
 
 export interface UnistBold extends UnistNode {
   type: "bold";

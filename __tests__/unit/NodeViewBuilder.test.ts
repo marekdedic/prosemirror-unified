@@ -1,6 +1,7 @@
-import { mocked } from "jest-mock";
 import type { NodeView } from "prosemirror-view";
 import type { Node as UnistNode } from "unist";
+
+import { mocked } from "jest-mock";
 
 import { ExtensionManager } from "../../src/ExtensionManager";
 import { NodeViewBuilder } from "../../src/NodeViewBuilder";

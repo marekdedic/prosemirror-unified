@@ -1,5 +1,6 @@
-import { InputRule } from "prosemirror-inputrules";
 import type { MarkType, Node as ProseMirrorNode } from "prosemirror-model";
+
+import { InputRule } from "prosemirror-inputrules";
 import {
   type EditorState,
   SelectionRange,
