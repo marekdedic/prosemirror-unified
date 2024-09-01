@@ -44,12 +44,13 @@ export class ProseMirrorToUnistConverter {
       return [];
     }
     return convertedNodes.map((convertedNode) => {
+      let postProcessedNode = convertedNode;
       for (const mark of node.marks) {
         let processed = false;
         for (const extension of this.extensionManager.markExtensions()) {
           if (mark.type.name === extension.proseMirrorMarkName()) {
-            convertedNode = extension.processConvertedUnistNode(
-              convertedNode,
+            postProcessedNode = extension.processConvertedUnistNode(
+              postProcessedNode,
               mark,
             );
             processed = true;
@@ -61,7 +62,7 @@ export class ProseMirrorToUnistConverter {
           );
         }
       }
-      return convertedNode;
+      return postProcessedNode;
     });
   }
 }
