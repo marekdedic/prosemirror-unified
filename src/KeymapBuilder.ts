@@ -29,6 +29,9 @@ export class KeymapBuilder {
 
   private addKeymap(map: Record<string, Command>): void {
     for (const key in map) {
+      if (!Object.prototype.hasOwnProperty.call(map, key)) {
+        continue;
+      }
       if (!this.keymap.get(key)) {
         this.keymap.set(key, []);
       }
