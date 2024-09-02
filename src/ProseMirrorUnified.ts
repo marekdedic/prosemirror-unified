@@ -5,6 +5,7 @@ import type { Processor } from "unified";
 import type { Node as UnistNode } from "unist";
 
 import type { Extension } from "./Extension";
+
 import { ExtensionManager } from "./ExtensionManager";
 import { InputRulesBuilder } from "./InputRulesBuilder";
 import { KeymapBuilder } from "./KeymapBuilder";
@@ -22,7 +23,6 @@ export class ProseMirrorUnified {
   private readonly inputRulesBuilder: InputRulesBuilder;
   private readonly keymapBuilder: KeymapBuilder;
   private readonly nodeViewBuilder: NodeViewBuilder;
-  private readonly unistToProseMirrorConverter: UnistToProseMirrorConverter;
   private readonly proseMirrorToUnistConverter: ProseMirrorToUnistConverter;
   private readonly unified: Processor<
     UnistNode,
@@ -31,6 +31,7 @@ export class ProseMirrorUnified {
     UnistNode,
     string
   >;
+  private readonly unistToProseMirrorConverter: UnistToProseMirrorConverter;
 
   public constructor(extensions: Array<Extension> = []) {
     const extensionManager = new ExtensionManager(extensions);
@@ -51,16 +52,6 @@ export class ProseMirrorUnified {
     this.unified = new UnifiedBuilder(extensionManager).build();
   }
 
-  public parse(source: string): ProseMirrorNode {
-    const unist = this.unified.runSync(this.unified.parse(source));
-    const ret = this.unistToProseMirrorConverter.convert(unist);
-    return ret;
-  }
-
-  public schema(): Schema<string, string> {
-    return this.builtSchema;
-  }
-
   public inputRulesPlugin(): Plugin {
     return this.inputRulesBuilder.build();
   }
@@ -71,6 +62,16 @@ export class ProseMirrorUnified {
 
   public nodeViews(): Record<string, NodeViewConstructor> {
     return this.nodeViewBuilder.build();
+  }
+
+  public parse(source: string): ProseMirrorNode {
+    const unist = this.unified.runSync(this.unified.parse(source));
+    const ret = this.unistToProseMirrorConverter.convert(unist);
+    return ret;
+  }
+
+  public schema(): Schema<string, string> {
+    return this.builtSchema;
   }
 
   public serialize(doc: ProseMirrorNode): string {

@@ -15,11 +15,12 @@ export abstract class SyntaxExtension<
     never
   >,
 > extends Extension {
-  public unistToProseMirrorTest(node: UnistNode): boolean {
-    return node.type === this.unistNodeName();
-  }
-
   /* eslint-disable @typescript-eslint/class-methods-use-this, @typescript-eslint/no-empty-function, @typescript-eslint/no-unused-vars -- These are invalid for interfaces */
+  public postUnistToProseMirrorHook(
+    // @ts-expect-error: TS6133 causes an error because of an unused parameter - however, this method is meant to be overriden
+    context: Partial<UnistToProseMirrorContext>,
+  ): void {}
+
   public proseMirrorInputRules(
     // @ts-expect-error: TS6133 causes an error because of an unused parameter - however, this method is meant to be overriden
     proseMirrorSchema: Schema<string, string>,
@@ -33,11 +34,6 @@ export abstract class SyntaxExtension<
   ): Record<string, Command> {
     return {};
   }
-
-  public postUnistToProseMirrorHook(
-    // @ts-expect-error: TS6133 causes an error because of an unused parameter - however, this method is meant to be overriden
-    context: Partial<UnistToProseMirrorContext>,
-  ): void {}
   /* eslint-enable */
 
   public abstract unistNodeName(): UNode["type"];
@@ -48,4 +44,8 @@ export abstract class SyntaxExtension<
     convertedChildren: Array<ProseMirrorNode>,
     context: Partial<UnistToProseMirrorContext>,
   ): Array<ProseMirrorNode>;
+
+  public unistToProseMirrorTest(node: UnistNode): boolean {
+    return node.type === this.unistNodeName();
+  }
 }

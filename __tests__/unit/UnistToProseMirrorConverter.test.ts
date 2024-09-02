@@ -28,9 +28,10 @@ test("Converts basic document", () => {
 
   const converter = new UnistToProseMirrorConverter(manager, schema);
 
-  const rootUnistNode = { type: "root", children: [] };
+  const rootUnistNode = { children: [], type: "root" };
 
   jest.spyOn(console, "warn").mockImplementation();
+
   expect(converter.convert(rootUnistNode)).toBe(rootProseMirrorNode);
   expect(docExtension.unistToProseMirrorTest).toHaveBeenCalledWith(
     rootUnistNode,
@@ -80,9 +81,10 @@ test("Converts a document with children", () => {
   const converter = new UnistToProseMirrorConverter(manager, schema);
 
   const textUnistNode = { type: "text", value: "Hello World!" };
-  const rootUnistNode = { type: "root", children: [textUnistNode] };
+  const rootUnistNode = { children: [textUnistNode], type: "root" };
 
   jest.spyOn(console, "warn").mockImplementation();
+
   expect(converter.convert(rootUnistNode)).toBe(rootProseMirrorNode);
   expect(textExtension.unistToProseMirrorTest).toHaveBeenCalledWith(
     textUnistNode,
@@ -111,16 +113,16 @@ test("Converts a document with children of multiple types", () => {
       doc: {
         content: "groupOne*",
       },
+      text: {},
       typeOne: {
-        group: "groupOne",
-      },
-      typeTwo: {
         group: "groupOne",
       },
       typeThree: {
         group: "groupOne",
       },
-      text: {},
+      typeTwo: {
+        group: "groupOne",
+      },
     },
   });
   const typeOneProseMirrorNode = schema.nodes.typeOne.createAndFill({}, [])!;
@@ -172,11 +174,12 @@ test("Converts a document with children of multiple types", () => {
   const typeOneUnistNode = { type: "one" };
   const typeTwoUnistNode = { type: "two" };
   const rootUnistNode = {
-    type: "root",
     children: [typeOneUnistNode, typeTwoUnistNode],
+    type: "root",
   };
 
   jest.spyOn(console, "warn").mockImplementation();
+
   expect(converter.convert(rootUnistNode)).toBe(rootProseMirrorNode);
 
   expect(typeOneExtension.unistToProseMirrorTest).toHaveBeenCalledWith(
@@ -221,9 +224,10 @@ test("Fails gracefully on no root converter", () => {
 
   const converter = new UnistToProseMirrorConverter(manager, schema);
 
-  const rootUnistNode = { type: "root", children: [] };
+  const rootUnistNode = { children: [], type: "root" };
 
   jest.spyOn(console, "warn").mockImplementation();
+
   expect(() => converter.convert(rootUnistNode)).toThrow(
     "Couldn't find any way to convert the root unist node.",
   );
@@ -238,13 +242,13 @@ test("Converts a document with invalid children", () => {
       doc: {
         content: "groupOne*",
       },
+      text: {},
       typeOne: {
         group: "groupOne",
       },
       typeTwo: {
         group: "groupOne",
       },
-      text: {},
     },
   });
   const typeOneProseMirrorNode = schema.nodes.typeOne.createAndFill({}, [])!;
@@ -278,11 +282,12 @@ test("Converts a document with invalid children", () => {
   const typeOneUnistNode = { type: "one" };
   const typeTwoUnistNode = { type: "two" };
   const rootUnistNode = {
-    type: "root",
     children: [typeOneUnistNode, typeTwoUnistNode],
+    type: "root",
   };
 
   jest.spyOn(console, "warn").mockImplementation();
+
   expect(converter.convert(rootUnistNode)).toBe(rootProseMirrorNode);
 
   expect(typeOneExtension.unistToProseMirrorTest).toHaveBeenCalledWith(

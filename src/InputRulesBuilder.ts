@@ -1,6 +1,7 @@
-import { type InputRule, inputRules } from "prosemirror-inputrules";
 import type { Schema } from "prosemirror-model";
 import type { Plugin } from "prosemirror-state";
+
+import { type InputRule, inputRules } from "prosemirror-inputrules";
 
 import type { ExtensionManager } from "./ExtensionManager";
 

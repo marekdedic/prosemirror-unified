@@ -4,7 +4,6 @@ export default {
   collectCoverageFrom: ["src/**/*", "!src/index.ts"],
   coverageDirectory: "coverage",
   coverageProvider: "babel",
-  resetMocks: true,
   projects: [
     {
       displayName: "Unit tests",
@@ -22,6 +21,11 @@ export default {
     },
     {
       displayName: "Integration tests",
+      setupFilesAfterEnv: [
+        "jest-prosemirror/environment",
+        "<rootDir>/__tests__/setupAfterEnv.ts",
+      ],
+      testEnvironment: "jsdom",
       testMatch: ["<rootDir>/__tests__/integration/**/*.test.ts"],
       transform: {
         // eslint-disable-next-line @typescript-eslint/naming-convention -- The key is a glob
@@ -33,11 +37,7 @@ export default {
         ],
       },
       transformIgnorePatterns: ["node_modules/(?!unified)/"],
-      setupFilesAfterEnv: [
-        "jest-prosemirror/environment",
-        "<rootDir>/__tests__/setupAfterEnv.ts",
-      ],
-      testEnvironment: "jsdom",
     },
   ],
+  resetMocks: true,
 };

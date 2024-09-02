@@ -1,5 +1,6 @@
-import { type Processor, unified } from "unified";
 import type { Node as UnistNode } from "unist";
+
+import { type Processor, unified } from "unified";
 
 import type { ExtensionManager } from "./ExtensionManager";
 

@@ -4,14 +4,14 @@ import { createProseMirrorNode } from "../../src/createProseMirrorNode";
 
 describe("createProseMirrorNode works", () => {
   const schema = new Schema({
+    marks: {},
     nodes: {
       doc: {},
-      text: {},
       node1: {
-        content: "group1*",
         attrs: {
           attr1: { default: "attr1_default" },
         },
+        content: "group1*",
       },
       node2: {
         group: "group1",
@@ -20,12 +20,13 @@ describe("createProseMirrorNode works", () => {
         group: "group1",
       },
       node4: {},
+      text: {},
     },
-    marks: {},
   });
 
   test("works with a basic node", () => {
     const result = createProseMirrorNode("node1", schema, []);
+
     expect(result).toHaveLength(1);
     expect(result[0]).toBeInstanceOf(ProseMirrorNode);
     expect(result[0].type.name).toBe("node1");
@@ -39,6 +40,7 @@ describe("createProseMirrorNode works", () => {
       schema.nodes.node2.create(),
       schema.nodes.node3.create(),
     ]);
+
     expect(result).toHaveLength(1);
     expect(result[0]).toBeInstanceOf(ProseMirrorNode);
     expect(result[0].type.name).toBe("node1");
@@ -51,6 +53,7 @@ describe("createProseMirrorNode works", () => {
     const result = createProseMirrorNode("node1", schema, [], {
       attr1: "value1",
     });
+
     expect(result).toHaveLength(1);
     expect(result[0]).toBeInstanceOf(ProseMirrorNode);
     expect(result[0].type.name).toBe("node1");
@@ -69,6 +72,7 @@ describe("createProseMirrorNode works", () => {
     const result = createProseMirrorNode("node1", schema, [], {
       attr2: "value1",
     });
+
     expect(result).toHaveLength(1);
     expect(result[0]).toBeInstanceOf(ProseMirrorNode);
     expect(result[0].type.name).toBe("node1");

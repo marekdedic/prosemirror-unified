@@ -1,5 +1,6 @@
-import { InputRule } from "prosemirror-inputrules";
 import type { MarkType, Node as ProseMirrorNode } from "prosemirror-model";
+
+import { InputRule } from "prosemirror-inputrules";
 import {
   type EditorState,
   SelectionRange,
@@ -27,7 +28,7 @@ export class MarkInputRule extends InputRule {
   ): boolean {
     for (const range of ranges) {
       const { $from, $to } = range;
-      let applies = $from.depth == 0 ? doc.type.allowsMarkType(type) : false;
+      let applies = $from.depth === 0 ? doc.type.allowsMarkType(type) : false;
       doc.nodesBetween($from.pos, $to.pos, (node) => {
         if (applies) {
           return false;

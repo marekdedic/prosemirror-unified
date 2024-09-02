@@ -9,13 +9,13 @@ test("NodeExtension.proseMirrorToUnistTest has a default implementation", () => 
   const extension = new MockNodeExtension();
   extension.proseMirrorNodeName.mockReturnValue("node1");
   const schema = new Schema({
+    marks: {},
     nodes: {
       doc: {},
-      text: {},
       node1: {},
       node2: {},
+      text: {},
     },
-    marks: {},
   });
   const node1 = schema.nodes.node1.create();
   const node2 = schema.nodes.node2.create();

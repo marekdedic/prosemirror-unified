@@ -1,5 +1,5 @@
 import type { Node as ProseMirrorNode, Schema } from "prosemirror-model";
-import type { Node as UnistNode, Parent } from "unist";
+import type { Parent, Node as UnistNode } from "unist";
 
 import type { ExtensionManager } from "./ExtensionManager";
 
@@ -17,18 +17,6 @@ export class UnistToProseMirrorConverter {
 
   private static unistNodeIsParent(node: UnistNode): node is Parent {
     return "children" in node;
-  }
-
-  public convert(unist: UnistNode): ProseMirrorNode {
-    const context: Partial<unknown> = {};
-    const rootNode = this.convertNode(unist, context);
-    for (const extension of this.extensionManager.syntaxExtensions()) {
-      extension.postUnistToProseMirrorHook(context);
-    }
-    if (rootNode.length !== 1) {
-      throw new Error("Couldn't find any way to convert the root unist node.");
-    }
-    return rootNode[0];
   }
 
   private convertNode(
@@ -53,11 +41,22 @@ export class UnistToProseMirrorConverter {
         context,
       );
     }
+    // eslint-disable-next-line no-console -- Intended console warning
     console.warn(
-      "Couldn't find any way to convert unist node of type \"" +
-        node.type +
-        '" to a ProseMirror node.',
+      `Couldn't find any way to convert unist node of type "${node.type}" to a ProseMirror node.`,
     );
     return [];
+  }
+
+  public convert(unist: UnistNode): ProseMirrorNode {
+    const context: Partial<unknown> = {};
+    const rootNode = this.convertNode(unist, context);
+    for (const extension of this.extensionManager.syntaxExtensions()) {
+      extension.postUnistToProseMirrorHook(context);
+    }
+    if (rootNode.length !== 1) {
+      throw new Error("Couldn't find any way to convert the root unist node.");
+    }
+    return rootNode[0];
   }
 }

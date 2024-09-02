@@ -1,5 +1,4 @@
-import type { Mocked } from "jest-mock";
-import { mocked } from "jest-mock";
+import { type Mocked, mocked } from "jest-mock";
 import { createEditor } from "jest-prosemirror";
 import { type Processor, unified } from "unified";
 
@@ -22,18 +21,18 @@ test("Parsing a document with an extension set", () => {
 
   const source = "<p>Hello World!</p>";
   const unistTree: UnistRoot = {
-    type: "root",
     children: [
       {
-        type: "paragraph",
         children: [
           {
             type: "text",
             value: "Hello World!",
           },
         ],
+        type: "paragraph",
       },
     ],
+    type: "root",
   };
 
   const unifiedMock = {
@@ -73,5 +72,6 @@ test("Parsing a document with an extension set", () => {
     expect(unifiedMock.stringify).toHaveBeenCalledTimes(1);
     expect(unifiedMock.stringify).toHaveBeenCalledWith(unistTree);
   });
+
   expect(console.warn).not.toHaveBeenCalled();
 });

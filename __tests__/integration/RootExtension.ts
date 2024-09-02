@@ -1,17 +1,18 @@
 import type {
-  Node as ProseMirrorNode,
   NodeSpec,
+  Node as ProseMirrorNode,
   Schema,
 } from "prosemirror-model";
 import type { Node as UnistNode } from "unist";
 
-import { createProseMirrorNode } from "../../src/createProseMirrorNode";
-import { NodeExtension } from "../../src/NodeExtension";
 import type { UnistParagraph } from "./ParagraphExtension";
 
+import { createProseMirrorNode } from "../../src/createProseMirrorNode";
+import { NodeExtension } from "../../src/NodeExtension";
+
 export interface UnistRoot extends UnistNode {
-  type: "root";
   children: Array<UnistParagraph>;
+  type: "root";
 }
 
 export const rootSpec: NodeSpec = {
@@ -19,15 +20,27 @@ export const rootSpec: NodeSpec = {
 };
 
 export class RootExtension extends NodeExtension<UnistRoot> {
-  public override unistNodeName(): "root" {
-    return "root";
-  }
   public override proseMirrorNodeName(): "doc" {
     return "doc";
   }
-
   public override proseMirrorNodeSpec(): NodeSpec {
     return rootSpec;
+  }
+
+  public override proseMirrorNodeToUnistNodes(
+    _: ProseMirrorNode,
+    convertedChildren: Array<UnistNode>,
+  ): Array<UnistRoot> {
+    return [
+      {
+        children: convertedChildren as Array<UnistParagraph>,
+        type: "root",
+      },
+    ];
+  }
+
+  public override unistNodeName(): "root" {
+    return "root";
   }
 
   public override unistNodeToProseMirrorNodes(
@@ -40,17 +53,5 @@ export class RootExtension extends NodeExtension<UnistRoot> {
       proseMirrorSchema,
       convertedChildren,
     );
-  }
-
-  public override proseMirrorNodeToUnistNodes(
-    _: ProseMirrorNode,
-    convertedChildren: Array<UnistNode>,
-  ): Array<UnistRoot> {
-    return [
-      {
-        type: "root",
-        children: convertedChildren as Array<UnistParagraph>,
-      },
-    ];
   }
 }

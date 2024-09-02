@@ -1,9 +1,10 @@
 import type { Node as UnistNode } from "unist";
 
 import type { Extension } from "./Extension";
+import type { SyntaxExtension } from "./SyntaxExtension";
+
 import { MarkExtension } from "./MarkExtension";
 import { NodeExtension } from "./NodeExtension";
-import type { SyntaxExtension } from "./SyntaxExtension";
 
 function isNodeExtension(
   extension: Extension,
@@ -32,6 +33,22 @@ export class ExtensionManager {
     }
   }
 
+  private add(extension: Extension): void {
+    for (const dependency of extension.dependencies()) {
+      this.add(dependency);
+    }
+
+    if (isMarkExtension(extension)) {
+      this.markExtensionList.set(extension.constructor.name, extension);
+      return;
+    }
+    if (isNodeExtension(extension)) {
+      this.nodeExtensionList.set(extension.constructor.name, extension);
+      return;
+    }
+    this.otherExtensionList.set(extension.constructor.name, extension);
+  }
+
   public extensions(): Array<Extension> {
     return (this.syntaxExtensions() as Array<Extension>).concat(
       Array.from(this.otherExtensionList.values()),
@@ -50,21 +67,5 @@ export class ExtensionManager {
     return (this.nodeExtensions() as Array<SyntaxExtension<UnistNode>>).concat(
       this.markExtensions(),
     );
-  }
-
-  private add(extension: Extension): void {
-    for (const dependency of extension.dependencies()) {
-      this.add(dependency);
-    }
-
-    if (isMarkExtension(extension)) {
-      this.markExtensionList.set(extension.constructor.name, extension);
-      return;
-    }
-    if (isNodeExtension(extension)) {
-      this.nodeExtensionList.set(extension.constructor.name, extension);
-      return;
-    }
-    this.otherExtensionList.set(extension.constructor.name, extension);
   }
 }

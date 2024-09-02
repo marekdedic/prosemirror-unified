@@ -1,5 +1,6 @@
-import { mocked } from "jest-mock";
 import type { Node as UnistNode } from "unist";
+
+import { mocked } from "jest-mock";
 
 import { Extension } from "../../src/Extension";
 import { ExtensionManager } from "../../src/ExtensionManager";

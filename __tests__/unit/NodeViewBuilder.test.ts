@@ -1,6 +1,7 @@
-import { mocked } from "jest-mock";
 import type { NodeView } from "prosemirror-view";
 import type { Node as UnistNode } from "unist";
+
+import { mocked } from "jest-mock";
 
 import { ExtensionManager } from "../../src/ExtensionManager";
 import { NodeViewBuilder } from "../../src/NodeViewBuilder";
@@ -42,5 +43,5 @@ test("NodeViewBuilder creates a plugin", () => {
   const builder = new NodeViewBuilder(manager);
   const nodeViews = builder.build();
 
-  expect(nodeViews).toStrictEqual({ text: textNodeView, node1: node1NodeView });
+  expect(nodeViews).toStrictEqual({ node1: node1NodeView, text: textNodeView });
 });
