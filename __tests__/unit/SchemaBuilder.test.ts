@@ -30,8 +30,8 @@ test("SchemaBuilder works with nodes", () => {
   const schema = builder.build();
 
   expect(schema).toBeInstanceOf(Schema);
-  expect(schema.nodes.doc).toBeInstanceOf(NodeType);
-  expect(schema.nodes.text).toBeInstanceOf(NodeType);
+  expect(schema.nodes["doc"]).toBeInstanceOf(NodeType);
+  expect(schema.nodes["text"]).toBeInstanceOf(NodeType);
   expect(schema.spec.nodes.get("doc")).toStrictEqual({});
   expect(schema.spec.nodes.get("text")).toStrictEqual({});
 });
@@ -55,9 +55,9 @@ test("SchemaBuilder works with marks", () => {
   const schema = builder.build();
 
   expect(schema).toBeInstanceOf(Schema);
-  expect(schema.marks.MARK_1).toBeInstanceOf(MarkType);
-  expect(schema.nodes.doc).toBeInstanceOf(NodeType);
-  expect(schema.nodes.text).toBeInstanceOf(NodeType);
+  expect(schema.marks["MARK_1"]).toBeInstanceOf(MarkType);
+  expect(schema.nodes["doc"]).toBeInstanceOf(NodeType);
+  expect(schema.nodes["text"]).toBeInstanceOf(NodeType);
   expect(schema.spec.marks.get("MARK_1")).toStrictEqual({});
   expect(schema.spec.nodes.get("doc")).toStrictEqual({});
   expect(schema.spec.nodes.get("text")).toStrictEqual({});
@@ -108,9 +108,9 @@ test("SchemaBuilder works with complex specs", () => {
   const schema = builder.build();
 
   expect(schema).toBeInstanceOf(Schema);
-  expect(schema.marks.MARK_1).toBeInstanceOf(MarkType);
-  expect(schema.nodes.doc).toBeInstanceOf(NodeType);
-  expect(schema.nodes.text).toBeInstanceOf(NodeType);
+  expect(schema.marks["MARK_1"]).toBeInstanceOf(MarkType);
+  expect(schema.nodes["doc"]).toBeInstanceOf(NodeType);
+  expect(schema.nodes["text"]).toBeInstanceOf(NodeType);
   expect(schema.spec.marks.get("MARK_1")).toStrictEqual(markSpec);
   expect(schema.spec.nodes.get("doc")).toStrictEqual(docSpec);
   expect(schema.spec.nodes.get("text")).toStrictEqual({});

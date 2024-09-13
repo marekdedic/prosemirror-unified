@@ -24,7 +24,10 @@ export class MockNodeExtension<
     [ProseMirrorNode, Array<UnistNode>]
   >();
 
-  public proseMirrorNodeView = jest.fn<NodeViewConstructor | null, []>();
+  public override proseMirrorNodeView = jest.fn<
+    NodeViewConstructor | null,
+    []
+  >();
 
   public unistNodeName = jest.fn<UNode["type"], []>();
 
