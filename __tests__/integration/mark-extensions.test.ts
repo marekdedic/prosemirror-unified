@@ -61,16 +61,9 @@ test("Parsing a document with a paragraph", () => {
 
   const proseMirrorTree = pmu
     .schema()
-    .nodes.doc.createAndFill(
-      {},
-      pmu
-        .schema()
-        .nodes.paragraph.createAndFill({}, [
-          pmu.schema().text("Hello "),
-          pmu.schema().text("World").mark([pmu.schema().marks.bold.create()]),
-          pmu.schema().text("!"),
-        ]),
-    )!;
+    .nodes[
+      "doc"
+    ].createAndFill({}, pmu.schema().nodes["paragraph"].createAndFill({}, [pmu.schema().text("Hello "), pmu.schema().text("World").mark([pmu.schema().marks["bold"].create()]), pmu.schema().text("!")]))!;
 
   jest.spyOn(console, "warn").mockImplementation();
   createEditor(proseMirrorRoot).callback((content) => {
@@ -160,16 +153,9 @@ test("Adding a mark with an input rule", () => {
 
   const proseMirrorTree = pmu
     .schema()
-    .nodes.doc.createAndFill(
-      {},
-      pmu
-        .schema()
-        .nodes.paragraph.createAndFill({}, [
-          pmu.schema().text("Hello "),
-          pmu.schema().text("World").mark([pmu.schema().marks.bold.create()]),
-          pmu.schema().text("!"),
-        ]),
-    )!;
+    .nodes[
+      "doc"
+    ].createAndFill({}, pmu.schema().nodes["paragraph"].createAndFill({}, [pmu.schema().text("Hello "), pmu.schema().text("World").mark([pmu.schema().marks["bold"].create()]), pmu.schema().text("!")]))!;
 
   jest.spyOn(console, "warn").mockImplementation();
   createEditor(proseMirrorRoot, {
@@ -264,16 +250,9 @@ test("Adding a mark with a key binding", () => {
 
   const proseMirrorTree = pmu
     .schema()
-    .nodes.doc.createAndFill(
-      {},
-      pmu
-        .schema()
-        .nodes.paragraph.createAndFill({}, [
-          pmu.schema().text("Hello "),
-          pmu.schema().text("World").mark([pmu.schema().marks.bold.create()]),
-          pmu.schema().text("!"),
-        ]),
-    )!;
+    .nodes[
+      "doc"
+    ].createAndFill({}, pmu.schema().nodes["paragraph"].createAndFill({}, [pmu.schema().text("Hello "), pmu.schema().text("World").mark([pmu.schema().marks["bold"].create()]), pmu.schema().text("!")]))!;
 
   createEditor(proseMirrorRoot, {
     plugins: [pmu.keymapPlugin()],

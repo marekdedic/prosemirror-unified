@@ -15,7 +15,7 @@ test("Converts basic document", () => {
       text: {},
     },
   });
-  const rootProseMirrorNode = schema.nodes.doc.createAndFill({}, [])!;
+  const rootProseMirrorNode = schema.nodes["doc"].createAndFill({}, [])!;
 
   const docExtension = mocked(new MockSyntaxExtension());
   docExtension.unistToProseMirrorTest.mockReturnValueOnce(true);
@@ -55,7 +55,7 @@ test("Converts a document with children", () => {
     },
   });
   const textProseMirrorNode = schema.text("Hello World!");
-  const rootProseMirrorNode = schema.nodes.doc.createAndFill({}, [
+  const rootProseMirrorNode = schema.nodes["doc"].createAndFill({}, [
     textProseMirrorNode,
   ])!;
 
@@ -125,9 +125,9 @@ test("Converts a document with children of multiple types", () => {
       },
     },
   });
-  const typeOneProseMirrorNode = schema.nodes.typeOne.createAndFill({}, [])!;
-  const typeTwoProseMirrorNode = schema.nodes.typeTwo.createAndFill({}, [])!;
-  const rootProseMirrorNode = schema.nodes.doc.createAndFill({}, [
+  const typeOneProseMirrorNode = schema.nodes["typeOne"].createAndFill({}, [])!;
+  const typeTwoProseMirrorNode = schema.nodes["typeTwo"].createAndFill({}, [])!;
+  const rootProseMirrorNode = schema.nodes["doc"].createAndFill({}, [
     typeOneProseMirrorNode,
     typeTwoProseMirrorNode,
   ])!;
@@ -251,9 +251,9 @@ test("Converts a document with invalid children", () => {
       },
     },
   });
-  const typeOneProseMirrorNode = schema.nodes.typeOne.createAndFill({}, [])!;
-  const typeTwoProseMirrorNode = schema.nodes.typeTwo.createAndFill({}, [])!;
-  const rootProseMirrorNode = schema.nodes.doc.createAndFill({}, [
+  const typeOneProseMirrorNode = schema.nodes["typeOne"].createAndFill({}, [])!;
+  const typeTwoProseMirrorNode = schema.nodes["typeTwo"].createAndFill({}, [])!;
+  const rootProseMirrorNode = schema.nodes["doc"].createAndFill({}, [
     typeOneProseMirrorNode,
     typeTwoProseMirrorNode,
   ])!;
