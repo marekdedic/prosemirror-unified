@@ -15,7 +15,7 @@ test("Converts basic document", () => {
       text: {},
     },
   });
-  const rootProseMirrorNode = schema.nodes["doc"].createAndFill({}, [])!;
+  const rootProseMirrorNode = schema.nodes["doc"].create({}, []);
 
   const docExtension = mocked(new MockSyntaxExtension());
   docExtension.unistToProseMirrorTest.mockReturnValueOnce(true);
@@ -55,9 +55,9 @@ test("Converts a document with children", () => {
     },
   });
   const textProseMirrorNode = schema.text("Hello World!");
-  const rootProseMirrorNode = schema.nodes["doc"].createAndFill({}, [
+  const rootProseMirrorNode = schema.nodes["doc"].create({}, [
     textProseMirrorNode,
-  ])!;
+  ]);
 
   const textExtension = mocked(new MockSyntaxExtension());
   textExtension.unistToProseMirrorTest.mockImplementation(
@@ -125,12 +125,12 @@ test("Converts a document with children of multiple types", () => {
       },
     },
   });
-  const typeOneProseMirrorNode = schema.nodes["typeOne"].createAndFill({}, [])!;
-  const typeTwoProseMirrorNode = schema.nodes["typeTwo"].createAndFill({}, [])!;
-  const rootProseMirrorNode = schema.nodes["doc"].createAndFill({}, [
+  const typeOneProseMirrorNode = schema.nodes["typeOne"].create({}, []);
+  const typeTwoProseMirrorNode = schema.nodes["typeTwo"].create({}, []);
+  const rootProseMirrorNode = schema.nodes["doc"].create({}, [
     typeOneProseMirrorNode,
     typeTwoProseMirrorNode,
-  ])!;
+  ]);
 
   const typeOneExtension = mocked(new MockSyntaxExtension());
   typeOneExtension.unistToProseMirrorTest.mockImplementation(
@@ -251,12 +251,12 @@ test("Converts a document with invalid children", () => {
       },
     },
   });
-  const typeOneProseMirrorNode = schema.nodes["typeOne"].createAndFill({}, [])!;
-  const typeTwoProseMirrorNode = schema.nodes["typeTwo"].createAndFill({}, [])!;
-  const rootProseMirrorNode = schema.nodes["doc"].createAndFill({}, [
+  const typeOneProseMirrorNode = schema.nodes["typeOne"].create({}, []);
+  const typeTwoProseMirrorNode = schema.nodes["typeTwo"].create({}, []);
+  const rootProseMirrorNode = schema.nodes["doc"].create({}, [
     typeOneProseMirrorNode,
     typeTwoProseMirrorNode,
-  ])!;
+  ]);
 
   const typeOneExtension = mocked(new MockSyntaxExtension());
   typeOneExtension.unistToProseMirrorTest.mockImplementation(

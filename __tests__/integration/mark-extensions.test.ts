@@ -63,7 +63,7 @@ test("Parsing a document with a paragraph", () => {
     .schema()
     .nodes[
       "doc"
-    ].createAndFill({}, pmu.schema().nodes["paragraph"].createAndFill({}, [pmu.schema().text("Hello "), pmu.schema().text("World").mark([pmu.schema().marks["bold"].create()]), pmu.schema().text("!")]))!;
+    ].create({}, pmu.schema().nodes["paragraph"].createAndFill({}, [pmu.schema().text("Hello "), pmu.schema().text("World").mark([pmu.schema().marks["bold"].create()]), pmu.schema().text("!")]));
 
   jest.spyOn(console, "warn").mockImplementation();
   createEditor(proseMirrorRoot).callback((content) => {
@@ -155,7 +155,7 @@ test("Adding a mark with an input rule", () => {
     .schema()
     .nodes[
       "doc"
-    ].createAndFill({}, pmu.schema().nodes["paragraph"].createAndFill({}, [pmu.schema().text("Hello "), pmu.schema().text("World").mark([pmu.schema().marks["bold"].create()]), pmu.schema().text("!")]))!;
+    ].create({}, pmu.schema().nodes["paragraph"].createAndFill({}, [pmu.schema().text("Hello "), pmu.schema().text("World").mark([pmu.schema().marks["bold"].create()]), pmu.schema().text("!")]));
 
   jest.spyOn(console, "warn").mockImplementation();
   createEditor(proseMirrorRoot, {
@@ -252,7 +252,7 @@ test("Adding a mark with a key binding", () => {
     .schema()
     .nodes[
       "doc"
-    ].createAndFill({}, pmu.schema().nodes["paragraph"].createAndFill({}, [pmu.schema().text("Hello "), pmu.schema().text("World").mark([pmu.schema().marks["bold"].create()]), pmu.schema().text("!")]))!;
+    ].create({}, pmu.schema().nodes["paragraph"].createAndFill({}, [pmu.schema().text("Hello "), pmu.schema().text("World").mark([pmu.schema().marks["bold"].create()]), pmu.schema().text("!")]));
 
   createEditor(proseMirrorRoot, {
     plugins: [pmu.keymapPlugin()],

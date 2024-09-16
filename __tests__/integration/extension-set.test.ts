@@ -49,7 +49,7 @@ test("Parsing a document with an extension set", () => {
     .schema()
     .nodes[
       "doc"
-    ].createAndFill({}, pmu.schema().nodes["paragraph"].createAndFill({}, pmu.schema().text("Hello World!")))!;
+    ].create({}, pmu.schema().nodes["paragraph"].createAndFill({}, pmu.schema().text("Hello World!")));
 
   jest.spyOn(console, "warn").mockImplementation();
   const proseMirrorRoot = pmu.parse(source);

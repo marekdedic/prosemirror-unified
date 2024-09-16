@@ -28,6 +28,7 @@ export class KeymapBuilder {
       if (!this.keymap.get(key)) {
         this.keymap.set(key, []);
       }
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- Set above.
       this.keymap.get(key)!.push(map[key]);
     }
   }

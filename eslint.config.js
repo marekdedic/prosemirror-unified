@@ -48,7 +48,6 @@ export default tseslint.config(
       "@typescript-eslint/method-signature-style": ["error", "method"],
       "@typescript-eslint/naming-convention": "error",
       "@typescript-eslint/no-import-type-side-effects": "error",
-      "@typescript-eslint/no-non-null-assertion": "off",
       "@typescript-eslint/no-shadow": "error",
       "@typescript-eslint/no-unnecessary-parameter-property-assignment":
         "error",
