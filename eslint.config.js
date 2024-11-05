@@ -148,9 +148,12 @@ export default tseslint.config(
     },
   },
   {
-    extends: [jest.recommended, jest.style],
+    ...jest.configs["flat/recommended"],
+    ...jest.configs["flat/style"],
     files: ["__tests__/**/*.ts"],
     rules: {
+      ...jest.configs["flat/recommended"].rules,
+      ...jest.configs["flat/style"].rules,
       "@typescript-eslint/unbound-method": "off",
       "jest/consistent-test-it": ["error", { withinDescribe: "test" }],
       "jest/no-conditional-in-test": "error",
@@ -190,6 +193,7 @@ export default tseslint.config(
       "@typescript-eslint/explicit-function-return-type": "off",
       "@typescript-eslint/no-unsafe-argument": "off",
       "@typescript-eslint/no-unsafe-assignment": "off",
+      "@typescript-eslint/no-unsafe-member-access": "off",
       "@typescript-eslint/restrict-template-expressions": "off",
     },
   },
