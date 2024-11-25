@@ -19,6 +19,18 @@ export class UnistToProseMirrorConverter {
     return "children" in node;
   }
 
+  public convert(unist: UnistNode): ProseMirrorNode {
+    const context: Partial<unknown> = {};
+    const rootNode = this.convertNode(unist, context);
+    for (const extension of this.extensionManager.syntaxExtensions()) {
+      extension.postUnistToProseMirrorHook(context);
+    }
+    if (rootNode.length !== 1) {
+      throw new Error("Couldn't find any way to convert the root unist node.");
+    }
+    return rootNode[0];
+  }
+
   private convertNode(
     node: UnistNode,
     context: Partial<unknown>,
@@ -46,17 +58,5 @@ export class UnistToProseMirrorConverter {
       `Couldn't find any way to convert unist node of type "${node.type}" to a ProseMirror node.`,
     );
     return [];
-  }
-
-  public convert(unist: UnistNode): ProseMirrorNode {
-    const context: Partial<unknown> = {};
-    const rootNode = this.convertNode(unist, context);
-    for (const extension of this.extensionManager.syntaxExtensions()) {
-      extension.postUnistToProseMirrorHook(context);
-    }
-    if (rootNode.length !== 1) {
-      throw new Error("Couldn't find any way to convert the root unist node.");
-    }
-    return rootNode[0];
   }
 }

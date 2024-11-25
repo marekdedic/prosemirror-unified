@@ -9,11 +9,11 @@ import { MockNodeExtension } from "../mocks/MockNodeExtension";
 
 class DocExtension<UNode extends UnistNode> extends MockNodeExtension<UNode> {}
 
-class TextExtension<UNode extends UnistNode> extends MockNodeExtension<UNode> {}
-
 class Node1Extension<
   UNode extends UnistNode,
 > extends MockNodeExtension<UNode> {}
+
+class TextExtension<UNode extends UnistNode> extends MockNodeExtension<UNode> {}
 
 test("NodeViewBuilder creates a plugin", () => {
   const textNodeView = (): NodeView => ({
