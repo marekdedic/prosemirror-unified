@@ -6,18 +6,6 @@ import type { SyntaxExtension } from "./SyntaxExtension";
 import { MarkExtension } from "./MarkExtension";
 import { NodeExtension } from "./NodeExtension";
 
-function isNodeExtension(
-  extension: Extension,
-): extension is NodeExtension<UnistNode> {
-  return extension instanceof NodeExtension;
-}
-
-function isMarkExtension(
-  extension: Extension,
-): extension is MarkExtension<UnistNode> {
-  return extension instanceof MarkExtension;
-}
-
 export class ExtensionManager {
   private readonly markExtensionList: Map<string, MarkExtension<UnistNode>>;
   private readonly nodeExtensionList: Map<string, NodeExtension<UnistNode>>;
@@ -31,22 +19,6 @@ export class ExtensionManager {
     for (const extension of extensions) {
       this.add(extension);
     }
-  }
-
-  private add(extension: Extension): void {
-    for (const dependency of extension.dependencies()) {
-      this.add(dependency);
-    }
-
-    if (isMarkExtension(extension)) {
-      this.markExtensionList.set(extension.constructor.name, extension);
-      return;
-    }
-    if (isNodeExtension(extension)) {
-      this.nodeExtensionList.set(extension.constructor.name, extension);
-      return;
-    }
-    this.otherExtensionList.set(extension.constructor.name, extension);
   }
 
   public extensions(): Array<Extension> {
@@ -68,4 +40,32 @@ export class ExtensionManager {
       this.markExtensions(),
     );
   }
+
+  private add(extension: Extension): void {
+    for (const dependency of extension.dependencies()) {
+      this.add(dependency);
+    }
+
+    if (isMarkExtension(extension)) {
+      this.markExtensionList.set(extension.constructor.name, extension);
+      return;
+    }
+    if (isNodeExtension(extension)) {
+      this.nodeExtensionList.set(extension.constructor.name, extension);
+      return;
+    }
+    this.otherExtensionList.set(extension.constructor.name, extension);
+  }
+}
+
+function isMarkExtension(
+  extension: Extension,
+): extension is MarkExtension<UnistNode> {
+  return extension instanceof MarkExtension;
+}
+
+function isNodeExtension(
+  extension: Extension,
+): extension is NodeExtension<UnistNode> {
+  return extension instanceof NodeExtension;
 }
