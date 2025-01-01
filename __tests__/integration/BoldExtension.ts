@@ -46,7 +46,6 @@ export class BoldExtension extends MarkExtension<UnistBold> {
     proseMirrorSchema: Schema<string, string>,
   ): Record<string, Command> {
     return {
-      // eslint-disable-next-line @typescript-eslint/naming-convention -- This is a key combination
       "Mod-b": toggleMark(proseMirrorSchema.marks[this.proseMirrorMarkName()]),
     };
   }
