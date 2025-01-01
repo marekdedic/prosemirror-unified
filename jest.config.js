@@ -9,7 +9,6 @@ export default {
       displayName: "Unit tests",
       testMatch: ["<rootDir>/__tests__/unit/**/*.test.ts"],
       transform: {
-        // eslint-disable-next-line @typescript-eslint/naming-convention -- The key is a glob
         "^.+\\.(j|t)s$": [
           "ts-jest",
           {
@@ -28,7 +27,6 @@ export default {
       testEnvironment: "jsdom",
       testMatch: ["<rootDir>/__tests__/integration/**/*.test.ts"],
       transform: {
-        // eslint-disable-next-line @typescript-eslint/naming-convention -- The key is a glob
         "^.+\\.(j|t)s$": [
           "ts-jest",
           {
