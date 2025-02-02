@@ -2,10 +2,10 @@ import type { NodeView } from "prosemirror-view";
 import type { Processor } from "unified";
 import type { Node as UnistNode } from "unist";
 
-import { type Mocked, mocked } from "jest-mock";
 import { inputRules } from "prosemirror-inputrules";
 import { keymap } from "prosemirror-keymap";
 import { Schema } from "prosemirror-model";
+import { expect, type Mocked, test, vi } from "vitest";
 
 import { Extension } from "../../src";
 import { ExtensionManager } from "../../src/ExtensionManager";
@@ -18,14 +18,14 @@ import { SchemaBuilder } from "../../src/SchemaBuilder";
 import { UnifiedBuilder } from "../../src/UnifiedBuilder";
 import { UnistToProseMirrorConverter } from "../../src/UnistToProseMirrorConverter";
 
-jest.mock("../../src/ExtensionManager");
-jest.mock("../../src/InputRulesBuilder");
-jest.mock("../../src/KeymapBuilder");
-jest.mock("../../src/NodeViewBuilder");
-jest.mock("../../src/ProseMirrorToUnistConverter");
-jest.mock("../../src/SchemaBuilder");
-jest.mock("../../src/UnifiedBuilder");
-jest.mock("../../src/UnistToProseMirrorConverter");
+vi.mock("../../src/ExtensionManager");
+vi.mock("../../src/InputRulesBuilder");
+vi.mock("../../src/KeymapBuilder");
+vi.mock("../../src/NodeViewBuilder");
+vi.mock("../../src/ProseMirrorToUnistConverter");
+vi.mock("../../src/SchemaBuilder");
+vi.mock("../../src/UnifiedBuilder");
+vi.mock("../../src/UnistToProseMirrorConverter");
 
 test("ProseMirrorUnified passes extensions to manager", () => {
   class MockExtension extends Extension {}
@@ -45,7 +45,7 @@ test("ProseMirrorUnified provides built schema", () => {
     },
   });
 
-  mocked(SchemaBuilder).prototype.build.mockReturnValueOnce(schema);
+  vi.mocked(SchemaBuilder.prototype).build.mockReturnValueOnce(schema);
 
   const pmu = new ProseMirrorUnified();
 
@@ -54,7 +54,7 @@ test("ProseMirrorUnified provides built schema", () => {
 
 test("ProseMirrorUnified provides input rules", () => {
   const plugin = inputRules({ rules: [] });
-  mocked(InputRulesBuilder).prototype.build.mockReturnValueOnce(plugin);
+  vi.mocked(InputRulesBuilder.prototype).build.mockReturnValueOnce(plugin);
 
   const pmu = new ProseMirrorUnified();
 
@@ -63,7 +63,7 @@ test("ProseMirrorUnified provides input rules", () => {
 
 test("ProseMirrorUnified provides a keymap", () => {
   const plugin = keymap({});
-  mocked(KeymapBuilder).prototype.build.mockReturnValueOnce(plugin);
+  vi.mocked(KeymapBuilder.prototype).build.mockReturnValueOnce(plugin);
 
   const pmu = new ProseMirrorUnified();
 
@@ -75,7 +75,7 @@ test("ProseMirrorUnified provides node views", () => {
     node1: (): NodeView => ({ dom: document.createElement("span") }),
     node2: (): NodeView => ({ dom: document.createElement("li") }),
   };
-  mocked(NodeViewBuilder).prototype.build.mockReturnValueOnce(nodeViews);
+  vi.mocked(NodeViewBuilder.prototype).build.mockReturnValueOnce(nodeViews);
 
   const pmu = new ProseMirrorUnified();
 
@@ -94,14 +94,16 @@ test("ProseMirrorUnified parses a string", () => {
   const processedRoot = { additional: "value", type: "root" };
 
   const unifiedMock = {
-    parse: jest.fn().mockReturnValueOnce(parsedRoot),
-    runSync: jest.fn().mockReturnValueOnce(processedRoot),
+    parse: vi.fn<(file: string) => UnistNode>().mockReturnValueOnce(parsedRoot),
+    runSync: vi
+      .fn<(node: UnistNode) => UnistNode>()
+      .mockReturnValueOnce(processedRoot),
   } as unknown as Mocked<
     Processor<UnistNode, UnistNode, UnistNode, UnistNode, string>
   >;
 
-  mocked(UnifiedBuilder).prototype.build.mockReturnValueOnce(unifiedMock);
-  mocked(UnistToProseMirrorConverter).prototype.convert.mockReturnValueOnce(
+  vi.mocked(UnifiedBuilder.prototype).build.mockReturnValueOnce(unifiedMock);
+  vi.mocked(UnistToProseMirrorConverter.prototype).convert.mockReturnValueOnce(
     rootProseMirrorNode,
   );
 
@@ -126,13 +128,15 @@ test("ProseMirrorUnified stringifies an AST", () => {
   const rootUnistNode = { type: "root" };
 
   const unifiedMock = {
-    stringify: jest.fn().mockReturnValueOnce("SOURCE INPUT"),
+    stringify: vi
+      .fn<(tree: UnistNode) => string>()
+      .mockReturnValueOnce("SOURCE INPUT"),
   } as unknown as Mocked<
     Processor<UnistNode, UnistNode, UnistNode, UnistNode, string>
   >;
 
-  mocked(UnifiedBuilder).prototype.build.mockReturnValue(unifiedMock);
-  mocked(ProseMirrorToUnistConverter).prototype.convert.mockReturnValueOnce(
+  vi.mocked(UnifiedBuilder.prototype).build.mockReturnValue(unifiedMock);
+  vi.mocked(ProseMirrorToUnistConverter.prototype).convert.mockReturnValueOnce(
     rootUnistNode,
   );
 
