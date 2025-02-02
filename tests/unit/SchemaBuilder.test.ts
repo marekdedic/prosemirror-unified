@@ -1,4 +1,3 @@
-import { mocked } from "jest-mock";
 import {
   type DOMOutputSpec,
   type Mark,
@@ -6,23 +5,24 @@ import {
   NodeType,
   Schema,
 } from "prosemirror-model";
+import { expect, test, vi } from "vitest";
 
 import { ExtensionManager } from "../../src/ExtensionManager";
 import { SchemaBuilder } from "../../src/SchemaBuilder";
 import { MockMarkExtension } from "../mocks/MockMarkExtension";
 import { MockNodeExtension } from "../mocks/MockNodeExtension";
 
-jest.mock("../../src/ExtensionManager");
+vi.mock("../../src/ExtensionManager");
 
 test("SchemaBuilder works with nodes", () => {
-  const docExtension = mocked(new MockNodeExtension());
+  const docExtension = vi.mocked(new MockNodeExtension());
   docExtension.proseMirrorNodeName.mockReturnValueOnce("doc");
   docExtension.proseMirrorNodeSpec.mockReturnValueOnce({});
-  const textExtension = mocked(new MockNodeExtension());
+  const textExtension = vi.mocked(new MockNodeExtension());
   textExtension.proseMirrorNodeName.mockReturnValueOnce("text");
   textExtension.proseMirrorNodeSpec.mockReturnValueOnce({});
 
-  const manager = mocked(new ExtensionManager([]));
+  const manager = vi.mocked(new ExtensionManager([]));
   manager.markExtensions.mockReturnValueOnce([]);
   manager.nodeExtensions.mockReturnValueOnce([docExtension, textExtension]);
 
@@ -37,17 +37,17 @@ test("SchemaBuilder works with nodes", () => {
 });
 
 test("SchemaBuilder works with marks", () => {
-  const docExtension = mocked(new MockNodeExtension());
+  const docExtension = vi.mocked(new MockNodeExtension());
   docExtension.proseMirrorNodeName.mockReturnValueOnce("doc");
   docExtension.proseMirrorNodeSpec.mockReturnValueOnce({});
-  const textExtension = mocked(new MockNodeExtension());
+  const textExtension = vi.mocked(new MockNodeExtension());
   textExtension.proseMirrorNodeName.mockReturnValueOnce("text");
   textExtension.proseMirrorNodeSpec.mockReturnValueOnce({});
-  const markExtension1 = mocked(new MockMarkExtension());
+  const markExtension1 = vi.mocked(new MockMarkExtension());
   markExtension1.proseMirrorMarkName.mockReturnValueOnce("MARK_1");
   markExtension1.proseMirrorMarkSpec.mockReturnValueOnce({});
 
-  const manager = mocked(new ExtensionManager([]));
+  const manager = vi.mocked(new ExtensionManager([]));
   manager.markExtensions.mockReturnValueOnce([markExtension1]);
   manager.nodeExtensions.mockReturnValueOnce([docExtension, textExtension]);
 
@@ -64,7 +64,7 @@ test("SchemaBuilder works with marks", () => {
 });
 
 test("SchemaBuilder works with complex specs", () => {
-  const docExtension = mocked(new MockNodeExtension());
+  const docExtension = vi.mocked(new MockNodeExtension());
   docExtension.proseMirrorNodeName.mockReturnValueOnce("doc");
   const docSpec = {
     code: true,
@@ -76,10 +76,10 @@ test("SchemaBuilder works with complex specs", () => {
     toDOM: (): DOMOutputSpec => ["pre", ["code", 0]],
   };
   docExtension.proseMirrorNodeSpec.mockReturnValueOnce(docSpec);
-  const textExtension = mocked(new MockNodeExtension());
+  const textExtension = vi.mocked(new MockNodeExtension());
   textExtension.proseMirrorNodeName.mockReturnValueOnce("text");
   textExtension.proseMirrorNodeSpec.mockReturnValueOnce({});
-  const markExtension1 = mocked(new MockMarkExtension());
+  const markExtension1 = vi.mocked(new MockMarkExtension());
   markExtension1.proseMirrorMarkName.mockReturnValueOnce("MARK_1");
   const markSpec = {
     attrs: { href: { default: null } },
@@ -100,7 +100,7 @@ test("SchemaBuilder works with complex specs", () => {
   };
   markExtension1.proseMirrorMarkSpec.mockReturnValueOnce(markSpec);
 
-  const manager = mocked(new ExtensionManager([]));
+  const manager = vi.mocked(new ExtensionManager([]));
   manager.markExtensions.mockReturnValueOnce([markExtension1]);
   manager.nodeExtensions.mockReturnValueOnce([docExtension, textExtension]);
 
