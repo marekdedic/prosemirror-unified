@@ -1,16 +1,16 @@
-import { mocked } from "jest-mock";
 import { Schema } from "prosemirror-model";
 import { Plugin } from "prosemirror-state";
+import { expect, test, vi } from "vitest";
 
 import { ExtensionManager } from "../../src/ExtensionManager";
 import { KeymapBuilder } from "../../src/KeymapBuilder";
 import { MockNodeExtension } from "../mocks/MockNodeExtension";
 
 test("KeymapBuilder creates a plugin", () => {
-  const docExtension = mocked(new MockNodeExtension());
+  const docExtension = vi.mocked(new MockNodeExtension());
   docExtension.proseMirrorNodeName.mockReturnValueOnce("doc");
   docExtension.proseMirrorNodeSpec.mockReturnValueOnce({});
-  const textExtension = mocked(new MockNodeExtension());
+  const textExtension = vi.mocked(new MockNodeExtension());
   textExtension.proseMirrorNodeName.mockReturnValueOnce("text");
   textExtension.proseMirrorNodeSpec.mockReturnValueOnce({});
 
