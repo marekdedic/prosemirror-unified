@@ -1,4 +1,5 @@
 import { Node as ProseMirrorNode, Schema } from "prosemirror-model";
+import { describe, expect, test } from "vitest";
 
 import { createProseMirrorNode } from "../../src/createProseMirrorNode";
 
