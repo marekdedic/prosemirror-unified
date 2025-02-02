@@ -1,7 +1,7 @@
 import type { NodeView } from "prosemirror-view";
 import type { Node as UnistNode } from "unist";
 
-import { mocked } from "jest-mock";
+import { expect, test, vi } from "vitest";
 
 import { ExtensionManager } from "../../src/ExtensionManager";
 import { NodeViewBuilder } from "../../src/NodeViewBuilder";
@@ -24,13 +24,13 @@ test("NodeViewBuilder creates a plugin", () => {
     dom: document.createElement("li"),
   });
 
-  const docExtension = mocked(new DocExtension());
+  const docExtension = vi.mocked(new DocExtension());
   docExtension.proseMirrorNodeName.mockReturnValueOnce("doc");
   docExtension.proseMirrorNodeView.mockReturnValueOnce(null);
-  const textExtension = mocked(new TextExtension());
+  const textExtension = vi.mocked(new TextExtension());
   textExtension.proseMirrorNodeName.mockReturnValueOnce("text");
   textExtension.proseMirrorNodeView.mockReturnValueOnce(textNodeView);
-  const node1Extension = mocked(new Node1Extension());
+  const node1Extension = vi.mocked(new Node1Extension());
   node1Extension.proseMirrorNodeName.mockReturnValueOnce("node1");
   node1Extension.proseMirrorNodeView.mockReturnValueOnce(node1NodeView);
 
