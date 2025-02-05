@@ -31,17 +31,16 @@ export class InputRulesBuilder {
       event: KeyboardEvent,
       // eslint-disable-next-line @typescript-eslint/no-invalid-void-type --- original prosemirror api
     ): boolean | void {
-      if (event.key !== "Enter") {
-        return originalHandleKeyDown?.(view, event);
+      if (event.key === "Enter") {
+        const { from, to } = view.state.selection;
+        inputRulesPlugin.props.handleTextInput?.call(
+          inputRulesPlugin,
+          view,
+          from,
+          to,
+          "\n",
+        );
       }
-      const { from, to } = view.state.selection;
-      inputRulesPlugin.props.handleTextInput?.call(
-        inputRulesPlugin,
-        view,
-        from,
-        to,
-        "\n",
-      );
       return originalHandleKeyDown?.(view, event);
     };
     inputRulesPlugin.props.handleKeyDown = customHandleKeyDown;
