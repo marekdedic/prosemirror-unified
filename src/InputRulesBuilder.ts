@@ -11,13 +11,13 @@ export class InputRulesBuilder {
 
   public constructor(
     extensionManager: ExtensionManager,
-    proseMirrorSchema: Schema<string, string>,
+    proseMirrorSchema: Schema<string, string>
   ) {
     this.rules = ([] as Array<InputRule>).concat.apply(
       [],
       extensionManager
         .syntaxExtensions()
-        .map((extension) => extension.proseMirrorInputRules(proseMirrorSchema)),
+        .map((extension) => extension.proseMirrorInputRules(proseMirrorSchema))
     );
   }
 
@@ -34,12 +34,12 @@ export class InputRulesBuilder {
       if (event.key !== "Enter") {
         return originalHandleKeyDown?.(view, event);
       }
-      const { $head } = view.state.selection;
+      const { from, to } = view.state.selection;
       inputRulesPlugin.props.handleTextInput?.call(
         inputRulesPlugin,
         view,
-        $head.pos,
-        $head.pos,
+        from,
+        to,
         "\n",
       );
       return originalHandleKeyDown?.(view, event);
