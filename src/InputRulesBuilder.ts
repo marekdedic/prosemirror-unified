@@ -1,5 +1,6 @@
 import type { Schema } from "prosemirror-model";
 import type { Plugin } from "prosemirror-state";
+import type { EditorView } from "prosemirror-view";
 
 import { type InputRule, inputRules } from "prosemirror-inputrules";
 
@@ -21,6 +22,29 @@ export class InputRulesBuilder {
   }
 
   public build(): Plugin {
-    return inputRules({ rules: this.rules });
+    const inputRulesPlugin = inputRules({ rules: this.rules });
+    const originalHandleKeyDown =
+      inputRulesPlugin.props.handleKeyDown?.bind(inputRulesPlugin);
+    const customHandleKeyDown = function (
+      this: typeof inputRulesPlugin,
+      view: EditorView,
+      event: KeyboardEvent,
+      // eslint-disable-next-line @typescript-eslint/no-invalid-void-type --- original prosemirror api
+    ): boolean | void {
+      if (event.key !== "Enter") {
+        return originalHandleKeyDown?.(view, event);
+      }
+      const { $head } = view.state.selection;
+      inputRulesPlugin.props.handleTextInput?.call(
+        inputRulesPlugin,
+        view,
+        $head.pos,
+        $head.pos,
+        "\n",
+      );
+      return originalHandleKeyDown?.(view, event);
+    };
+    inputRulesPlugin.props.handleKeyDown = customHandleKeyDown;
+    return inputRulesPlugin;
   }
 }
