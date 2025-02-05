@@ -11,13 +11,13 @@ export class InputRulesBuilder {
 
   public constructor(
     extensionManager: ExtensionManager,
-    proseMirrorSchema: Schema<string, string>
+    proseMirrorSchema: Schema<string, string>,
   ) {
     this.rules = ([] as Array<InputRule>).concat.apply(
       [],
       extensionManager
         .syntaxExtensions()
-        .map((extension) => extension.proseMirrorInputRules(proseMirrorSchema))
+        .map((extension) => extension.proseMirrorInputRules(proseMirrorSchema)),
     );
   }
 
