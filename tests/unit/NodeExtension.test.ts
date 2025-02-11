@@ -1,4 +1,5 @@
 import { Schema } from "prosemirror-model";
+import { expect, test } from "vitest";
 
 import { Extension } from "../../src/Extension";
 import { NodeExtension } from "../../src/NodeExtension";

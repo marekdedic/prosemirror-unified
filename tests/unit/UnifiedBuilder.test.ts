@@ -1,21 +1,21 @@
-import { mocked } from "jest-mock";
+import { expect, test, vi } from "vitest";
 
 import { Extension } from "../../src/Extension";
 import { ExtensionManager } from "../../src/ExtensionManager";
 import { UnifiedBuilder } from "../../src/UnifiedBuilder";
 
-jest.mock("../../src/Extension");
-jest.mock("../../src/ExtensionManager");
+vi.mock("../../src/Extension");
+vi.mock("../../src/ExtensionManager");
 
 test("UnifiedBuilder uses extension hooks", () => {
   class MockExtension extends Extension {}
 
-  const extension = mocked(new MockExtension());
+  const extension = vi.mocked(new MockExtension());
   extension.unifiedInitializationHook.mockImplementationOnce(
     (processor) => processor,
   );
 
-  const manager = mocked(new ExtensionManager([]));
+  const manager = vi.mocked(new ExtensionManager([]));
   manager.extensions.mockReturnValueOnce([extension]);
 
   const builder = new UnifiedBuilder(manager);

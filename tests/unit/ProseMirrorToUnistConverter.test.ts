@@ -1,21 +1,23 @@
-import { mocked } from "jest-mock";
 import { Schema } from "prosemirror-model";
+import { expect, test, vi } from "vitest";
 
 import { ExtensionManager } from "../../src/ExtensionManager";
 import { ProseMirrorToUnistConverter } from "../../src/ProseMirrorToUnistConverter";
 import { MockMarkExtension } from "../mocks/MockMarkExtension";
 import { MockNodeExtension } from "../mocks/MockNodeExtension";
 
-jest.mock("../../src/ExtensionManager");
-jest.mock("../../src/MarkExtension");
+vi.mock("../../src/ExtensionManager");
+vi.mock("../../src/MarkExtension");
+
+/* eslint-disable @typescript-eslint/no-empty-function, no-console -- Console output testing */
 
 test("Converts basic document", () => {
-  const docExtension = mocked(new MockNodeExtension());
+  const docExtension = vi.mocked(new MockNodeExtension());
   docExtension.proseMirrorNodeName.mockReturnValueOnce("doc");
   const rootUnistNode = { children: [], type: "root" };
   docExtension.proseMirrorNodeToUnistNodes.mockReturnValueOnce([rootUnistNode]);
 
-  const manager = mocked(new ExtensionManager([]));
+  const manager = vi.mocked(new ExtensionManager([]));
   manager.nodeExtensions.mockReturnValueOnce([docExtension]);
 
   const converter = new ProseMirrorToUnistConverter(manager);
@@ -28,7 +30,7 @@ test("Converts basic document", () => {
   });
   const rootProseMirrorNode = schema.nodes.doc.create({}, []);
 
-  jest.spyOn(console, "warn").mockImplementation();
+  vi.spyOn(console, "warn").mockImplementation(() => {});
 
   expect(converter.convert(rootProseMirrorNode)).toStrictEqual(rootUnistNode);
   expect(docExtension.proseMirrorNodeToUnistNodes).toHaveBeenCalledWith(
@@ -39,19 +41,19 @@ test("Converts basic document", () => {
 });
 
 test("Converts a document with children", () => {
-  const textExtension = mocked(new MockNodeExtension());
+  const textExtension = vi.mocked(new MockNodeExtension());
   textExtension.proseMirrorNodeName.mockReturnValueOnce("text");
   const textUnistNode = { type: "text", value: "Hello World!" };
   textExtension.proseMirrorNodeToUnistNodes.mockReturnValueOnce([
     textUnistNode,
   ]);
 
-  const docExtension = mocked(new MockNodeExtension());
+  const docExtension = vi.mocked(new MockNodeExtension());
   docExtension.proseMirrorNodeName.mockReturnValueOnce("doc");
   const rootUnistNode = { children: [textUnistNode], type: "root" };
   docExtension.proseMirrorNodeToUnistNodes.mockReturnValueOnce([rootUnistNode]);
 
-  const manager = mocked(new ExtensionManager([]));
+  const manager = vi.mocked(new ExtensionManager([]));
   manager.nodeExtensions.mockReturnValue([docExtension, textExtension]);
 
   const converter = new ProseMirrorToUnistConverter(manager);
@@ -69,7 +71,7 @@ test("Converts a document with children", () => {
     textProseMirrorNode,
   ]);
 
-  jest.spyOn(console, "warn").mockImplementation();
+  vi.spyOn(console, "warn").mockImplementation(() => {});
 
   expect(converter.convert(rootProseMirrorNode)).toStrictEqual(rootUnistNode);
   expect(textExtension.proseMirrorNodeToUnistNodes).toHaveBeenCalledWith(
@@ -84,21 +86,21 @@ test("Converts a document with children", () => {
 });
 
 test("Converts a document with children of multiple types", () => {
-  const typeOneExtension = mocked(new MockNodeExtension());
+  const typeOneExtension = vi.mocked(new MockNodeExtension());
   typeOneExtension.proseMirrorNodeName.mockReturnValue("typeOne");
   const typeOneUnistNode = { type: "one" };
   typeOneExtension.proseMirrorNodeToUnistNodes.mockReturnValueOnce([
     typeOneUnistNode,
   ]);
 
-  const typeTwoExtension = mocked(new MockNodeExtension());
+  const typeTwoExtension = vi.mocked(new MockNodeExtension());
   typeTwoExtension.proseMirrorNodeName.mockReturnValue("typeTwo");
   const typeTwoUnistNode = { type: "two" };
   typeTwoExtension.proseMirrorNodeToUnistNodes.mockReturnValueOnce([
     typeTwoUnistNode,
   ]);
 
-  const docExtension = mocked(new MockNodeExtension());
+  const docExtension = vi.mocked(new MockNodeExtension());
   docExtension.proseMirrorNodeName.mockReturnValueOnce("doc");
   const rootUnistNode = {
     children: [typeOneUnistNode, typeTwoUnistNode],
@@ -106,7 +108,7 @@ test("Converts a document with children of multiple types", () => {
   };
   docExtension.proseMirrorNodeToUnistNodes.mockReturnValueOnce([rootUnistNode]);
 
-  const manager = mocked(new ExtensionManager([]));
+  const manager = vi.mocked(new ExtensionManager([]));
   manager.nodeExtensions.mockReturnValue([
     docExtension,
     typeOneExtension,
@@ -136,7 +138,7 @@ test("Converts a document with children of multiple types", () => {
     typeTwoProseMirrorNode,
   ]);
 
-  jest.spyOn(console, "warn").mockImplementation();
+  vi.spyOn(console, "warn").mockImplementation(() => {});
 
   expect(converter.convert(rootProseMirrorNode)).toStrictEqual(rootUnistNode);
   expect(typeOneExtension.proseMirrorNodeToUnistNodes).toHaveBeenCalledWith(
@@ -155,14 +157,14 @@ test("Converts a document with children of multiple types", () => {
 });
 
 test("Converts a document with marks", () => {
-  const textExtension = mocked(new MockNodeExtension());
+  const textExtension = vi.mocked(new MockNodeExtension());
   textExtension.proseMirrorNodeName.mockReturnValueOnce("text");
   const textUnistNode = { type: "text", value: "Hello World!" };
   textExtension.proseMirrorNodeToUnistNodes.mockReturnValueOnce([
     textUnistNode,
   ]);
 
-  const markOneExtension = mocked(new MockMarkExtension());
+  const markOneExtension = vi.mocked(new MockMarkExtension());
   markOneExtension.proseMirrorMarkName.mockReturnValue("markOne");
   const bothMarksUnistNode = {
     markOne: true,
@@ -174,7 +176,7 @@ test("Converts a document with marks", () => {
     bothMarksUnistNode,
   );
 
-  const markTwoExtension = mocked(new MockMarkExtension());
+  const markTwoExtension = vi.mocked(new MockMarkExtension());
   markTwoExtension.proseMirrorMarkName.mockReturnValue("markTwo");
   const markTwoUnistNode = {
     markTwo: true,
@@ -185,7 +187,7 @@ test("Converts a document with marks", () => {
     markTwoUnistNode,
   );
 
-  const docExtension = mocked(new MockNodeExtension());
+  const docExtension = vi.mocked(new MockNodeExtension());
   docExtension.proseMirrorNodeName.mockReturnValueOnce("doc");
   const rootUnistNode = {
     children: [textUnistNode],
@@ -193,7 +195,7 @@ test("Converts a document with marks", () => {
   };
   docExtension.proseMirrorNodeToUnistNodes.mockReturnValueOnce([rootUnistNode]);
 
-  const manager = mocked(new ExtensionManager([]));
+  const manager = vi.mocked(new ExtensionManager([]));
   manager.markExtensions.mockReturnValue([markOneExtension, markTwoExtension]);
   manager.nodeExtensions.mockReturnValue([docExtension, textExtension]);
 
@@ -218,7 +220,7 @@ test("Converts a document with marks", () => {
     textProseMirrorNode,
   ]);
 
-  jest.spyOn(console, "warn").mockImplementation();
+  vi.spyOn(console, "warn").mockImplementation(() => {});
 
   expect(converter.convert(rootProseMirrorNode)).toStrictEqual(rootUnistNode);
   expect(textExtension.proseMirrorNodeToUnistNodes).toHaveBeenCalledWith(
@@ -246,7 +248,7 @@ test("Converts a document with marks", () => {
 });
 
 test("Fails gracefully on no root converter", () => {
-  const manager = mocked(new ExtensionManager([]));
+  const manager = vi.mocked(new ExtensionManager([]));
   manager.nodeExtensions.mockReturnValueOnce([]);
 
   const converter = new ProseMirrorToUnistConverter(manager);
@@ -259,7 +261,7 @@ test("Fails gracefully on no root converter", () => {
   });
   const rootNode = schema.nodes.doc.create({}, []);
 
-  jest.spyOn(console, "warn").mockImplementation();
+  vi.spyOn(console, "warn").mockImplementation(() => {});
 
   expect(() => converter.convert(rootNode)).toThrow(
     "Couldn't find any way to convert the root ProseMirror node.",
@@ -270,14 +272,14 @@ test("Fails gracefully on no root converter", () => {
 });
 
 test("Converts a document with invalid children", () => {
-  const typeOneExtension = mocked(new MockNodeExtension());
+  const typeOneExtension = vi.mocked(new MockNodeExtension());
   typeOneExtension.proseMirrorNodeName.mockReturnValue("typeOne");
   const typeOneUnistNode = { type: "one" };
   typeOneExtension.proseMirrorNodeToUnistNodes.mockReturnValueOnce([
     typeOneUnistNode,
   ]);
 
-  const docExtension = mocked(new MockNodeExtension());
+  const docExtension = vi.mocked(new MockNodeExtension());
   docExtension.proseMirrorNodeName.mockReturnValueOnce("doc");
   const rootUnistNode = {
     children: [typeOneUnistNode],
@@ -285,7 +287,7 @@ test("Converts a document with invalid children", () => {
   };
   docExtension.proseMirrorNodeToUnistNodes.mockReturnValueOnce([rootUnistNode]);
 
-  const manager = mocked(new ExtensionManager([]));
+  const manager = vi.mocked(new ExtensionManager([]));
   manager.nodeExtensions.mockReturnValue([docExtension, typeOneExtension]);
 
   const converter = new ProseMirrorToUnistConverter(manager);
@@ -314,7 +316,7 @@ test("Converts a document with invalid children", () => {
     typeTwoProseMirrorNode,
   ]);
 
-  jest.spyOn(console, "warn").mockImplementation();
+  vi.spyOn(console, "warn").mockImplementation(() => {});
 
   expect(converter.convert(rootProseMirrorNode)).toStrictEqual(rootUnistNode);
   expect(typeOneExtension.proseMirrorNodeToUnistNodes).toHaveBeenCalledWith(
@@ -327,14 +329,14 @@ test("Converts a document with invalid children", () => {
 });
 
 test("Converts a document with invalid marks", () => {
-  const typeOneExtension = mocked(new MockNodeExtension());
+  const typeOneExtension = vi.mocked(new MockNodeExtension());
   typeOneExtension.proseMirrorNodeName.mockReturnValue("typeOne");
   const typeOneUnistNode = { type: "one" };
   typeOneExtension.proseMirrorNodeToUnistNodes.mockReturnValueOnce([
     typeOneUnistNode,
   ]);
 
-  const docExtension = mocked(new MockNodeExtension());
+  const docExtension = vi.mocked(new MockNodeExtension());
   docExtension.proseMirrorNodeName.mockReturnValueOnce("doc");
   const rootUnistNode = {
     children: [typeOneUnistNode],
@@ -342,7 +344,7 @@ test("Converts a document with invalid marks", () => {
   };
   docExtension.proseMirrorNodeToUnistNodes.mockReturnValueOnce([rootUnistNode]);
 
-  const manager = mocked(new ExtensionManager([]));
+  const manager = vi.mocked(new ExtensionManager([]));
   manager.markExtensions.mockReturnValue([]);
   manager.nodeExtensions.mockReturnValue([docExtension, typeOneExtension]);
 
@@ -369,7 +371,7 @@ test("Converts a document with invalid marks", () => {
     typeOneProseMirrorNode,
   ]);
 
-  jest.spyOn(console, "warn").mockImplementation();
+  vi.spyOn(console, "warn").mockImplementation(() => {});
 
   expect(converter.convert(rootProseMirrorNode)).toStrictEqual(rootUnistNode);
   expect(typeOneExtension.proseMirrorNodeToUnistNodes).toHaveBeenCalledWith(
@@ -380,3 +382,5 @@ test("Converts a document with invalid marks", () => {
     'Couldn\'t find any way to convert ProseMirror mark of type "typeTwo" to a unist node.',
   );
 });
+
+/* eslint-enable */

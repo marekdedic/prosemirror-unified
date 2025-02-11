@@ -1,3 +1,5 @@
+import { expect, test } from "vitest";
+
 import { Extension } from "../../src/Extension";
 import { MarkExtension } from "../../src/MarkExtension";
 import { SyntaxExtension } from "../../src/SyntaxExtension";
