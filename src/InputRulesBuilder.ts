@@ -24,10 +24,8 @@ export class InputRulesBuilder {
     const inputRulesPlugin = inputRules({ rules: this.rules });
     const originalHandleKeyDown =
       inputRulesPlugin.props.handleKeyDown?.bind(inputRulesPlugin);
-    const customHandleKeyDown: Exclude<
-      typeof originalHandleKeyDown,
-      undefined
-    > = (view, event) => {
+    // eslint-disable-next-line @typescript-eslint/no-invalid-void-type -- Type from prosemirror-view
+    inputRulesPlugin.props.handleKeyDown = (view, event): boolean | void => {
       if (event.key === "Enter") {
         const { from, to } = view.state.selection;
         inputRulesPlugin.props.handleTextInput?.call(
@@ -40,7 +38,6 @@ export class InputRulesBuilder {
       }
       return originalHandleKeyDown?.(view, event);
     };
-    inputRulesPlugin.props.handleKeyDown = customHandleKeyDown;
     return inputRulesPlugin;
   }
 }
