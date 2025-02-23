@@ -1,6 +1,7 @@
 import { mocked } from "jest-mock";
 import { Schema } from "prosemirror-model";
 import { Plugin } from "prosemirror-state";
+import { expect, test } from "vitest";
 
 import { ExtensionManager } from "../../src/ExtensionManager";
 import { KeymapBuilder } from "../../src/KeymapBuilder";

@@ -6,6 +6,7 @@ import { type Mocked, mocked } from "jest-mock";
 import { inputRules } from "prosemirror-inputrules";
 import { keymap } from "prosemirror-keymap";
 import { Schema } from "prosemirror-model";
+import { expect, test, vi } from "vitest";
 
 import { Extension } from "../../src";
 import { ExtensionManager } from "../../src/ExtensionManager";
@@ -18,14 +19,14 @@ import { SchemaBuilder } from "../../src/SchemaBuilder";
 import { UnifiedBuilder } from "../../src/UnifiedBuilder";
 import { UnistToProseMirrorConverter } from "../../src/UnistToProseMirrorConverter";
 
-jest.mock("../../src/ExtensionManager");
-jest.mock("../../src/InputRulesBuilder");
-jest.mock("../../src/KeymapBuilder");
-jest.mock("../../src/NodeViewBuilder");
-jest.mock("../../src/ProseMirrorToUnistConverter");
-jest.mock("../../src/SchemaBuilder");
-jest.mock("../../src/UnifiedBuilder");
-jest.mock("../../src/UnistToProseMirrorConverter");
+vi.mock("../../src/ExtensionManager");
+vi.mock("../../src/InputRulesBuilder");
+vi.mock("../../src/KeymapBuilder");
+vi.mock("../../src/NodeViewBuilder");
+vi.mock("../../src/ProseMirrorToUnistConverter");
+vi.mock("../../src/SchemaBuilder");
+vi.mock("../../src/UnifiedBuilder");
+vi.mock("../../src/UnistToProseMirrorConverter");
 
 test("ProseMirrorUnified passes extensions to manager", () => {
   class MockExtension extends Extension {}
@@ -94,8 +95,10 @@ test("ProseMirrorUnified parses a string", () => {
   const processedRoot = { additional: "value", type: "root" };
 
   const unifiedMock = {
-    parse: jest.fn().mockReturnValueOnce(parsedRoot),
-    runSync: jest.fn().mockReturnValueOnce(processedRoot),
+    parse: vi.fn<(file: string) => UnistNode>().mockReturnValueOnce(parsedRoot),
+    runSync: vi
+      .fn<(node: UnistNode) => UnistNode>()
+      .mockReturnValueOnce(processedRoot),
   } as unknown as Mocked<
     Processor<UnistNode, UnistNode, UnistNode, UnistNode, string>
   >;
@@ -126,7 +129,9 @@ test("ProseMirrorUnified stringifies an AST", () => {
   const rootUnistNode = { type: "root" };
 
   const unifiedMock = {
-    stringify: jest.fn().mockReturnValueOnce("SOURCE INPUT"),
+    stringify: vi
+      .fn<(tree: UnistNode) => string>()
+      .mockReturnValueOnce("SOURCE INPUT"),
   } as unknown as Mocked<
     Processor<UnistNode, UnistNode, UnistNode, UnistNode, string>
   >;
