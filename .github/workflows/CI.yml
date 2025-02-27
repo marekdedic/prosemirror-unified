@@ -77,7 +77,7 @@ jobs:
 
       - name: "Run unit tests"
         run: |
-          npm run test unit
+          npm run test-coverage unit
 
       - name: "Upload coverage results"
         uses: coverallsapp/github-action@v2.3.6
@@ -88,7 +88,7 @@ jobs:
 
       - name: "Run integration tests"
         run: |
-          npm run test integration
+          npm run test-coverage integration
 
       - name: "Upload coverage results"
         uses: coverallsapp/github-action@v2.3.6
