@@ -24,6 +24,7 @@ export default defineConfig({
   },
   plugins: [dts({ rollupTypes: true })],
   test: {
+    environment: "jsdom",
     mockReset: true,
   },
 });
