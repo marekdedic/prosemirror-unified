@@ -1,3 +1,5 @@
+import { vi } from "vitest";
+
 function supportRangeDOMRect(): void {
   document.createRange = (): Range => {
     const range = new Range();
@@ -17,12 +19,11 @@ function supportRangeDOMRect(): void {
     range.getClientRects = (): DOMRectList => ({
       item: () => null,
       length: 0,
-      [Symbol.iterator]: jest.fn(),
+      [Symbol.iterator]: vi.fn<() => IterableIterator<DOMRect>>(),
     });
 
     return range;
   };
 }
 
-// eslint-disable-next-line jest/require-hook -- Setup function for all tests
 supportRangeDOMRect();

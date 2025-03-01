@@ -1,4 +1,5 @@
 import { Schema } from "prosemirror-model";
+import { expect, test } from "vitest";
 
 import { MockSyntaxExtension } from "../mocks/MockSyntaxExtension";
 

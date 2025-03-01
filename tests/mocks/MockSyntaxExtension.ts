@@ -1,6 +1,8 @@
 import type { Node as ProseMirrorNode, Schema } from "prosemirror-model";
 import type { Node as UnistNode } from "unist";
 
+import { vi } from "vitest";
+
 import { SyntaxExtension } from "../../src/SyntaxExtension";
 
 export class MockSyntaxExtension<
@@ -10,15 +12,15 @@ export class MockSyntaxExtension<
     never
   >,
 > extends SyntaxExtension<UNode, UnistToProseMirrorContext> {
-  public unistNodeName = jest.fn<UNode["type"], []>();
+  public unistNodeName = vi.fn<() => UNode["type"]>();
 
-  public unistNodeToProseMirrorNodes = jest.fn<
-    Array<ProseMirrorNode>,
-    [
-      UNode,
-      Schema<string, string>,
-      Array<ProseMirrorNode>,
-      Partial<UnistToProseMirrorContext>,
-    ]
-  >();
+  public unistNodeToProseMirrorNodes =
+    vi.fn<
+      (
+        node: UNode,
+        schema: Schema<string, string>,
+        convertedChildren: Array<ProseMirrorNode>,
+        context: Partial<UnistToProseMirrorContext>,
+      ) => Array<ProseMirrorNode>
+    >();
 }

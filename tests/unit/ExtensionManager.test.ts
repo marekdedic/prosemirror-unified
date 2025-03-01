@@ -1,17 +1,17 @@
 import type { Node as UnistNode } from "unist";
 
-import { mocked } from "jest-mock";
+import { expect, test, vi } from "vitest";
 
 import { Extension } from "../../src/Extension";
 import { ExtensionManager } from "../../src/ExtensionManager";
 import { MockMarkExtension } from "../mocks/MockMarkExtension";
 import { MockNodeExtension } from "../mocks/MockNodeExtension";
 
-jest.mock("../../src/Extension");
-jest.mock("../../src/SyntaxExtension");
+vi.mock("../../src/Extension");
+vi.mock("../../src/SyntaxExtension");
 
 test("ExtensionManager manages mark extensions", () => {
-  const markExtension = mocked(new MockMarkExtension());
+  const markExtension = vi.mocked(new MockMarkExtension());
   markExtension.dependencies.mockReturnValueOnce([]);
   const manager = new ExtensionManager([markExtension]);
 
@@ -22,7 +22,7 @@ test("ExtensionManager manages mark extensions", () => {
 });
 
 test("ExtensionManager manages node extensions", () => {
-  const nodeExtension = mocked(new MockNodeExtension());
+  const nodeExtension = vi.mocked(new MockNodeExtension());
   nodeExtension.dependencies.mockReturnValueOnce([]);
   const manager = new ExtensionManager([nodeExtension]);
 
@@ -34,7 +34,7 @@ test("ExtensionManager manages node extensions", () => {
 
 test("ExtensionManager manages other extensions", () => {
   class MockExtension extends Extension {}
-  const extension = mocked(new MockExtension());
+  const extension = vi.mocked(new MockExtension());
   extension.dependencies.mockReturnValueOnce([]);
   const manager = new ExtensionManager([extension]);
 
@@ -59,17 +59,17 @@ test("ExtensionManager manages mark and node extensions", () => {
   > extends MockNodeExtension<UNode> {}
   class MockExtension1 extends Extension {}
   class MockExtension2 extends Extension {}
-  const markExtension1 = mocked(new MarkExtension1());
+  const markExtension1 = vi.mocked(new MarkExtension1());
   markExtension1.dependencies.mockReturnValueOnce([]);
-  const markExtension2 = mocked(new MarkExtension2());
+  const markExtension2 = vi.mocked(new MarkExtension2());
   markExtension2.dependencies.mockReturnValueOnce([]);
-  const nodeExtension1 = mocked(new NodeExtension1());
+  const nodeExtension1 = vi.mocked(new NodeExtension1());
   nodeExtension1.dependencies.mockReturnValueOnce([]);
-  const nodeExtension2 = mocked(new NodeExtension2());
+  const nodeExtension2 = vi.mocked(new NodeExtension2());
   nodeExtension2.dependencies.mockReturnValueOnce([]);
-  const extension1 = mocked(new MockExtension1());
+  const extension1 = vi.mocked(new MockExtension1());
   extension1.dependencies.mockReturnValueOnce([]);
-  const extension2 = mocked(new MockExtension2());
+  const extension2 = vi.mocked(new MockExtension2());
   extension2.dependencies.mockReturnValueOnce([]);
   const manager = new ExtensionManager([
     markExtension1,
@@ -118,15 +118,15 @@ test("ExtensionManager manages extensions with dependencies", () => {
     UNode extends UnistNode,
   > extends MockNodeExtension<UNode> {}
   class MockExtension1 extends Extension {}
-  const markExtension1 = mocked(new MarkExtension1());
+  const markExtension1 = vi.mocked(new MarkExtension1());
   markExtension1.dependencies.mockReturnValueOnce([]);
-  const markExtension2 = mocked(new MarkExtension2());
+  const markExtension2 = vi.mocked(new MarkExtension2());
   markExtension2.dependencies.mockReturnValueOnce([]);
-  const nodeExtension1 = mocked(new NodeExtension1());
+  const nodeExtension1 = vi.mocked(new NodeExtension1());
   nodeExtension1.dependencies.mockReturnValueOnce([]);
-  const nodeExtension2 = mocked(new NodeExtension2());
+  const nodeExtension2 = vi.mocked(new NodeExtension2());
   nodeExtension2.dependencies.mockReturnValueOnce([]);
-  const extension1 = mocked(new MockExtension1());
+  const extension1 = vi.mocked(new MockExtension1());
   extension1.dependencies.mockReturnValueOnce([
     markExtension1,
     markExtension2,
