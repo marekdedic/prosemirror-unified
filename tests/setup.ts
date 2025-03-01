@@ -19,7 +19,7 @@ function supportRangeDOMRect(): void {
     range.getClientRects = (): DOMRectList => ({
       item: () => null,
       length: 0,
-      [Symbol.iterator]: vi.fn<() => IterableIterator<DOMRect>>(),
+      [Symbol.iterator]: vi.fn<() => ArrayIterator<DOMRect>>(),
     });
 
     return range;
