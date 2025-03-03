@@ -15,21 +15,21 @@ export abstract class SyntaxExtension<
     never
   >,
 > extends Extension {
-  /* eslint-disable @typescript-eslint/ban-ts-comment, @typescript-eslint/class-methods-use-this, @typescript-eslint/no-empty-function, @typescript-eslint/no-unused-vars -- These are invalid for interfaces */
+  /* eslint-disable @typescript-eslint/class-methods-use-this, @typescript-eslint/no-empty-function, @typescript-eslint/no-unused-vars -- These are invalid for interfaces */
   public postUnistToProseMirrorHook(
-    // @ts-ignore-error: TS6133 causes an error because of an unused parameter - however, this method is meant to be overriden
+    // @ts-expect-error: TS6133 causes an error because of an unused parameter - however, this method is meant to be overriden
     context: Partial<UnistToProseMirrorContext>,
   ): void {}
 
   public proseMirrorInputRules(
-    // @ts-ignore-error: TS6133 causes an error because of an unused parameter - however, this method is meant to be overriden
+    // @ts-expect-error: TS6133 causes an error because of an unused parameter - however, this method is meant to be overriden
     proseMirrorSchema: Schema<string, string>,
   ): Array<InputRule> {
     return [];
   }
 
   public proseMirrorKeymap(
-    // @ts-ignore-error: TS6133 causes an error because of an unused parameter - however, this method is meant to be overriden
+    // @ts-expect-error: TS6133 causes an error because of an unused parameter - however, this method is meant to be overriden
     proseMirrorSchema: Schema<string, string>,
   ): Record<string, Command> {
     return {};
