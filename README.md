@@ -36,7 +36,7 @@ const view = new EditorView(
       schema: pmu.schema(),
     }),
     // Add interactive elements (task lists etc.)
-    nodeViews: adapter.nodeViews(),
+    nodeViews: pmu.nodeViews(),
     // Log (in the browser console) the current content in markdown on every update
     dispatchTransaction: (tr): void => {
       view.updateState(view.state.apply(tr));
