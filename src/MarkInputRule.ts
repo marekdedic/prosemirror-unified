@@ -4,7 +4,6 @@ import { InputRule } from "prosemirror-inputrules";
 import {
   type EditorState,
   SelectionRange,
-  TextSelection,
   type Transaction,
 } from "prosemirror-state";
 
@@ -49,10 +48,6 @@ export class MarkInputRule extends InputRule {
     start: number,
     end: number,
   ): Transaction | null {
-    if (!(state.selection instanceof TextSelection)) {
-      return null;
-    }
-
     // Determine if mark applies to match
     const $start = state.doc.resolve(start);
     const $end = state.doc.resolve(end);
