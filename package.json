@@ -1,6 +1,6 @@
 {
   "name": "prosemirror-unified",
-  "version": "0.8.2",
+  "version": "0.8.3",
   "description": "ProseMirror Unified integration",
   "keywords": [
     "prosemirror",
@@ -22,9 +22,9 @@
   "types": "dist/prosemirror-unified.d.ts",
   "exports": {
     ".": {
-      "import": "dist/prosemirror-unified.js",
-      "require": "dist/prosemirror-unified.cjs",
-      "types": "dist/prosemirror-unified.d.ts"
+      "types": "./dist/prosemirror-unified.d.ts",
+      "import": "./dist/prosemirror-unified.js",
+      "require": "./dist/prosemirror-unified.cjs"
     }
   },
   "sideEffects": false,
@@ -76,6 +76,6 @@
     "vite": "^6.0.7",
     "vite-plugin-dts": "^4.5.0",
     "vitest": "^3.0.4",
-    "vitest-prosemirror": "^0.1.2"
+    "vitest-prosemirror": "^0.2.1"
   }
 }
