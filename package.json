@@ -20,6 +20,13 @@
   "main": "dist/prosemirror-unified.cjs",
   "module": "dist/prosemirror-unified.js",
   "types": "dist/prosemirror-unified.d.ts",
+  "exports": {
+    ".": {
+      "import": "dist/prosemirror-unified.js",
+      "require": "dist/prosemirror-unified.cjs",
+      "types": "dist/prosemirror-unified.d.ts"
+    }
+  },
   "sideEffects": false,
   "files": [
     "dist",
