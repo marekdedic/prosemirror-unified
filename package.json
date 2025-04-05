@@ -22,9 +22,9 @@
   "types": "dist/prosemirror-unified.d.ts",
   "exports": {
     ".": {
-      "import": "dist/prosemirror-unified.js",
-      "require": "dist/prosemirror-unified.cjs",
-      "types": "dist/prosemirror-unified.d.ts"
+      "types": "./dist/prosemirror-unified.d.ts",
+      "import": "./dist/prosemirror-unified.js",
+      "require": "./dist/prosemirror-unified.cjs"
     }
   },
   "sideEffects": false,
