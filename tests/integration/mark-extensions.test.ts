@@ -271,7 +271,7 @@ test("Adding a mark with a key binding", () => {
     plugins: [pmu.keymapPlugin()],
   });
   testEditor.selectText({ from: 7, to: 12 });
-  testEditor.shortcut("Mod-b");
+  testEditor.insertText("b", { ctrlKey: true });
 
   expect(testEditor.schema.spec.marks.size).toBe(1);
   expect(testEditor.schema.spec.marks.get("bold")).toBe(boldSpec);
