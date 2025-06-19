@@ -1,5 +1,7 @@
 import { vi } from "vitest";
 
+/* eslint-disable vitest/require-hook -- OK in setup file */
+
 function supportRangeDOMRect(): void {
   document.createRange = (): Range => {
     const range = new Range();
@@ -27,3 +29,5 @@ function supportRangeDOMRect(): void {
 }
 
 supportRangeDOMRect();
+
+/* eslint-enable */
