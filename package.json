@@ -30,9 +30,7 @@
   "module": "dist/prosemirror-unified.js",
   "types": "dist/prosemirror-unified.d.ts",
   "files": [
-    "dist",
-    "LICENSE",
-    "README.md"
+    "dist"
   ],
   "scripts": {
     "prebuild": "npm run clean",
@@ -62,7 +60,7 @@
     "@vitest/eslint-plugin": "^1.1.25",
     "eslint": "^9.9.0",
     "eslint-config-prettier": "^10.0.1",
-    "eslint-plugin-package-json": "^0.54.0",
+    "eslint-plugin-package-json": "^0.56.0",
     "eslint-plugin-perfectionist": "^4.0.3",
     "eslint-plugin-prefer-arrow-functions": "^3.4.0",
     "eslint-plugin-prettier": "^5.0.0",
