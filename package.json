@@ -21,9 +21,14 @@
   "type": "module",
   "exports": {
     ".": {
-      "types": "./dist/prosemirror-unified.d.ts",
-      "import": "./dist/prosemirror-unified.js",
-      "require": "./dist/prosemirror-unified.cjs"
+      "import": {
+        "types": "./dist/prosemirror-unified.d.ts",
+        "default": "./dist/prosemirror-unified.js"
+      },
+      "require": {
+        "types": "./dist/prosemirror-unified.d.cts",
+        "default": "./dist/prosemirror-unified.cjs"
+      }
     }
   },
   "main": "dist/prosemirror-unified.cjs",
@@ -34,7 +39,7 @@
   ],
   "scripts": {
     "prebuild": "npm run clean",
-    "build": "vite build",
+    "build": "vite build && cp dist/prosemirror-unified.d.ts dist/prosemirror-unified.d.cts",
     "clean": "rimraf dist/* types/*",
     "lint": "run-p -c --aggregate-output lint:*",
     "lint:attw": "attw --pack",
