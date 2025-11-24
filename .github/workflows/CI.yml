@@ -80,7 +80,7 @@ jobs:
           npm run test-coverage unit
 
       - name: "Upload coverage results"
-        uses: coverallsapp/github-action@v2.3.6
+        uses: coverallsapp/github-action@v2.3.7
         with:
           debug: true
           parallel: true
@@ -91,14 +91,14 @@ jobs:
           npm run test-coverage integration
 
       - name: "Upload coverage results"
-        uses: coverallsapp/github-action@v2.3.6
+        uses: coverallsapp/github-action@v2.3.7
         with:
           debug: true
           parallel: true
           flag-name: integration
 
       - name: "Close coverage report"
-        uses: coverallsapp/github-action@v2.3.6
+        uses: coverallsapp/github-action@v2.3.7
         with:
           debug: true
           parallel-finished: true
