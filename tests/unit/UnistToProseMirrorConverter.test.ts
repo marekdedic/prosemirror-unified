@@ -230,7 +230,7 @@ test("Fails gracefully on no root converter", () => {
 
   vi.spyOn(console, "warn").mockImplementation(() => {});
 
-  expect(() => converter.convert(rootUnistNode)).toThrow(
+  expect(() => converter.convert(rootUnistNode)).toThrowError(
     "Couldn't find any way to convert the root unist node.",
   );
   expect(console.warn).toHaveBeenCalledWith(

@@ -263,7 +263,7 @@ test("Fails gracefully on no root converter", () => {
 
   vi.spyOn(console, "warn").mockImplementation(() => {});
 
-  expect(() => converter.convert(rootNode)).toThrow(
+  expect(() => converter.convert(rootNode)).toThrowError(
     "Couldn't find any way to convert the root ProseMirror node.",
   );
   expect(console.warn).toHaveBeenCalledWith(
