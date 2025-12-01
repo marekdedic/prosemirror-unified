@@ -83,7 +83,7 @@ test("Parsing a document with no root node", () => {
   expect(
     () =>
       new ProseMirrorUnified([new TextExtension(), new ParagraphExtension()]),
-  ).toThrow("Schema is missing its top node type ('doc')");
+  ).toThrowError("Schema is missing its top node type ('doc')");
   expect(console.warn).not.toHaveBeenCalled();
 });
 
@@ -93,7 +93,7 @@ test("Parsing a document with no text node", () => {
   expect(
     () =>
       new ProseMirrorUnified([new ParagraphExtension(), new RootExtension()]),
-  ).toThrow("Every schema needs a 'text' type");
+  ).toThrowError("Every schema needs a 'text' type");
   expect(console.warn).not.toHaveBeenCalled();
 });
 
