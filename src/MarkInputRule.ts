@@ -84,7 +84,7 @@ export class MarkInputRule extends InputRule {
     }
 
     // Add back the last character if it is not a newline,
-    // otherwise omit it because newline is handled out of the text node.
+    // Otherwise omit it because newline is handled out of the text node.
     if (match[2] !== "\n") {
       tr.insertText(match[2]);
     }
