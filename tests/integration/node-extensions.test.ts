@@ -52,9 +52,15 @@ test("Parsing a document with a paragraph", () => {
 
   const proseMirrorTree = pmu
     .schema()
-    .nodes[
-      "doc"
-    ].create({}, pmu.schema().nodes["paragraph"].createAndFill({}, pmu.schema().text("Hello World!")));
+    .nodes["doc"].create(
+      {},
+      pmu
+        .schema()
+        .nodes["paragraph"].createAndFill(
+          {},
+          pmu.schema().text("Hello World!"),
+        ),
+    );
 
   vi.spyOn(console, "warn").mockImplementation(() => {});
   const testEditor = new ProseMirrorTester(proseMirrorRoot);
@@ -159,9 +165,12 @@ test("Parsing a document with no link node", () => {
 
   const targetProseMirrorTree = pmu
     .schema()
-    .nodes[
-      "doc"
-    ].create({}, pmu.schema().nodes["paragraph"].createAndFill({}, pmu.schema().text("Hello !")));
+    .nodes["doc"].create(
+      {},
+      pmu
+        .schema()
+        .nodes["paragraph"].createAndFill({}, pmu.schema().text("Hello !")),
+    );
 
   vi.spyOn(console, "warn").mockImplementation(() => {});
   const proseMirrorRoot = pmu.parse(source);
