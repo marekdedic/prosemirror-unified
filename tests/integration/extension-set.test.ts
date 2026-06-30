@@ -53,9 +53,15 @@ test("Parsing a document with an extension set", () => {
 
   const proseMirrorTree = pmu
     .schema()
-    .nodes[
-      "doc"
-    ].create({}, pmu.schema().nodes["paragraph"].createAndFill({}, pmu.schema().text("Hello World!")));
+    .nodes["doc"].create(
+      {},
+      pmu
+        .schema()
+        .nodes["paragraph"].createAndFill(
+          {},
+          pmu.schema().text("Hello World!"),
+        ),
+    );
 
   vi.spyOn(console, "warn").mockImplementation(() => {});
   const proseMirrorRoot = pmu.parse(source);
