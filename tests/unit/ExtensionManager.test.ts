@@ -104,6 +104,71 @@ test("ExtensionManager manages mark and node extensions", () => {
   ]);
 });
 
+test("ExtensionManager distinguishes extensions with the same constructor name", () => {
+  const MarkExtension1 = class n<
+    UNode extends UnistNode,
+  > extends MockMarkExtension<UNode> {};
+  const MarkExtension2 = class n<
+    UNode extends UnistNode,
+  > extends MockMarkExtension<UNode> {};
+  const NodeExtension1 = class n<
+    UNode extends UnistNode,
+  > extends MockNodeExtension<UNode> {};
+  const NodeExtension2 = class n<
+    UNode extends UnistNode,
+  > extends MockNodeExtension<UNode> {};
+  const Extension1 = class n extends Extension {};
+  const Extension2 = class n extends Extension {};
+  const markExtension1 = vi.mocked(new MarkExtension1());
+  markExtension1.dependencies.mockReturnValueOnce([]);
+  const markExtension2 = vi.mocked(new MarkExtension2());
+  markExtension2.dependencies.mockReturnValueOnce([]);
+  const nodeExtension1 = vi.mocked(new NodeExtension1());
+  nodeExtension1.dependencies.mockReturnValueOnce([]);
+  const nodeExtension2 = vi.mocked(new NodeExtension2());
+  nodeExtension2.dependencies.mockReturnValueOnce([]);
+  const extension1 = vi.mocked(new Extension1());
+  extension1.dependencies.mockReturnValueOnce([]);
+  const extension2 = vi.mocked(new Extension2());
+  extension2.dependencies.mockReturnValueOnce([]);
+  const manager = new ExtensionManager([
+    markExtension1,
+    markExtension2,
+    nodeExtension1,
+    nodeExtension2,
+    extension1,
+    extension2,
+  ]);
+
+  expect(manager.markExtensions()).toStrictEqual([
+    markExtension1,
+    markExtension2,
+  ]);
+  expect(manager.nodeExtensions()).toStrictEqual([
+    nodeExtension1,
+    nodeExtension2,
+  ]);
+  expect(manager.extensions()).toStrictEqual([
+    nodeExtension1,
+    nodeExtension2,
+    markExtension1,
+    markExtension2,
+    extension1,
+    extension2,
+  ]);
+});
+
+test("ExtensionManager deduplicates instances of the same extension", () => {
+  class MockExtension extends Extension {}
+  const extension1 = vi.mocked(new MockExtension());
+  extension1.dependencies.mockReturnValueOnce([]);
+  const extension2 = vi.mocked(new MockExtension());
+  extension2.dependencies.mockReturnValueOnce([]);
+  const manager = new ExtensionManager([extension1, extension2]);
+
+  expect(manager.extensions()).toStrictEqual([extension2]);
+});
+
 test("ExtensionManager manages extensions with dependencies", () => {
   class MarkExtension1<
     UNode extends UnistNode,
