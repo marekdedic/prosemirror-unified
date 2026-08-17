@@ -87,25 +87,19 @@ jobs:
           npm run test-coverage unit
 
       - name: "Upload coverage results"
-        uses: coverallsapp/github-action@v2.3.8
+        uses: codecov/codecov-action@v7.0.0
         with:
-          debug: true
-          parallel: true
-          flag-name: unit
+          flags: unit
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: true
 
       - name: "Run integration tests"
         run: |
           npm run test-coverage integration
 
       - name: "Upload coverage results"
-        uses: coverallsapp/github-action@v2.3.8
+        uses: codecov/codecov-action@v7.0.0
         with:
-          debug: true
-          parallel: true
-          flag-name: integration
-
-      - name: "Close coverage report"
-        uses: coverallsapp/github-action@v2.3.8
-        with:
-          debug: true
-          parallel-finished: true
+          flags: integration
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: true
