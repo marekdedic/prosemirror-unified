@@ -2,7 +2,7 @@
 
 [![NPM Version](https://img.shields.io/npm/v/prosemirror-unified?logo=npm)](https://www.npmjs.com/package/prosemirror-unified)
 [![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/marekdedic/prosemirror-unified/CI.yml?branch=master&logo=github)](https://github.com/marekdedic/prosemirror-unified/actions/workflows/CI.yml)
-[![Coveralls](https://img.shields.io/coverallsCoverage/github/marekdedic/prosemirror-unified?branch=master&logo=coveralls)](https://coveralls.io/github/marekdedic/prosemirror-unified)
+[![Codecov (with branch)](https://img.shields.io/codecov/c/github/marekdedic/prosemirror-unified/master?logo=codecov)](https://app.codecov.io/gh/marekdedic/prosemirror-unified)
 [![NPM Downloads](https://img.shields.io/npm/dm/prosemirror-unified?logo=npm)](https://www.npmjs.com/package/prosemirror-unified)
 [![NPM License](https://img.shields.io/npm/l/prosemirror-unified)](https://github.com/marekdedic/prosemirror-unified/blob/master/LICENSE)
 
