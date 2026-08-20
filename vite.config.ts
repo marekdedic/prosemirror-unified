@@ -9,7 +9,6 @@ export default defineConfig({
     lib: {
       entry: "src/index",
       formats: ["es", "cjs"],
-      name: "prosemirror-unified",
     },
     minify: false,
     rollupOptions: {
