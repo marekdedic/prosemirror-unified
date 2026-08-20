@@ -7,9 +7,15 @@ import { MarkExtension } from "./MarkExtension";
 import { NodeExtension } from "./NodeExtension";
 
 export class ExtensionManager {
-  private readonly markExtensionList: Map<string, MarkExtension<UnistNode>>;
-  private readonly nodeExtensionList: Map<string, NodeExtension<UnistNode>>;
-  private readonly otherExtensionList: Map<string, Extension>;
+  private readonly markExtensionList: Map<
+    Extension["constructor"],
+    MarkExtension<UnistNode>
+  >;
+  private readonly nodeExtensionList: Map<
+    Extension["constructor"],
+    NodeExtension<UnistNode>
+  >;
+  private readonly otherExtensionList: Map<Extension["constructor"], Extension>;
 
   public constructor(extensions: Array<Extension>) {
     this.markExtensionList = new Map();
@@ -47,14 +53,14 @@ export class ExtensionManager {
     }
 
     if (isMarkExtension(extension)) {
-      this.markExtensionList.set(extension.constructor.name, extension);
+      this.markExtensionList.set(extension.constructor, extension);
       return;
     }
     if (isNodeExtension(extension)) {
-      this.nodeExtensionList.set(extension.constructor.name, extension);
+      this.nodeExtensionList.set(extension.constructor, extension);
       return;
     }
-    this.otherExtensionList.set(extension.constructor.name, extension);
+    this.otherExtensionList.set(extension.constructor, extension);
   }
 }
 
