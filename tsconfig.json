@@ -1,7 +1,5 @@
 {
   "compilerOptions": {
-    "declaration": true,
-    "declarationDir": "types",
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "module": "es6",
