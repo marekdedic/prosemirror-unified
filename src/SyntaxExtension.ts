@@ -5,9 +5,6 @@ import type { Node as UnistNode } from "unist";
 
 import { Extension } from "./Extension";
 
-/**
- * @public
- */
 export abstract class SyntaxExtension<
   UNode extends UnistNode,
   UnistToProseMirrorContext extends Record<string, unknown> = Record<

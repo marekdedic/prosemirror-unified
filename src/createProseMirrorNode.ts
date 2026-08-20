@@ -1,8 +1,5 @@
 import type { Attrs, Node as ProseMirrorNode, Schema } from "prosemirror-model";
 
-/**
- * @public
- */
 export function createProseMirrorNode(
   nodeName: string | null,
   schema: Schema<string, string>,
