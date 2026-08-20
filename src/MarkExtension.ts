@@ -3,9 +3,6 @@ import type { Node as UnistNode } from "unist";
 
 import { SyntaxExtension } from "./SyntaxExtension";
 
-/**
- * @public
- */
 export abstract class MarkExtension<
   UNode extends UnistNode,
   UnistToProseMirrorContext extends Record<string, unknown> = Record<

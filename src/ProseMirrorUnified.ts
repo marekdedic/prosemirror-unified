@@ -15,9 +15,6 @@ import { SchemaBuilder } from "./SchemaBuilder";
 import { UnifiedBuilder } from "./UnifiedBuilder";
 import { UnistToProseMirrorConverter } from "./UnistToProseMirrorConverter";
 
-/**
- * @public
- */
 export class ProseMirrorUnified {
   private readonly builtSchema: Schema<string, string>;
   private readonly inputRulesBuilder: InputRulesBuilder;
