@@ -269,6 +269,27 @@ This class extends the `InputRule` class provided by ProseMirror and should be u
 
 Creates a new input rule that adds the mark specified by `markType` if the user input matches the provided `matcher`.
 
+The `matcher` must end with `$` and must contain two named capturing groups:
+
+- `content` — the text the mark is applied to. The whole match is replaced by this group, which is how the surrounding delimiters (e.g. the asterisks around bold text) get removed.
+- `trailing` — the text typed after the closing delimiter. It is re-inserted verbatim after the mark has been applied, and may be longer than one character. A `trailing` match consisting of a single newline is not re-inserted, because the newline is handled outside of the text node.
+
+The `trailing` group may be made optional, in which case the rule also applies when nothing follows the closing delimiter — the rule then triggers as soon as the delimiter itself is typed:
+
+```ts
+new MarkInputRule(/<b>(?<content>.*)<\/b>(?<trailing>.)?$/u, schema.marks["bold"]);
+```
+
+A rule that never has any trailing text can use an empty group:
+
+```ts
+new MarkInputRule(/<b>(?<content>.*)<\/b>(?<trailing>)?$/u, schema.marks["bold"]);
+```
+
+Note that requiring trailing text is what lets a matcher with a variable-length delimiter resolve the delimiter unambiguously, so making `trailing` optional is only appropriate for marks with a fixed delimiter.
+
+Any other capturing groups are ignored, so they may be used freely.
+
 ### `createProseMirrorNode(nodeName: string | null, schema: Schema<string, string>, children: Array<ProseMirrorNode>, attrs: Attrs = {}): Array<ProseMirrorNode>`
 
 A helper function that creates a ProseMirror node based on `nodeName` with the specified children and attributes. Returns `[]` if `nodeName` is `null`. This function is useful when creating `NodeExtension`s
