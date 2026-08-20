@@ -11,6 +11,14 @@ export class MarkInputRule extends InputRule {
   private readonly markType: MarkType;
 
   public constructor(matcher: RegExp, markType: MarkType) {
+    if (
+      !matcher.source.includes("(?<content>") ||
+      !matcher.source.includes("(?<trailing>")
+    ) {
+      throw new Error(
+        'A MarkInputRule matcher must contain the named capturing groups "content" and "trailing".',
+      );
+    }
     super(matcher, (state, match, start, end) =>
       this.markHandler(state, match, start, end),
     );
@@ -45,6 +53,13 @@ export class MarkInputRule extends InputRule {
     start: number,
     end: number,
   ): Transaction | null {
+    // The constructor guarantees that both named groups are present in the matcher.
+    // The trailing group may be optional and therefore not participate in the match.
+    const { content, trailing } = match.groups as {
+      content: string;
+      trailing?: string;
+    };
+
     // Determine if mark applies to match
     const $start = state.doc.resolve(start);
     const $end = state.doc.resolve(end);
@@ -63,7 +78,7 @@ export class MarkInputRule extends InputRule {
     const tr = state.tr.replaceWith(
       start,
       end,
-      this.markType.schema.text(match[1]),
+      this.markType.schema.text(content),
     );
 
     // Add back all marks, including the new one
@@ -80,10 +95,10 @@ export class MarkInputRule extends InputRule {
       tr.removeStoredMark(markType);
     }
 
-    // Add back the last character if it is not a newline,
+    // Add back the trailing text if there is any and it is not a newline,
     // Otherwise omit it because newline is handled out of the text node.
-    if (match[2] !== "\n") {
-      tr.insertText(match[2]);
+    if (trailing !== undefined && trailing !== "\n") {
+      tr.insertText(trailing);
     }
 
     return tr;
