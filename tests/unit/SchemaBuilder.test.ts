@@ -1,3 +1,5 @@
+import type { Node as UnistNode } from "unist";
+
 import {
   type DOMOutputSpec,
   type Mark,
@@ -114,4 +116,66 @@ test("SchemaBuilder works with complex specs", () => {
   expect(schema.spec.marks.get("MARK_1")).toStrictEqual(markSpec);
   expect(schema.spec.nodes.get("doc")).toStrictEqual(docSpec);
   expect(schema.spec.nodes.get("text")).toStrictEqual({});
+});
+
+test("SchemaBuilder warns about conflicting specs from different extensions", () => {
+  expect.assertions(3);
+
+  const NodeExtension1 = class<
+    UNode extends UnistNode,
+  > extends MockNodeExtension<UNode> {};
+  const NodeExtension2 = class<
+    UNode extends UnistNode,
+  > extends MockNodeExtension<UNode> {};
+  const docExtension = vi.mocked(new NodeExtension1());
+  docExtension.proseMirrorNodeName.mockReturnValueOnce("doc");
+  docExtension.proseMirrorNodeSpec.mockReturnValueOnce({});
+  const otherDocExtension = vi.mocked(new NodeExtension2());
+  otherDocExtension.proseMirrorNodeName.mockReturnValueOnce("doc");
+  otherDocExtension.proseMirrorNodeSpec.mockReturnValueOnce({});
+  const textExtension = vi.mocked(new MockNodeExtension());
+  textExtension.proseMirrorNodeName.mockReturnValueOnce("text");
+  textExtension.proseMirrorNodeSpec.mockReturnValueOnce({});
+  const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+
+  const manager = vi.mocked(new ExtensionManager([]));
+  manager.markExtensions.mockReturnValueOnce([]);
+  manager.nodeExtensions.mockReturnValueOnce([
+    docExtension,
+    otherDocExtension,
+    textExtension,
+  ]);
+
+  const builder = new SchemaBuilder(manager);
+
+  expect(warn).toHaveBeenCalledTimes(1);
+  expect(warn.mock.calls[0][0]).toContain('ProseMirror node spec for "doc"');
+  expect(builder.build()).toBeInstanceOf(Schema);
+});
+
+test("SchemaBuilder doesn't warn when only one extension provides a mark spec", () => {
+  expect.assertions(2);
+
+  const docExtension = vi.mocked(new MockNodeExtension());
+  docExtension.proseMirrorNodeName.mockReturnValueOnce("doc");
+  docExtension.proseMirrorNodeSpec.mockReturnValueOnce({});
+  const textExtension = vi.mocked(new MockNodeExtension());
+  textExtension.proseMirrorNodeName.mockReturnValueOnce("text");
+  textExtension.proseMirrorNodeSpec.mockReturnValueOnce({});
+  const markExtension1 = vi.mocked(new MockMarkExtension());
+  markExtension1.proseMirrorMarkName.mockReturnValueOnce("MARK_1");
+  markExtension1.proseMirrorMarkSpec.mockReturnValueOnce({});
+  const markExtension2 = vi.mocked(new MockMarkExtension());
+  markExtension2.proseMirrorMarkName.mockReturnValueOnce("MARK_1");
+  markExtension2.proseMirrorMarkSpec.mockReturnValueOnce(null);
+  const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+
+  const manager = vi.mocked(new ExtensionManager([]));
+  manager.markExtensions.mockReturnValueOnce([markExtension1, markExtension2]);
+  manager.nodeExtensions.mockReturnValueOnce([docExtension, textExtension]);
+
+  const builder = new SchemaBuilder(manager);
+
+  expect(warn).not.toHaveBeenCalled();
+  expect(builder.build()).toBeInstanceOf(Schema);
 });

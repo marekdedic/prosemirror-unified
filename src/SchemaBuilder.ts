@@ -3,7 +3,9 @@ import { type MarkSpec, type NodeSpec, Schema } from "prosemirror-model";
 import type { ExtensionManager } from "./ExtensionManager";
 
 export class SchemaBuilder {
+  private readonly markOwners = new Map<string, unknown>();
   private readonly marks: Record<string, MarkSpec> = {};
+  private readonly nodeOwners = new Map<string, unknown>();
   private readonly nodes: Record<string, NodeSpec> = {};
 
   public constructor(extensionManager: ExtensionManager) {
@@ -11,6 +13,7 @@ export class SchemaBuilder {
       const name = extension.proseMirrorNodeName();
       const spec = extension.proseMirrorNodeSpec();
       if (name !== null && spec !== null) {
+        warnOnConflict(this.nodeOwners, "node", name, extension);
         this.nodes[name] = spec;
       }
     }
@@ -18,6 +21,7 @@ export class SchemaBuilder {
       const name = extension.proseMirrorMarkName();
       const spec = extension.proseMirrorMarkSpec();
       if (name !== null && spec !== null) {
+        warnOnConflict(this.markOwners, "mark", name, extension);
         this.marks[name] = spec;
       }
     }
@@ -29,4 +33,20 @@ export class SchemaBuilder {
       nodes: this.nodes,
     });
   }
+}
+
+function warnOnConflict(
+  owners: Map<string, unknown>,
+  kind: string,
+  name: string,
+  extension: object,
+): void {
+  const previousOwner = owners.get(name);
+  if (previousOwner !== undefined && previousOwner !== extension.constructor) {
+    // eslint-disable-next-line no-console -- Intended console warning
+    console.warn(
+      `Two different extensions provide a ProseMirror ${kind} spec for "${name}", only the last one will be used. This usually means that a package providing extensions is present multiple times in your dependency tree.`,
+    );
+  }
+  owners.set(name, extension.constructor);
 }
