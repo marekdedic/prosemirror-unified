@@ -22,7 +22,6 @@ export default defineConfig({
         "unified",
       ],
     },
-    sourcemap: true,
   },
   plugins: [dts({ bundleTypes: true })],
   test: {

@@ -1,12 +1,9 @@
 {
   "compilerOptions": {
-    "declaration": true,
-    "declarationDir": "types",
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "module": "es6",
     "moduleResolution": "bundler",
-    "sourceMap": true,
     "target": "es6",
     "types": [],
 
