@@ -115,3 +115,71 @@ test("SchemaBuilder works with complex specs", () => {
   expect(schema.spec.nodes.get("doc")).toStrictEqual(docSpec);
   expect(schema.spec.nodes.get("text")).toStrictEqual({});
 });
+
+test("SchemaBuilder skips node extensions with no name or no spec", () => {
+  expect.assertions(3);
+
+  const docExtension = vi.mocked(new MockNodeExtension());
+  docExtension.proseMirrorNodeName.mockReturnValueOnce("doc");
+  docExtension.proseMirrorNodeSpec.mockReturnValueOnce({});
+  const textExtension = vi.mocked(new MockNodeExtension());
+  textExtension.proseMirrorNodeName.mockReturnValueOnce("text");
+  textExtension.proseMirrorNodeSpec.mockReturnValueOnce({});
+  const namelessExtension = vi.mocked(new MockNodeExtension());
+  namelessExtension.proseMirrorNodeName.mockReturnValueOnce(null);
+  namelessExtension.proseMirrorNodeSpec.mockReturnValueOnce({});
+  const speclessExtension = vi.mocked(new MockNodeExtension());
+  speclessExtension.proseMirrorNodeName.mockReturnValueOnce("SPECLESS");
+  speclessExtension.proseMirrorNodeSpec.mockReturnValueOnce(null);
+
+  const manager = vi.mocked(new ExtensionManager([]));
+  manager.markExtensions.mockReturnValueOnce([]);
+  manager.nodeExtensions.mockReturnValueOnce([
+    docExtension,
+    textExtension,
+    namelessExtension,
+    speclessExtension,
+  ]);
+
+  const builder = new SchemaBuilder(manager);
+  const schema = builder.build();
+
+  expect(schema.spec.nodes.size).toBe(2);
+  expect(schema.spec.nodes.get("doc")).toStrictEqual({});
+  expect(schema.spec.nodes.get("text")).toStrictEqual({});
+});
+
+test("SchemaBuilder skips mark extensions with no name or no spec", () => {
+  expect.assertions(3);
+
+  const docExtension = vi.mocked(new MockNodeExtension());
+  docExtension.proseMirrorNodeName.mockReturnValueOnce("doc");
+  docExtension.proseMirrorNodeSpec.mockReturnValueOnce({});
+  const textExtension = vi.mocked(new MockNodeExtension());
+  textExtension.proseMirrorNodeName.mockReturnValueOnce("text");
+  textExtension.proseMirrorNodeSpec.mockReturnValueOnce({});
+  const markExtension1 = vi.mocked(new MockMarkExtension());
+  markExtension1.proseMirrorMarkName.mockReturnValueOnce("MARK_1");
+  markExtension1.proseMirrorMarkSpec.mockReturnValueOnce({});
+  const namelessExtension = vi.mocked(new MockMarkExtension());
+  namelessExtension.proseMirrorMarkName.mockReturnValueOnce(null);
+  namelessExtension.proseMirrorMarkSpec.mockReturnValueOnce({});
+  const speclessExtension = vi.mocked(new MockMarkExtension());
+  speclessExtension.proseMirrorMarkName.mockReturnValueOnce("SPECLESS");
+  speclessExtension.proseMirrorMarkSpec.mockReturnValueOnce(null);
+
+  const manager = vi.mocked(new ExtensionManager([]));
+  manager.markExtensions.mockReturnValueOnce([
+    markExtension1,
+    namelessExtension,
+    speclessExtension,
+  ]);
+  manager.nodeExtensions.mockReturnValueOnce([docExtension, textExtension]);
+
+  const builder = new SchemaBuilder(manager);
+  const schema = builder.build();
+
+  expect(schema.spec.marks.size).toBe(1);
+  expect(schema.spec.marks.get("MARK_1")).toStrictEqual({});
+  expect(schema.marks["MARK_1"]).toBeInstanceOf(MarkType);
+});
