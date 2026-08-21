@@ -466,4 +466,199 @@ test("Applies post-conversion hook changes to the converted document", () => {
   expect(console.warn).not.toHaveBeenCalled();
 });
 
+test("Shares a single context object with every extension", () => {
+  expect.assertions(6);
+
+  const schema = new Schema<string, string>({
+    nodes: {
+      doc: { content: "text*" },
+      text: {},
+    },
+  });
+  const contexts: Array<Partial<Record<string, unknown>>> = [];
+
+  const textExtension = vi.mocked(new MockSyntaxExtension());
+  textExtension.unistToProseMirrorTest.mockImplementation(
+    (node) => node.type === "text",
+  );
+  textExtension.unistNodeToProseMirrorNodes.mockImplementation(
+    (_node, proseMirrorSchema, _convertedChildren, context) => {
+      contexts.push(context);
+      return [proseMirrorSchema.text("Hello World!")];
+    },
+  );
+  textExtension.postUnistToProseMirrorHook.mockImplementation((context) => {
+    contexts.push(context);
+  });
+
+  const docExtension = vi.mocked(new MockSyntaxExtension());
+  docExtension.unistToProseMirrorTest.mockImplementation(
+    (node) => node.type === "root",
+  );
+  docExtension.unistNodeToProseMirrorNodes.mockImplementation(
+    (_node, proseMirrorSchema, convertedChildren, context) => {
+      contexts.push(context);
+      return [proseMirrorSchema.nodes["doc"].create({}, convertedChildren)];
+    },
+  );
+  docExtension.postUnistToProseMirrorHook.mockImplementation((context) => {
+    contexts.push(context);
+  });
+
+  const manager = vi.mocked(new ExtensionManager([]));
+  manager.syntaxExtensions.mockReturnValue([docExtension, textExtension]);
+
+  const converter = new UnistToProseMirrorConverter(manager, schema);
+
+  const rootUnistNode = {
+    children: [
+      { type: "text", value: "Hello" },
+      { type: "text", value: "World" },
+    ],
+    type: "root",
+  };
+
+  vi.spyOn(console, "warn").mockImplementation(() => {});
+
+  converter.convert(rootUnistNode);
+
+  // Two text nodes, the root node and one hook per extension.
+  expect(contexts).toHaveLength(5);
+
+  for (const context of contexts) {
+    expect(context).toBe(contexts[0]);
+  }
+});
+
+test("Makes context changes visible to extensions converting later nodes", () => {
+  expect.assertions(3);
+
+  const schema = new Schema<string, string>({
+    nodes: {
+      doc: { content: "paragraph+" },
+      paragraph: { content: "text*" },
+      text: {},
+    },
+  });
+
+  const writerExtension = vi.mocked(new MockSyntaxExtension());
+  writerExtension.unistToProseMirrorTest.mockImplementation(
+    (node) => node.type === "writer",
+  );
+  writerExtension.unistNodeToProseMirrorNodes.mockImplementation(
+    (_node, proseMirrorSchema, _convertedChildren, context) => {
+      (context as Record<string, unknown>)["value"] = "WRITTEN";
+      return [proseMirrorSchema.text("writer")];
+    },
+  );
+
+  // Snapshots are needed because the context is mutated further after the call.
+  const readerSnapshots: Array<Record<string, unknown>> = [];
+  const readerExtension = vi.mocked(new MockSyntaxExtension());
+  readerExtension.unistToProseMirrorTest.mockImplementation(
+    (node) => node.type === "reader",
+  );
+  readerExtension.unistNodeToProseMirrorNodes.mockImplementation(
+    (_node, proseMirrorSchema, _convertedChildren, context) => {
+      readerSnapshots.push({ ...context });
+      return [proseMirrorSchema.text("reader")];
+    },
+  );
+
+  const paragraphSnapshots: Array<Record<string, unknown>> = [];
+  const paragraphExtension = vi.mocked(new MockSyntaxExtension());
+  paragraphExtension.unistToProseMirrorTest.mockImplementation(
+    (node) => node.type === "paragraph",
+  );
+  paragraphExtension.unistNodeToProseMirrorNodes.mockImplementation(
+    (_node, proseMirrorSchema, convertedChildren, context) => {
+      paragraphSnapshots.push({ ...context });
+      return [
+        proseMirrorSchema.nodes["paragraph"].create({}, convertedChildren),
+      ];
+    },
+  );
+
+  const docExtension = vi.mocked(new MockSyntaxExtension());
+  docExtension.unistToProseMirrorTest.mockImplementation(
+    (node) => node.type === "root",
+  );
+  docExtension.unistNodeToProseMirrorNodes.mockImplementation(
+    (_node, proseMirrorSchema, convertedChildren) => [
+      proseMirrorSchema.nodes["doc"].create({}, convertedChildren),
+    ],
+  );
+
+  const manager = vi.mocked(new ExtensionManager([]));
+  manager.syntaxExtensions.mockReturnValue([
+    docExtension,
+    paragraphExtension,
+    writerExtension,
+    readerExtension,
+  ]);
+
+  const converter = new UnistToProseMirrorConverter(manager, schema);
+
+  const rootUnistNode = {
+    children: [
+      { children: [{ type: "writer" }], type: "paragraph" },
+      { children: [{ type: "reader" }], type: "paragraph" },
+    ],
+    type: "root",
+  };
+
+  vi.spyOn(console, "warn").mockImplementation(() => {});
+
+  converter.convert(rootUnistNode);
+
+  // A parent sees what its own children wrote.
+  expect(paragraphSnapshots[0]["value"]).toBe("WRITTEN");
+  // A node sees what an earlier subtree wrote.
+  expect(readerSnapshots[0]["value"]).toBe("WRITTEN");
+  expect(console.warn).not.toHaveBeenCalled();
+});
+
+test("Starts every conversion with an empty context", () => {
+  expect.assertions(3);
+
+  const schema = new Schema<string, string>({
+    nodes: {
+      doc: {},
+      text: {},
+    },
+  });
+
+  const snapshots: Array<Record<string, unknown>> = [];
+  const contexts: Array<Partial<Record<string, unknown>>> = [];
+  const docExtension = vi.mocked(new MockSyntaxExtension());
+  docExtension.unistToProseMirrorTest.mockImplementation(
+    (node) => node.type === "root",
+  );
+  docExtension.unistNodeToProseMirrorNodes.mockImplementation(
+    (_node, proseMirrorSchema, _convertedChildren, context) => {
+      snapshots.push({ ...context });
+      contexts.push(context);
+      (context as Record<string, unknown>)["value"] = "WRITTEN";
+      return [proseMirrorSchema.nodes["doc"].create({}, [])];
+    },
+  );
+
+  const manager = vi.mocked(new ExtensionManager([]));
+  manager.syntaxExtensions.mockReturnValue([docExtension]);
+
+  const converter = new UnistToProseMirrorConverter(manager, schema);
+
+  const rootUnistNode = { children: [], type: "root" };
+
+  vi.spyOn(console, "warn").mockImplementation(() => {});
+
+  converter.convert(rootUnistNode);
+  converter.convert(rootUnistNode);
+
+  expect(snapshots[0]).toStrictEqual({});
+  // The second conversion must not see what the first one wrote.
+  expect(snapshots[1]).toStrictEqual({});
+  expect(contexts[1]).not.toBe(contexts[0]);
+});
+
 /* eslint-enable */
