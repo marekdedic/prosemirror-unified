@@ -661,4 +661,129 @@ test("Starts every conversion with an empty context", () => {
   expect(contexts[1]).not.toBe(contexts[0]);
 });
 
+test("Converts a node that produces no ProseMirror nodes", () => {
+  expect.assertions(4);
+
+  const schema = new Schema<string, string>({
+    nodes: {
+      doc: { content: "text*" },
+      text: {},
+    },
+  });
+
+  // Mimics a definition: the node only records something in the context and
+  // Contributes nothing to the document itself.
+  const definitionExtension = vi.mocked(new MockSyntaxExtension());
+  definitionExtension.unistToProseMirrorTest.mockImplementation(
+    (node) => node.type === "definition",
+  );
+  definitionExtension.unistNodeToProseMirrorNodes.mockImplementation(
+    (_node, _proseMirrorSchema, _convertedChildren, context) => {
+      (context as Record<string, unknown>)["value"] = "WRITTEN";
+      return [];
+    },
+  );
+
+  const textExtension = vi.mocked(new MockSyntaxExtension());
+  textExtension.unistToProseMirrorTest.mockImplementation(
+    (node) => node.type === "text",
+  );
+  textExtension.unistNodeToProseMirrorNodes.mockImplementation(
+    (_node, proseMirrorSchema) => [proseMirrorSchema.text("Hello World!")],
+  );
+
+  const docExtension = vi.mocked(new MockSyntaxExtension());
+  docExtension.unistToProseMirrorTest.mockImplementation(
+    (node) => node.type === "root",
+  );
+  docExtension.unistNodeToProseMirrorNodes.mockImplementation(
+    (_node, proseMirrorSchema, convertedChildren) => [
+      proseMirrorSchema.nodes["doc"].create({}, convertedChildren),
+    ],
+  );
+
+  const manager = vi.mocked(new ExtensionManager([]));
+  manager.syntaxExtensions.mockReturnValue([
+    docExtension,
+    definitionExtension,
+    textExtension,
+  ]);
+
+  const converter = new UnistToProseMirrorConverter(manager, schema);
+
+  const rootUnistNode = {
+    children: [{ type: "definition" }, { type: "text", value: "Hello World!" }],
+    type: "root",
+  };
+
+  vi.spyOn(console, "warn").mockImplementation(() => {});
+
+  const converted = converter.convert(rootUnistNode);
+
+  expect(converted.childCount).toBe(1);
+  expect(converted.child(0).text).toBe("Hello World!");
+  expect(definitionExtension.unistNodeToProseMirrorNodes).toHaveBeenCalledTimes(
+    1,
+  );
+  // Converting to nothing is intentional and must not be reported.
+  expect(console.warn).not.toHaveBeenCalled();
+});
+
+test("Converts a node into multiple ProseMirror nodes", () => {
+  expect.assertions(4);
+
+  const schema = new Schema<string, string>({
+    nodes: {
+      doc: { content: "text*" },
+      text: {},
+    },
+  });
+
+  const splittingExtension = vi.mocked(new MockSyntaxExtension());
+  splittingExtension.unistToProseMirrorTest.mockImplementation(
+    (node) => node.type === "splitting",
+  );
+  splittingExtension.unistNodeToProseMirrorNodes.mockImplementation(
+    (_node, proseMirrorSchema) => [
+      proseMirrorSchema.text("Hello "),
+      proseMirrorSchema.text("World!"),
+    ],
+  );
+
+  const docExtension = vi.mocked(new MockSyntaxExtension());
+  docExtension.unistToProseMirrorTest.mockImplementation(
+    (node) => node.type === "root",
+  );
+  docExtension.unistNodeToProseMirrorNodes.mockImplementation(
+    (_node, proseMirrorSchema, convertedChildren) => [
+      proseMirrorSchema.nodes["doc"].create({}, convertedChildren),
+    ],
+  );
+
+  const manager = vi.mocked(new ExtensionManager([]));
+  manager.syntaxExtensions.mockReturnValue([docExtension, splittingExtension]);
+
+  const converter = new UnistToProseMirrorConverter(manager, schema);
+
+  const rootUnistNode = {
+    children: [{ type: "splitting" }, { type: "splitting" }],
+    type: "root",
+  };
+
+  vi.spyOn(console, "warn").mockImplementation(() => {});
+
+  const converted = converter.convert(rootUnistNode);
+
+  // Both nodes of both children end up flattened into the parent.
+  expect(
+    docExtension.unistNodeToProseMirrorNodes.mock.calls[0][2],
+  ).toHaveLength(4);
+  expect(
+    docExtension.unistNodeToProseMirrorNodes.mock.calls[0][2][1].text,
+  ).toBe("World!");
+  // ProseMirror joins the adjacent text nodes back together.
+  expect(converted.textContent).toBe("Hello World!Hello World!");
+  expect(console.warn).not.toHaveBeenCalled();
+});
+
 /* eslint-enable */
