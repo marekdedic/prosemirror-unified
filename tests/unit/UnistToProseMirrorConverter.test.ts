@@ -1,4 +1,4 @@
-import { Schema } from "prosemirror-model";
+import { type Mark, Schema } from "prosemirror-model";
 import { expect, test, vi } from "vitest";
 
 import { ExtensionManager } from "../../src/ExtensionManager";
@@ -314,6 +314,156 @@ test("Converts a document with invalid children", () => {
   expect(console.warn).toHaveBeenCalledWith(
     'Couldn\'t find any way to convert unist node of type "two" to a ProseMirror node.',
   );
+});
+
+test("Runs the post-conversion hook of every syntax extension", () => {
+  expect.assertions(6);
+
+  const schema = new Schema<string, string>({
+    nodes: {
+      doc: { content: "text*" },
+      text: {},
+    },
+  });
+  const textProseMirrorNode = schema.text("Hello World!");
+  const rootProseMirrorNode = schema.nodes["doc"].create({}, [
+    textProseMirrorNode,
+  ]);
+
+  const textExtension = vi.mocked(new MockSyntaxExtension());
+  textExtension.unistToProseMirrorTest.mockImplementation(
+    (node) => node.type === "text",
+  );
+  textExtension.unistNodeToProseMirrorNodes.mockReturnValueOnce([
+    textProseMirrorNode,
+  ]);
+
+  const docExtension = vi.mocked(new MockSyntaxExtension());
+  docExtension.unistToProseMirrorTest.mockImplementation(
+    (node) => node.type === "root",
+  );
+  docExtension.unistNodeToProseMirrorNodes.mockReturnValueOnce([
+    rootProseMirrorNode,
+  ]);
+
+  const manager = vi.mocked(new ExtensionManager([]));
+  manager.syntaxExtensions.mockReturnValue([docExtension, textExtension]);
+
+  const converter = new UnistToProseMirrorConverter(manager, schema);
+
+  const rootUnistNode = {
+    children: [{ type: "text", value: "Hello World!" }],
+    type: "root",
+  };
+
+  vi.spyOn(console, "warn").mockImplementation(() => {});
+
+  converter.convert(rootUnistNode);
+
+  expect(docExtension.postUnistToProseMirrorHook).toHaveBeenCalledTimes(1);
+  expect(docExtension.postUnistToProseMirrorHook).toHaveBeenCalledWith({});
+  expect(textExtension.postUnistToProseMirrorHook).toHaveBeenCalledTimes(1);
+  expect(textExtension.postUnistToProseMirrorHook).toHaveBeenCalledWith({});
+
+  // The hooks only run once the whole tree has been converted.
+  expect(
+    textExtension.postUnistToProseMirrorHook.mock.invocationCallOrder[0],
+  ).toBeGreaterThan(
+    docExtension.unistNodeToProseMirrorNodes.mock.invocationCallOrder[0],
+  );
+  expect(console.warn).not.toHaveBeenCalled();
+});
+
+interface ReferenceContext extends Record<string, unknown> {
+  definitions: Record<string, string>;
+  marks: Record<string, Mark>;
+}
+
+test("Applies post-conversion hook changes to the converted document", () => {
+  expect.assertions(4);
+
+  const schema = new Schema<string, string>({
+    marks: {
+      link: { attrs: { href: { default: null } } },
+    },
+    nodes: {
+      doc: { content: "text*" },
+      text: {},
+    },
+  });
+
+  // Mimics the reference/definition pattern: the mark is created with a
+  // Placeholder attribute that only the hook can fill in.
+  const referenceExtension = vi.mocked(
+    new MockSyntaxExtension<{ type: "reference" }, ReferenceContext>(),
+  );
+  referenceExtension.unistToProseMirrorTest.mockImplementation(
+    (node) => node.type === "reference",
+  );
+  referenceExtension.unistNodeToProseMirrorNodes.mockImplementation(
+    (_node, proseMirrorSchema, _convertedChildren, context) => {
+      const mark = proseMirrorSchema.marks["link"].create({ href: null });
+      context.marks ??= {};
+      context.marks["ID"] = mark;
+      return [proseMirrorSchema.text("Hello World!").mark([mark])];
+    },
+  );
+  referenceExtension.postUnistToProseMirrorHook.mockImplementation(
+    (context) => {
+      for (const [id, mark] of Object.entries(context.marks ?? {})) {
+        (mark.attrs as Record<string, unknown>)["href"] =
+          context.definitions?.[id];
+      }
+    },
+  );
+
+  // The definition is only encountered after the reference that needs it.
+  const definitionExtension = vi.mocked(
+    new MockSyntaxExtension<{ type: "definition" }, ReferenceContext>(),
+  );
+  definitionExtension.unistToProseMirrorTest.mockImplementation(
+    (node) => node.type === "definition",
+  );
+  definitionExtension.unistNodeToProseMirrorNodes.mockImplementation(
+    (_node, _proseMirrorSchema, _convertedChildren, context) => {
+      context.definitions ??= {};
+      context.definitions["ID"] = "https://example.com";
+      return [];
+    },
+  );
+
+  const docExtension = vi.mocked(new MockSyntaxExtension());
+  docExtension.unistToProseMirrorTest.mockImplementation(
+    (node) => node.type === "root",
+  );
+  docExtension.unistNodeToProseMirrorNodes.mockImplementation(
+    (_node, proseMirrorSchema, convertedChildren) => [
+      proseMirrorSchema.nodes["doc"].create({}, convertedChildren),
+    ],
+  );
+
+  const manager = vi.mocked(new ExtensionManager([]));
+  manager.syntaxExtensions.mockReturnValue([
+    docExtension,
+    referenceExtension,
+    definitionExtension,
+  ]);
+
+  const converter = new UnistToProseMirrorConverter(manager, schema);
+
+  const rootUnistNode = {
+    children: [{ type: "reference" }, { type: "definition" }],
+    type: "root",
+  };
+
+  vi.spyOn(console, "warn").mockImplementation(() => {});
+
+  const converted = converter.convert(rootUnistNode);
+
+  expect(converted.childCount).toBe(1);
+  expect(converted.child(0).marks).toHaveLength(1);
+  expect(converted.child(0).marks[0].attrs["href"]).toBe("https://example.com");
+  expect(console.warn).not.toHaveBeenCalled();
 });
 
 /* eslint-enable */
