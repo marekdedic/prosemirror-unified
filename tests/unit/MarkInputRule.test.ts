@@ -20,13 +20,33 @@ describe("MarkInputRule works", () => {
     },
   });
 
-  const typeText = (matcher: RegExp, text: string): ProseMirrorTester => {
+  // The paragraph disallows all marks, so a matching rule must not apply.
+  const markLessSchema = new Schema({
+    marks: {
+      bold: { toDOM: (): DOMOutputSpec => ["b", 0] },
+    },
+    nodes: {
+      doc: { content: "paragraph+" },
+      paragraph: {
+        content: "text*",
+        marks: "",
+        toDOM: (): DOMOutputSpec => ["p", 0],
+      },
+      text: {},
+    },
+  });
+
+  const typeText = (
+    ruleSchema: Schema<"doc" | "paragraph" | "text", "bold">,
+    matcher: RegExp,
+    text: string,
+  ): ProseMirrorTester => {
     const testEditor = new ProseMirrorTester(
-      schema.nodes.doc.create(null, schema.nodes.paragraph.create()),
+      ruleSchema.nodes.doc.create(null, ruleSchema.nodes.paragraph.create()),
       {
         plugins: [
           inputRules({
-            rules: [new MarkInputRule(matcher, schema.marks.bold)],
+            rules: [new MarkInputRule(matcher, ruleSchema.marks.bold)],
           }),
         ],
       },
@@ -79,6 +99,7 @@ describe("MarkInputRule works", () => {
     expect.assertions(3);
 
     const testEditor = typeText(
+      schema,
       /<b>(?<content>.*)<\/b>(?<trailing>.)$/u,
       "<b>bold</b> ",
     );
@@ -93,6 +114,7 @@ describe("MarkInputRule works", () => {
 
     // The content group sits at index 2, after the backreferenced delimiter
     const testEditor = typeText(
+      schema,
       /(?<delimiter>`+)(?<content>[^`]+)\k<delimiter>(?<trailing>.)$/u,
       "``code`` ",
     );
@@ -105,8 +127,11 @@ describe("MarkInputRule works", () => {
     expect.assertions(1);
 
     expect(
-      typeText(/<b>(?<content>.*)<\/b>(?<trailing>\s\s)$/u, "<b>bold</b>  ").doc
-        .textContent,
+      typeText(
+        schema,
+        /<b>(?<content>.*)<\/b>(?<trailing>\s\s)$/u,
+        "<b>bold</b>  ",
+      ).doc.textContent,
     ).toBe("bold  ");
   });
 
@@ -114,6 +139,7 @@ describe("MarkInputRule works", () => {
     expect.assertions(2);
 
     const testEditor = typeText(
+      schema,
       /<b>(?<content>.*)<\/b>(?<trailing>.)?$/u,
       "<b>bold</b>",
     );
@@ -126,11 +152,25 @@ describe("MarkInputRule works", () => {
     expect.assertions(2);
 
     const testEditor = typeText(
+      schema,
       /<b>(?<content>.*)<\/b>(?<trailing>)?$/u,
       "<b>bold</b>",
     );
 
     expect(testEditor.doc.textContent).toBe("bold");
     expect(testEditor.doc.nodeAt(1)?.marks).toHaveLength(1);
+  });
+
+  test("does not apply a mark the target node disallows", () => {
+    expect.assertions(2);
+
+    const testEditor = typeText(
+      markLessSchema,
+      /<b>(?<content>.*)<\/b>(?<trailing>.)$/u,
+      "<b>bold</b>!",
+    );
+
+    expect(testEditor.doc.textContent).toBe("<b>bold</b>!");
+    expect(testEditor.doc.nodeAt(1)?.marks).toHaveLength(0);
   });
 });
