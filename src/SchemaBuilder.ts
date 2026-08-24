@@ -52,7 +52,7 @@ export class SchemaBuilder {
     owner: string,
   ): Error {
     // Two distinct classes can share a name, in which case naming them twice
-    // Would be more confusing than helpful.
+    // would be more confusing than helpful.
     if (previousOwner === owner) {
       return new Error(
         `Two different extensions named "${owner}" both provide the ProseMirror ${kind} "${name}".`,

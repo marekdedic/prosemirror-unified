@@ -395,7 +395,7 @@ test("Applies post-conversion hook changes to the converted document", () => {
   });
 
   // Mimics the reference/definition pattern: the mark is created with a
-  // Placeholder attribute that only the hook can fill in.
+  // placeholder attribute that only the hook can fill in.
   const referenceExtension = vi.mocked(
     new MockSyntaxExtension<{ type: "reference" }, ReferenceContext>(),
   );
@@ -674,7 +674,7 @@ test("Converts a node that produces no ProseMirror nodes", () => {
   });
 
   // Mimics a definition: the node only records something in the context and
-  // Contributes nothing to the document itself.
+  // contributes nothing to the document itself.
   const definitionExtension = vi.mocked(new MockSyntaxExtension());
   definitionExtension.unistToProseMirrorTest.mockImplementation(
     (node) => node.type === "definition",

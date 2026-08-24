@@ -245,7 +245,7 @@ test("SchemaBuilder reports two different extensions sharing a name", () => {
   expect.assertions(1);
 
   // Two distinct classes can share a name, in which case naming them twice
-  // Would be more confusing than helpful.
+  // would be more confusing than helpful.
   const NodeExtension1 = class n<
     UNode extends UnistNode,
   > extends MockNodeExtension<UNode> {};
