@@ -222,3 +222,109 @@ test("ExtensionManager manages extensions with dependencies", () => {
     markExtension2,
   ]);
 });
+
+test("ExtensionManager manages transitive dependencies", () => {
+  expect.assertions(4);
+
+  class LeafExtension<
+    UNode extends UnistNode,
+  > extends MockNodeExtension<UNode> {}
+  class MiddleExtension<
+    UNode extends UnistNode,
+  > extends MockNodeExtension<UNode> {}
+  class TopExtension extends Extension {}
+
+  const leafExtension = vi.mocked(new LeafExtension());
+  leafExtension.dependencies.mockReturnValueOnce([]);
+  const middleExtension = vi.mocked(new MiddleExtension());
+  middleExtension.dependencies.mockReturnValueOnce([leafExtension]);
+  const topExtension = vi.mocked(new TopExtension());
+  topExtension.dependencies.mockReturnValueOnce([middleExtension]);
+
+  const manager = new ExtensionManager([topExtension]);
+
+  expect(manager.nodeExtensions()).toStrictEqual([
+    leafExtension,
+    middleExtension,
+  ]);
+  expect(manager.markExtensions()).toStrictEqual([]);
+  expect(manager.syntaxExtensions()).toStrictEqual([
+    leafExtension,
+    middleExtension,
+  ]);
+  // Dependencies come before the extension that depends on them.
+  expect(manager.extensions()).toStrictEqual([
+    leafExtension,
+    middleExtension,
+    topExtension,
+  ]);
+});
+
+test("ExtensionManager deduplicates a shared transitive dependency", () => {
+  expect.assertions(3);
+
+  class FirstNodeExtension<
+    UNode extends UnistNode,
+  > extends MockNodeExtension<UNode> {}
+  class SharedExtension<
+    UNode extends UnistNode,
+  > extends MockNodeExtension<UNode> {}
+  class LastNodeExtension<
+    UNode extends UnistNode,
+  > extends MockNodeExtension<UNode> {}
+  class DependerExtension1<
+    UNode extends UnistNode,
+  > extends MockMarkExtension<UNode> {}
+  class DependerExtension2<
+    UNode extends UnistNode,
+  > extends MockMarkExtension<UNode> {}
+  class TopExtension extends Extension {}
+
+  const firstNodeExtension = vi.mocked(new FirstNodeExtension());
+  firstNodeExtension.dependencies.mockReturnValueOnce([]);
+  const sharedExtension1 = vi.mocked(new SharedExtension());
+  sharedExtension1.dependencies.mockReturnValueOnce([]);
+  const sharedExtension2 = vi.mocked(new SharedExtension());
+  sharedExtension2.dependencies.mockReturnValueOnce([]);
+  const sharedExtension3 = vi.mocked(new SharedExtension());
+  sharedExtension3.dependencies.mockReturnValueOnce([]);
+  const lastNodeExtension = vi.mocked(new LastNodeExtension());
+  lastNodeExtension.dependencies.mockReturnValueOnce([]);
+  const dependerExtension1 = vi.mocked(new DependerExtension1());
+  dependerExtension1.dependencies.mockReturnValueOnce([sharedExtension2]);
+  const dependerExtension2 = vi.mocked(new DependerExtension2());
+  dependerExtension2.dependencies.mockReturnValueOnce([sharedExtension3]);
+
+  // The shared extension is reachable directly and through both dependers.
+  const topExtension = vi.mocked(new TopExtension());
+  topExtension.dependencies.mockReturnValueOnce([
+    firstNodeExtension,
+    sharedExtension1,
+    dependerExtension1,
+    lastNodeExtension,
+    dependerExtension2,
+  ]);
+
+  const manager = new ExtensionManager([topExtension]);
+
+  // The extension keeps the position of its first occurrence, so an extension
+  // Listed first stays the first node extension - and therefore the default
+  // ProseMirror block - no matter what depends on what.
+  expect(manager.nodeExtensions()).toStrictEqual([
+    firstNodeExtension,
+    sharedExtension3,
+    lastNodeExtension,
+  ]);
+  expect(manager.markExtensions()).toStrictEqual([
+    dependerExtension1,
+    dependerExtension2,
+  ]);
+  expect(manager.extensions()).toStrictEqual([
+    firstNodeExtension,
+    sharedExtension3,
+    lastNodeExtension,
+    dependerExtension1,
+    dependerExtension2,
+    topExtension,
+  ]);
+});

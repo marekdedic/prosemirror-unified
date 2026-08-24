@@ -15,7 +15,7 @@ class Node1Extension<
 
 class TextExtension<UNode extends UnistNode> extends MockNodeExtension<UNode> {}
 
-test("NodeViewBuilder creates a plugin", () => {
+test("NodeViewBuilder collects the node views of the extensions", () => {
   const textNodeView = (): NodeView => ({
     dom: document.createElement("span"),
   });

@@ -1,20 +1,16 @@
-import type { Node as UnistNode } from "unist";
-
-import { type Processor, unified } from "unified";
-import { expect, type Mocked, test, vi } from "vitest";
+import { expect, test, vi } from "vitest";
 import { ProseMirrorTester } from "vitest-prosemirror";
 
 import { ProseMirrorUnified } from "../../src/ProseMirrorUnified";
 import { ParagraphExtension, paragraphSpec } from "./ParagraphExtension";
+import { ParserProviderExtension } from "./ParserProviderExtension";
 import { RootExtension, rootSpec, type UnistRoot } from "./RootExtension";
 import { TextExtension, textSpec } from "./TextExtension";
-
-vi.mock("unified");
 
 /* eslint-disable @typescript-eslint/no-empty-function, no-console -- Testing console output */
 
 test("Parsing a document with a paragraph", () => {
-  expect.assertions(13);
+  expect.assertions(11);
 
   const source = "<p>Hello World!</p>";
   const unistTree: UnistRoot = {
@@ -32,17 +28,10 @@ test("Parsing a document with a paragraph", () => {
     type: "root",
   };
 
-  const unifiedMock = {
-    parse: vi.fn<(file: string) => UnistNode>().mockReturnValueOnce(unistTree),
-    runSync: vi
-      .fn<(node: UnistNode) => UnistNode>()
-      .mockImplementation((root) => root),
-    stringify: vi.fn<(tree: UnistNode) => string>().mockReturnValueOnce(source),
-  } as unknown as Mocked<Processor>;
-
-  vi.mocked(unified).mockReturnValueOnce(unifiedMock);
+  const parserProvider = new ParserProviderExtension(unistTree, source);
 
   const pmu = new ProseMirrorUnified([
+    parserProvider,
     new RootExtension(),
     new TextExtension(),
     new ParagraphExtension(),
@@ -71,14 +60,12 @@ test("Parsing a document with a paragraph", () => {
   expect(testEditor.schema.spec.nodes.get("paragraph")).toBe(paragraphSpec);
   expect(testEditor.schema.spec.nodes.get("text")).toBe(textSpec);
   expect(testEditor.doc).toEqualProseMirrorNode(proseMirrorTree);
-  expect(unifiedMock.parse).toHaveBeenCalledTimes(1);
-  expect(unifiedMock.parse).toHaveBeenCalledWith(source);
-  expect(unifiedMock.runSync).toHaveBeenCalledTimes(1);
+  expect(parserProvider.parsed).toStrictEqual([source]);
+  expect(parserProvider.transformed).toHaveLength(1);
 
   expect(pmu.serialize(testEditor.doc)).toBe(source);
 
-  expect(unifiedMock.stringify).toHaveBeenCalledTimes(1);
-  expect(unifiedMock.stringify).toHaveBeenCalledWith(unistTree);
+  expect(parserProvider.stringified).toStrictEqual([unistTree]);
 
   expect(console.warn).not.toHaveBeenCalled();
 });
@@ -104,7 +91,7 @@ test("Parsing a document with no text node", () => {
 });
 
 test("Parsing a document with no link node", () => {
-  expect.assertions(13);
+  expect.assertions(11);
 
   const source = "<p>Hello <a>World</a>!</p>";
   const target = "<p>Hello !</p>";
@@ -145,19 +132,10 @@ test("Parsing a document with no link node", () => {
     type: "root",
   };
 
-  const unifiedMock = {
-    parse: vi
-      .fn<(file: string) => UnistNode>()
-      .mockReturnValueOnce(sourceUnistTree),
-    runSync: vi
-      .fn<(node: UnistNode) => UnistNode>()
-      .mockImplementation((root) => root),
-    stringify: vi.fn<(tree: UnistNode) => string>().mockReturnValueOnce(target),
-  } as unknown as Mocked<Processor>;
-
-  vi.mocked(unified).mockReturnValueOnce(unifiedMock);
+  const parserProvider = new ParserProviderExtension(sourceUnistTree, target);
 
   const pmu = new ProseMirrorUnified([
+    parserProvider,
     new RootExtension(),
     new TextExtension(),
     new ParagraphExtension(),
@@ -182,14 +160,12 @@ test("Parsing a document with no link node", () => {
   expect(testEditor.schema.spec.nodes.get("paragraph")).toBe(paragraphSpec);
   expect(testEditor.schema.spec.nodes.get("text")).toBe(textSpec);
   expect(testEditor.doc).toEqualProseMirrorNode(targetProseMirrorTree);
-  expect(unifiedMock.parse).toHaveBeenCalledTimes(1);
-  expect(unifiedMock.parse).toHaveBeenCalledWith(source);
-  expect(unifiedMock.runSync).toHaveBeenCalledTimes(1);
+  expect(parserProvider.parsed).toStrictEqual([source]);
+  expect(parserProvider.transformed).toHaveLength(1);
 
   expect(pmu.serialize(testEditor.doc)).toBe(target);
 
-  expect(unifiedMock.stringify).toHaveBeenCalledTimes(1);
-  expect(unifiedMock.stringify).toHaveBeenCalledWith(targetUnistTree);
+  expect(parserProvider.stringified).toStrictEqual([targetUnistTree]);
 
   expect(console.warn).toHaveBeenCalledWith(
     'Couldn\'t find any way to convert unist node of type "link" to a ProseMirror node.',

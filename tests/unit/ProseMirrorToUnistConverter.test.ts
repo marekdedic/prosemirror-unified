@@ -1,3 +1,5 @@
+import type { Node as UnistNode } from "unist";
+
 import { Schema } from "prosemirror-model";
 import { expect, test, vi } from "vitest";
 
@@ -13,7 +15,7 @@ vi.mock("../../src/MarkExtension");
 
 test("Converts basic document", () => {
   const docExtension = vi.mocked(new MockNodeExtension());
-  docExtension.proseMirrorNodeName.mockReturnValueOnce("doc");
+  docExtension.proseMirrorNodeName.mockReturnValue("doc");
   const rootUnistNode = { children: [], type: "root" };
   docExtension.proseMirrorNodeToUnistNodes.mockReturnValueOnce([rootUnistNode]);
 
@@ -42,14 +44,14 @@ test("Converts basic document", () => {
 
 test("Converts a document with children", () => {
   const textExtension = vi.mocked(new MockNodeExtension());
-  textExtension.proseMirrorNodeName.mockReturnValueOnce("text");
+  textExtension.proseMirrorNodeName.mockReturnValue("text");
   const textUnistNode = { type: "text", value: "Hello World!" };
   textExtension.proseMirrorNodeToUnistNodes.mockReturnValueOnce([
     textUnistNode,
   ]);
 
   const docExtension = vi.mocked(new MockNodeExtension());
-  docExtension.proseMirrorNodeName.mockReturnValueOnce("doc");
+  docExtension.proseMirrorNodeName.mockReturnValue("doc");
   const rootUnistNode = { children: [textUnistNode], type: "root" };
   docExtension.proseMirrorNodeToUnistNodes.mockReturnValueOnce([rootUnistNode]);
 
@@ -101,7 +103,7 @@ test("Converts a document with children of multiple types", () => {
   ]);
 
   const docExtension = vi.mocked(new MockNodeExtension());
-  docExtension.proseMirrorNodeName.mockReturnValueOnce("doc");
+  docExtension.proseMirrorNodeName.mockReturnValue("doc");
   const rootUnistNode = {
     children: [typeOneUnistNode, typeTwoUnistNode],
     type: "root",
@@ -158,7 +160,7 @@ test("Converts a document with children of multiple types", () => {
 
 test("Converts a document with marks", () => {
   const textExtension = vi.mocked(new MockNodeExtension());
-  textExtension.proseMirrorNodeName.mockReturnValueOnce("text");
+  textExtension.proseMirrorNodeName.mockReturnValue("text");
   const textUnistNode = { type: "text", value: "Hello World!" };
   textExtension.proseMirrorNodeToUnistNodes.mockReturnValueOnce([
     textUnistNode,
@@ -188,7 +190,7 @@ test("Converts a document with marks", () => {
   );
 
   const docExtension = vi.mocked(new MockNodeExtension());
-  docExtension.proseMirrorNodeName.mockReturnValueOnce("doc");
+  docExtension.proseMirrorNodeName.mockReturnValue("doc");
   const rootUnistNode = {
     children: [textUnistNode],
     type: "root",
@@ -280,7 +282,7 @@ test("Converts a document with invalid children", () => {
   ]);
 
   const docExtension = vi.mocked(new MockNodeExtension());
-  docExtension.proseMirrorNodeName.mockReturnValueOnce("doc");
+  docExtension.proseMirrorNodeName.mockReturnValue("doc");
   const rootUnistNode = {
     children: [typeOneUnistNode],
     type: "root",
@@ -337,7 +339,7 @@ test("Converts a document with invalid marks", () => {
   ]);
 
   const docExtension = vi.mocked(new MockNodeExtension());
-  docExtension.proseMirrorNodeName.mockReturnValueOnce("doc");
+  docExtension.proseMirrorNodeName.mockReturnValue("doc");
   const rootUnistNode = {
     children: [typeOneUnistNode],
     type: "root",
@@ -380,6 +382,128 @@ test("Converts a document with invalid marks", () => {
   );
   expect(console.warn).toHaveBeenCalledWith(
     'Couldn\'t find any way to convert ProseMirror mark of type "typeTwo" to a unist node.',
+  );
+});
+
+test("Warns when multiple extensions can convert a node", () => {
+  expect.assertions(6);
+
+  class DocExtension1<
+    UNode extends UnistNode,
+  > extends MockNodeExtension<UNode> {}
+  class DocExtension2<
+    UNode extends UnistNode,
+  > extends MockNodeExtension<UNode> {}
+
+  const textUnistNode = { type: "text", value: "Hello World!" };
+  const firstRootUnistNode = { children: [textUnistNode], type: "first" };
+  const secondRootUnistNode = { children: [textUnistNode], type: "second" };
+
+  const textExtension = vi.mocked(new MockNodeExtension());
+  textExtension.proseMirrorNodeName.mockReturnValue("text");
+  textExtension.proseMirrorNodeToUnistNodes.mockReturnValue([textUnistNode]);
+
+  const extension1 = vi.mocked(new DocExtension1());
+  extension1.proseMirrorNodeName.mockReturnValue("doc");
+  extension1.proseMirrorNodeToUnistNodes.mockReturnValue([firstRootUnistNode]);
+
+  const extension2 = vi.mocked(new DocExtension2());
+  extension2.proseMirrorNodeName.mockReturnValue("doc");
+  extension2.proseMirrorNodeToUnistNodes.mockReturnValue([secondRootUnistNode]);
+
+  const manager = vi.mocked(new ExtensionManager([]));
+  manager.nodeExtensions.mockReturnValue([
+    extension1,
+    extension2,
+    textExtension,
+  ]);
+  manager.markExtensions.mockReturnValue([]);
+
+  const converter = new ProseMirrorToUnistConverter(manager);
+
+  const schema = new Schema({
+    nodes: {
+      doc: { content: "text*" },
+      text: {},
+    },
+  });
+  const rootProseMirrorNode = schema.nodes.doc.create({}, [
+    schema.text("Hello World!"),
+  ]);
+
+  vi.spyOn(console, "warn").mockImplementation(() => {});
+
+  const converted = converter.convert(rootProseMirrorNode);
+
+  // The first matching extension wins.
+  expect(converted).toStrictEqual(firstRootUnistNode);
+  expect(extension1.proseMirrorNodeToUnistNodes).toHaveBeenCalledTimes(1);
+  expect(extension2.proseMirrorNodeToUnistNodes).not.toHaveBeenCalled();
+  // The children are only converted once, not once per matching extension.
+  expect(textExtension.proseMirrorNodeToUnistNodes).toHaveBeenCalledTimes(1);
+  expect(console.warn).toHaveBeenCalledTimes(1);
+  expect(console.warn).toHaveBeenCalledWith(
+    'Multiple extensions (DocExtension1, DocExtension2) can convert the ProseMirror node of type "doc" to a unist node, using DocExtension1.',
+  );
+});
+
+test("Warns when multiple extensions can convert a mark", () => {
+  expect.assertions(5);
+
+  class MarkExtension1<
+    UNode extends UnistNode,
+  > extends MockMarkExtension<UNode> {}
+  class MarkExtension2<
+    UNode extends UnistNode,
+  > extends MockMarkExtension<UNode> {}
+
+  const textUnistNode = { type: "text", value: "Hello World!" };
+  const markedUnistNode = { marked: true, type: "text" };
+  const rootUnistNode = { children: [markedUnistNode], type: "root" };
+
+  const textExtension = vi.mocked(new MockNodeExtension());
+  textExtension.proseMirrorNodeName.mockReturnValue("text");
+  textExtension.proseMirrorNodeToUnistNodes.mockReturnValue([textUnistNode]);
+
+  const extension1 = vi.mocked(new MarkExtension1());
+  extension1.proseMirrorMarkName.mockReturnValue("mark");
+  extension1.processConvertedUnistNode.mockReturnValue(markedUnistNode);
+
+  const extension2 = vi.mocked(new MarkExtension2());
+  extension2.proseMirrorMarkName.mockReturnValue("mark");
+
+  const docExtension = vi.mocked(new MockNodeExtension());
+  docExtension.proseMirrorNodeName.mockReturnValue("doc");
+  docExtension.proseMirrorNodeToUnistNodes.mockReturnValue([rootUnistNode]);
+
+  const manager = vi.mocked(new ExtensionManager([]));
+  manager.markExtensions.mockReturnValue([extension1, extension2]);
+  manager.nodeExtensions.mockReturnValue([docExtension, textExtension]);
+
+  const converter = new ProseMirrorToUnistConverter(manager);
+
+  const schema = new Schema({
+    marks: { mark: {} },
+    nodes: {
+      doc: { content: "text*" },
+      text: {},
+    },
+  });
+  const rootProseMirrorNode = schema.nodes.doc.create({}, [
+    schema.text("Hello World!").mark([schema.marks.mark.create()]),
+  ]);
+
+  vi.spyOn(console, "warn").mockImplementation(() => {});
+
+  const converted = converter.convert(rootProseMirrorNode);
+
+  // The first matching extension wins.
+  expect(converted).toStrictEqual(rootUnistNode);
+  expect(extension1.processConvertedUnistNode).toHaveBeenCalledTimes(1);
+  expect(extension2.processConvertedUnistNode).not.toHaveBeenCalled();
+  expect(console.warn).toHaveBeenCalledTimes(1);
+  expect(console.warn).toHaveBeenCalledWith(
+    'Multiple extensions (MarkExtension1, MarkExtension2) can convert the ProseMirror mark of type "mark" to a unist node, using MarkExtension1.',
   );
 });
 
