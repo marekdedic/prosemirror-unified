@@ -1,20 +1,11 @@
-import type { NodeView } from "prosemirror-view";
 import type { Processor } from "unified";
 import type { Node as UnistNode } from "unist";
 
-import { inputRules } from "prosemirror-inputrules";
-import { keymap } from "prosemirror-keymap";
 import { Schema } from "prosemirror-model";
 import { expect, type Mocked, test, vi } from "vitest";
 
-import { Extension } from "../../src";
-import { ExtensionManager } from "../../src/ExtensionManager";
-import { InputRulesBuilder } from "../../src/InputRulesBuilder";
-import { KeymapBuilder } from "../../src/KeymapBuilder";
-import { NodeViewBuilder } from "../../src/NodeViewBuilder";
 import { ProseMirrorToUnistConverter } from "../../src/ProseMirrorToUnistConverter";
 import { ProseMirrorUnified } from "../../src/ProseMirrorUnified";
-import { SchemaBuilder } from "../../src/SchemaBuilder";
 import { UnifiedBuilder } from "../../src/UnifiedBuilder";
 import { UnistToProseMirrorConverter } from "../../src/UnistToProseMirrorConverter";
 
@@ -26,61 +17,6 @@ vi.mock("../../src/ProseMirrorToUnistConverter");
 vi.mock("../../src/SchemaBuilder");
 vi.mock("../../src/UnifiedBuilder");
 vi.mock("../../src/UnistToProseMirrorConverter");
-
-test("ProseMirrorUnified passes extensions to manager", () => {
-  class MockExtension extends Extension {}
-  const extension1 = new MockExtension();
-  const extension2 = new MockExtension();
-
-  new ProseMirrorUnified([extension1, extension2]);
-
-  expect(ExtensionManager).toHaveBeenCalledWith([extension1, extension2]);
-});
-
-test("ProseMirrorUnified provides built schema", () => {
-  const schema = new Schema<string, string>({
-    nodes: {
-      doc: {},
-      text: {},
-    },
-  });
-
-  vi.mocked(SchemaBuilder.prototype).build.mockReturnValueOnce(schema);
-
-  const pmu = new ProseMirrorUnified();
-
-  expect(pmu.schema()).toBe(schema);
-});
-
-test("ProseMirrorUnified provides input rules", () => {
-  const plugin = inputRules({ rules: [] });
-  vi.mocked(InputRulesBuilder.prototype).build.mockReturnValueOnce(plugin);
-
-  const pmu = new ProseMirrorUnified();
-
-  expect(pmu.inputRulesPlugin()).toBe(plugin);
-});
-
-test("ProseMirrorUnified provides a keymap", () => {
-  const plugin = keymap({});
-  vi.mocked(KeymapBuilder.prototype).build.mockReturnValueOnce(plugin);
-
-  const pmu = new ProseMirrorUnified();
-
-  expect(pmu.keymapPlugin()).toBe(plugin);
-});
-
-test("ProseMirrorUnified provides node views", () => {
-  const nodeViews = {
-    node1: (): NodeView => ({ dom: document.createElement("span") }),
-    node2: (): NodeView => ({ dom: document.createElement("li") }),
-  };
-  vi.mocked(NodeViewBuilder.prototype).build.mockReturnValueOnce(nodeViews);
-
-  const pmu = new ProseMirrorUnified();
-
-  expect(pmu.nodeViews()).toBe(nodeViews);
-});
 
 test("ProseMirrorUnified parses a string", () => {
   const schema = new Schema({

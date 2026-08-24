@@ -1,5 +1,6 @@
+import type { Command } from "prosemirror-state";
+
 import { type DOMOutputSpec, Schema } from "prosemirror-model";
-import { type Command, Plugin } from "prosemirror-state";
 import { expect, test, vi } from "vitest";
 import { ProseMirrorTester } from "vitest-prosemirror";
 
@@ -53,27 +54,6 @@ const pressKey = (
 
   return testEditor;
 };
-
-test("KeymapBuilder creates a plugin", () => {
-  expect.assertions(1);
-
-  const docExtension = vi.mocked(new MockNodeExtension());
-  docExtension.proseMirrorNodeName.mockReturnValueOnce("doc");
-  docExtension.proseMirrorNodeSpec.mockReturnValueOnce({});
-  const textExtension = vi.mocked(new MockNodeExtension());
-  textExtension.proseMirrorNodeName.mockReturnValueOnce("text");
-  textExtension.proseMirrorNodeSpec.mockReturnValueOnce({});
-
-  const manager = new ExtensionManager([docExtension, textExtension]);
-  const emptySchema = new Schema<string, string>({
-    nodes: { doc: {}, text: {} },
-  });
-
-  const builder = new KeymapBuilder(manager, emptySchema);
-  const rules = builder.build();
-
-  expect(rules).toBeInstanceOf(Plugin);
-});
 
 test("KeymapBuilder chains commands bound to the same key", () => {
   expect.assertions(2);

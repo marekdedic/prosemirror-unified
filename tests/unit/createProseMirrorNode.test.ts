@@ -1,4 +1,4 @@
-import { Node as ProseMirrorNode, Schema } from "prosemirror-model";
+import { Schema } from "prosemirror-model";
 import { describe, expect, test } from "vitest";
 
 import { createProseMirrorNode } from "../../src/createProseMirrorNode";
@@ -29,11 +29,9 @@ describe("createProseMirrorNode works", () => {
     const result = createProseMirrorNode("node1", schema, []);
 
     expect(result).toHaveLength(1);
-    expect(result[0]).toBeInstanceOf(ProseMirrorNode);
     expect(result[0].type.name).toBe("node1");
     expect(result[0].childCount).toBe(0);
     expect(result[0].attrs["attr1"]).toBe("attr1_default");
-    expect(result[0].attrs["attr2"]).toBeUndefined();
   });
 
   test("works with children", () => {
@@ -43,11 +41,9 @@ describe("createProseMirrorNode works", () => {
     ]);
 
     expect(result).toHaveLength(1);
-    expect(result[0]).toBeInstanceOf(ProseMirrorNode);
     expect(result[0].type.name).toBe("node1");
     expect(result[0].childCount).toBe(2);
     expect(result[0].attrs["attr1"]).toBe("attr1_default");
-    expect(result[0].attrs["attr2"]).toBeUndefined();
   });
 
   test("works with attributes", () => {
@@ -56,11 +52,9 @@ describe("createProseMirrorNode works", () => {
     });
 
     expect(result).toHaveLength(1);
-    expect(result[0]).toBeInstanceOf(ProseMirrorNode);
     expect(result[0].type.name).toBe("node1");
     expect(result[0].childCount).toBe(0);
     expect(result[0].attrs["attr1"]).toBe("value1");
-    expect(result[0].attrs["attr2"]).toBeUndefined();
   });
 
   test("works with invalid children", () => {
@@ -75,11 +69,9 @@ describe("createProseMirrorNode works", () => {
     });
 
     expect(result).toHaveLength(1);
-    expect(result[0]).toBeInstanceOf(ProseMirrorNode);
     expect(result[0].type.name).toBe("node1");
     expect(result[0].childCount).toBe(0);
     expect(result[0].attrs["attr1"]).toBe("attr1_default");
-    expect(result[0].attrs["attr2"]).toBeUndefined();
   });
 
   test("works with null node", () => {

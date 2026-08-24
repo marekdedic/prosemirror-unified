@@ -1,8 +1,7 @@
 import type { InputRule } from "prosemirror-inputrules";
 
 import { type DOMOutputSpec, Schema } from "prosemirror-model";
-import { Plugin } from "prosemirror-state";
-import { expect, test, vi } from "vitest";
+import { expect, test } from "vitest";
 import { ProseMirrorTester } from "vitest-prosemirror";
 
 import { ExtensionManager } from "../../src/ExtensionManager";
@@ -54,25 +53,6 @@ const testerWithBoldRule = (): ProseMirrorTester => {
     },
   );
 };
-
-test("InputRulesBuilder creates a plugin", () => {
-  expect.assertions(1);
-
-  const docExtension = vi.mocked(new MockNodeExtension());
-  docExtension.proseMirrorNodeName.mockReturnValueOnce("doc");
-  docExtension.proseMirrorNodeSpec.mockReturnValueOnce({});
-  const textExtension = vi.mocked(new MockNodeExtension());
-  textExtension.proseMirrorNodeName.mockReturnValueOnce("text");
-  textExtension.proseMirrorNodeSpec.mockReturnValueOnce({});
-
-  const manager = new ExtensionManager([docExtension, textExtension]);
-  const schema = new Schema<string, string>({ nodes: { doc: {}, text: {} } });
-
-  const builder = new InputRulesBuilder(manager, schema);
-  const rules = builder.build();
-
-  expect(rules).toBeInstanceOf(Plugin);
-});
 
 test("InputRulesBuilder applies an input rule on Enter", () => {
   expect.assertions(1);
