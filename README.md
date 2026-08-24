@@ -101,7 +101,7 @@ As some extensions need to add information after the whole document is parsed, t
 
 ### Translating from ProseMirror to unist
 
-prosemirror-unified traverses the existing ProseMirror AST and creates a matching unist AST from the leaf nodes to the root. For each node, all extensions are searched to find a `NodeExtension` that can translate this node. As when translating in the other direction, at most one `NodeExtension` should be applicable to any given node - if several match, the first one is used and a warning is logged. Once an applicable `NodeExtension` is found, all the children of the node are translated first. Only after that is the actual node translated, so that it can use the already-prepared children and incorporate then in the unist tree. If the original ProseMirror node had any marks, then for each mark a matching `MarkExtension` is found and that extension can post-process the already-translated unist node. Unlike node translation, this step is cumulative - each `MarkExtension` receives the result of the previous one - so a node with several marks is post-processed several times. For multiple marks, the order in which they are processes will is not guaranteed.
+prosemirror-unified traverses the existing ProseMirror AST and creates a matching unist AST from the leaf nodes to the root. For each node, all extensions are searched to find a `NodeExtension` that can translate this node. As when translating in the other direction, at most one `NodeExtension` should be applicable to any given node - if several match, the first one is used and a warning is logged. Once an applicable `NodeExtension` is found, all the children of the node are translated first. Only after that is the actual node translated, so that it can use the already-prepared children and incorporate then in the unist tree. If the original ProseMirror node had any marks, then for each mark a matching `MarkExtension` is found and that extension can post-process the already-translated unist node. As with nodes, at most one `MarkExtension` should handle any given mark - if several match, the first one is used and a warning is logged. A node carrying several marks is post-processed once per mark, each `MarkExtension` receiving the result of the previous one. For multiple marks, the order in which they are processes will is not guaranteed.
 
 #### Example
 
@@ -253,7 +253,7 @@ This method is used to check whether the extension can post-process a given unis
 
 ##### `abstract proseMirrorMarkName(): string | null`
 
-This method should return the type of the ProseMirror mark this extension handles or `null` if it doesn't produce any ProseMirror marks. No two extensions may return the same name - doing so throws when the schema is built.
+This method should return the type of the ProseMirror mark this extension handles or `null` if it doesn't produce any ProseMirror marks. No two extensions may return the same name - doing so throws when the schema is built, or logs a warning during translation if only one of the two extensions provides a mark spec.
 
 ##### `abstract proseMirrorMarkSpec(): MarkSpec | null`
 
@@ -261,7 +261,7 @@ This method should return a ProseMirror mark spec for the ProseMirror mark it pr
 
 ##### `abstract processConvertedUnistNode(convertedNode: UnistNode, originalMark: Mark): UNode`
 
-This method is called when converting from ProseMirror to unist. The ProseMirror node has already been translated using an appropriate `NodeExtension` and the resulting unist node is passed to this method as a parameter, together with the mark that was applied to the original ProseMirror node. This function should post-process the unist node to produce the correct result for the given mark.
+This method is called when converting from ProseMirror to unist. The ProseMirror node has already been translated using an appropriate `NodeExtension` and the resulting unist node is passed to this method as a parameter, together with the mark that was applied to the original ProseMirror node. This function should post-process the unist node to produce the correct result for the given mark. If the node carried several marks, the unist node passed in may already have been post-processed by the `MarkExtension`s of the other marks.
 
 ### The `MarkInputRule` class
 

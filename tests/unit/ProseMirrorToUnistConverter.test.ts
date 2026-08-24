@@ -447,4 +447,64 @@ test("Warns when multiple extensions can convert a node", () => {
   );
 });
 
+test("Warns when multiple extensions can convert a mark", () => {
+  expect.assertions(5);
+
+  class MarkExtension1<
+    UNode extends UnistNode,
+  > extends MockMarkExtension<UNode> {}
+  class MarkExtension2<
+    UNode extends UnistNode,
+  > extends MockMarkExtension<UNode> {}
+
+  const textUnistNode = { type: "text", value: "Hello World!" };
+  const markedUnistNode = { marked: true, type: "text" };
+  const rootUnistNode = { children: [markedUnistNode], type: "root" };
+
+  const textExtension = vi.mocked(new MockNodeExtension());
+  textExtension.proseMirrorNodeName.mockReturnValue("text");
+  textExtension.proseMirrorNodeToUnistNodes.mockReturnValue([textUnistNode]);
+
+  const extension1 = vi.mocked(new MarkExtension1());
+  extension1.proseMirrorMarkName.mockReturnValue("mark");
+  extension1.processConvertedUnistNode.mockReturnValue(markedUnistNode);
+
+  const extension2 = vi.mocked(new MarkExtension2());
+  extension2.proseMirrorMarkName.mockReturnValue("mark");
+
+  const docExtension = vi.mocked(new MockNodeExtension());
+  docExtension.proseMirrorNodeName.mockReturnValue("doc");
+  docExtension.proseMirrorNodeToUnistNodes.mockReturnValue([rootUnistNode]);
+
+  const manager = vi.mocked(new ExtensionManager([]));
+  manager.markExtensions.mockReturnValue([extension1, extension2]);
+  manager.nodeExtensions.mockReturnValue([docExtension, textExtension]);
+
+  const converter = new ProseMirrorToUnistConverter(manager);
+
+  const schema = new Schema({
+    marks: { mark: {} },
+    nodes: {
+      doc: { content: "text*" },
+      text: {},
+    },
+  });
+  const rootProseMirrorNode = schema.nodes.doc.create({}, [
+    schema.text("Hello World!").mark([schema.marks.mark.create()]),
+  ]);
+
+  vi.spyOn(console, "warn").mockImplementation(() => {});
+
+  const converted = converter.convert(rootProseMirrorNode);
+
+  // The first matching extension wins.
+  expect(converted).toStrictEqual(rootUnistNode);
+  expect(extension1.processConvertedUnistNode).toHaveBeenCalledTimes(1);
+  expect(extension2.processConvertedUnistNode).not.toHaveBeenCalled();
+  expect(console.warn).toHaveBeenCalledTimes(1);
+  expect(console.warn).toHaveBeenCalledWith(
+    'Multiple extensions (MarkExtension1, MarkExtension2) can convert the ProseMirror mark of type "mark" to a unist node, using MarkExtension1.',
+  );
+});
+
 /* eslint-enable */
