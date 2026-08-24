@@ -1,16 +1,12 @@
-import type { Node as UnistNode } from "unist";
-
-import { type Processor, unified } from "unified";
-import { expect, type Mocked, test, vi } from "vitest";
+import { expect, test, vi } from "vitest";
 import { ProseMirrorTester } from "vitest-prosemirror";
 
 import { Extension } from "../../src/Extension";
 import { ProseMirrorUnified } from "../../src/ProseMirrorUnified";
 import { ParagraphExtension, paragraphSpec } from "./ParagraphExtension";
+import { ParserProviderExtension } from "./ParserProviderExtension";
 import { RootExtension, rootSpec, type UnistRoot } from "./RootExtension";
 import { TextExtension, textSpec } from "./TextExtension";
-
-vi.mock("unified");
 
 class SetExtension extends Extension {
   public override dependencies(): Array<Extension> {
@@ -21,7 +17,7 @@ class SetExtension extends Extension {
 /* eslint-disable @typescript-eslint/no-empty-function, no-console -- Testing console output */
 
 test("Parsing a document with an extension set", () => {
-  expect.assertions(13);
+  expect.assertions(11);
 
   const source = "<p>Hello World!</p>";
   const unistTree: UnistRoot = {
@@ -39,17 +35,9 @@ test("Parsing a document with an extension set", () => {
     type: "root",
   };
 
-  const unifiedMock = {
-    parse: vi.fn<(file: string) => UnistNode>().mockReturnValueOnce(unistTree),
-    runSync: vi
-      .fn<(node: UnistNode) => UnistNode>()
-      .mockImplementation((root) => root),
-    stringify: vi.fn<(tree: UnistNode) => string>().mockReturnValueOnce(source),
-  } as unknown as Mocked<Processor>;
+  const parserProvider = new ParserProviderExtension(unistTree, source);
 
-  vi.mocked(unified).mockReturnValueOnce(unifiedMock);
-
-  const pmu = new ProseMirrorUnified([new SetExtension()]);
+  const pmu = new ProseMirrorUnified([parserProvider, new SetExtension()]);
 
   const proseMirrorTree = pmu
     .schema()
@@ -73,14 +61,12 @@ test("Parsing a document with an extension set", () => {
   expect(testEditor.schema.spec.nodes.get("paragraph")).toBe(paragraphSpec);
   expect(testEditor.schema.spec.nodes.get("text")).toBe(textSpec);
   expect(testEditor.doc).toEqualProseMirrorNode(proseMirrorTree);
-  expect(unifiedMock.parse).toHaveBeenCalledTimes(1);
-  expect(unifiedMock.parse).toHaveBeenCalledWith(source);
-  expect(unifiedMock.runSync).toHaveBeenCalledTimes(1);
+  expect(parserProvider.parsed).toStrictEqual([source]);
+  expect(parserProvider.transformed).toHaveLength(1);
 
   expect(pmu.serialize(testEditor.doc)).toBe(source);
 
-  expect(unifiedMock.stringify).toHaveBeenCalledTimes(1);
-  expect(unifiedMock.stringify).toHaveBeenCalledWith(unistTree);
+  expect(parserProvider.stringified).toStrictEqual([unistTree]);
 
   expect(console.warn).not.toHaveBeenCalled();
 });
