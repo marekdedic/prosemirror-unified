@@ -34,7 +34,7 @@ export class InputRulesBuilder {
           from,
           to,
           "\n",
-          () => view.state.tr.insertText("\n").scrollIntoView(),
+          () => view.state.tr,
         );
       }
       return originalHandleKeyDown?.(view, event);
