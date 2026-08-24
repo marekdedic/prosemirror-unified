@@ -247,10 +247,6 @@ This specifies the type of global context (shared across all extensions) that th
 
 #### Methods
 
-##### `proseMirrorToUnistTest(node: UnistNode, mark: Mark): boolean`
-
-This method is used to check whether the extension can post-process a given unist node with a ProseMirror mark. By default, it checks whether the node is a text node and the mark type matches `this.proseMirrorMarkName()`.
-
 ##### `abstract proseMirrorMarkName(): string | null`
 
 This method should return the type of the ProseMirror mark this extension handles or `null` if it doesn't produce any ProseMirror marks. No two extensions may return the same name - doing so throws when the schema is built, or logs a warning during translation if only one of the two extensions provides a mark spec.
@@ -261,7 +257,7 @@ This method should return a ProseMirror mark spec for the ProseMirror mark it pr
 
 ##### `abstract processConvertedUnistNode(convertedNode: UnistNode, originalMark: Mark): UNode`
 
-This method is called when converting from ProseMirror to unist. The ProseMirror node has already been translated using an appropriate `NodeExtension` and the resulting unist node is passed to this method as a parameter, together with the mark that was applied to the original ProseMirror node. This function should post-process the unist node to produce the correct result for the given mark. If the node carried several marks, the unist node passed in may already have been post-processed by the `MarkExtension`s of the other marks.
+This method is called when converting from ProseMirror to unist. The ProseMirror node has already been translated using an appropriate `NodeExtension` and the resulting unist node is passed to this method as a parameter, together with the mark that was applied to the original ProseMirror node. It is called for every mark on the original ProseMirror node whose type name matches `this.proseMirrorMarkName()`. This function should post-process the unist node to produce the correct result for the given mark. If the node carried several marks, the unist node passed in may already have been post-processed by the `MarkExtension`s of the other marks.
 
 ### The `MarkInputRule` class
 
