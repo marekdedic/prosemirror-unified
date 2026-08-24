@@ -21,29 +21,35 @@ export class ProseMirrorToUnistConverter {
   }
 
   private convertNode(node: ProseMirrorNode): Array<UnistNode> {
-    let convertedNodes: Array<UnistNode> | null = null;
-    for (const extension of this.extensionManager.nodeExtensions()) {
-      if (!extension.proseMirrorToUnistTest(node)) {
-        continue;
-      }
-      let convertedChildren: Array<UnistNode> = [];
-      for (let i = 0; i < node.childCount; ++i) {
-        convertedChildren = convertedChildren.concat(
-          this.convertNode(node.child(i)),
-        );
-      }
-      convertedNodes = extension.proseMirrorNodeToUnistNodes(
-        node,
-        convertedChildren,
-      );
-    }
-    if (convertedNodes === null) {
+    const matches = this.extensionManager
+      .nodeExtensions()
+      .filter((extension) => extension.proseMirrorToUnistTest(node));
+    if (matches.length === 0) {
       // eslint-disable-next-line no-console -- Intended console warning
       console.warn(
         `Couldn't find any way to convert ProseMirror node of type "${node.type.name}" to a unist node.`,
       );
       return [];
     }
+    if (matches.length > 1) {
+      const names = matches
+        .map((extension) => extension.constructor.name)
+        .join(", ");
+      // eslint-disable-next-line no-console -- Intended console warning
+      console.warn(
+        `Multiple extensions (${names}) can convert the ProseMirror node of type "${node.type.name}" to a unist node, using ${matches[0].constructor.name}.`,
+      );
+    }
+    let convertedChildren: Array<UnistNode> = [];
+    for (let i = 0; i < node.childCount; ++i) {
+      convertedChildren = convertedChildren.concat(
+        this.convertNode(node.child(i)),
+      );
+    }
+    const convertedNodes = matches[0].proseMirrorNodeToUnistNodes(
+      node,
+      convertedChildren,
+    );
     return convertedNodes.map((convertedNode) => {
       let postProcessedNode = convertedNode;
       for (const mark of node.marks) {

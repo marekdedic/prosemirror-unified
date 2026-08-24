@@ -1,3 +1,5 @@
+import type { Node as UnistNode } from "unist";
+
 import {
   type DOMOutputSpec,
   type Mark,
@@ -182,4 +184,87 @@ test("SchemaBuilder skips mark extensions with no name or no spec", () => {
   expect(schema.spec.marks.size).toBe(1);
   expect(schema.spec.marks.get("MARK_1")).toStrictEqual({});
   expect(schema.marks["MARK_1"]).toBeInstanceOf(MarkType);
+});
+
+test("SchemaBuilder throws on a duplicate node name", () => {
+  expect.assertions(1);
+
+  class NodeExtension1<
+    UNode extends UnistNode,
+  > extends MockNodeExtension<UNode> {}
+  class NodeExtension2<
+    UNode extends UnistNode,
+  > extends MockNodeExtension<UNode> {}
+
+  const extension1 = vi.mocked(new NodeExtension1());
+  extension1.proseMirrorNodeName.mockReturnValueOnce("doc");
+  extension1.proseMirrorNodeSpec.mockReturnValueOnce({});
+  const extension2 = vi.mocked(new NodeExtension2());
+  extension2.proseMirrorNodeName.mockReturnValueOnce("doc");
+  extension2.proseMirrorNodeSpec.mockReturnValueOnce({});
+
+  const manager = vi.mocked(new ExtensionManager([]));
+  manager.markExtensions.mockReturnValueOnce([]);
+  manager.nodeExtensions.mockReturnValueOnce([extension1, extension2]);
+
+  expect(() => new SchemaBuilder(manager)).toThrow(
+    'Two extensions (NodeExtension1 and NodeExtension2) both provide the ProseMirror node "doc".',
+  );
+});
+
+test("SchemaBuilder throws on a duplicate mark name", () => {
+  expect.assertions(1);
+
+  class MarkExtension1<
+    UNode extends UnistNode,
+  > extends MockMarkExtension<UNode> {}
+  class MarkExtension2<
+    UNode extends UnistNode,
+  > extends MockMarkExtension<UNode> {}
+
+  const docExtension = vi.mocked(new MockNodeExtension());
+  docExtension.proseMirrorNodeName.mockReturnValueOnce("doc");
+  docExtension.proseMirrorNodeSpec.mockReturnValueOnce({});
+  const extension1 = vi.mocked(new MarkExtension1());
+  extension1.proseMirrorMarkName.mockReturnValueOnce("MARK");
+  extension1.proseMirrorMarkSpec.mockReturnValueOnce({});
+  const extension2 = vi.mocked(new MarkExtension2());
+  extension2.proseMirrorMarkName.mockReturnValueOnce("MARK");
+  extension2.proseMirrorMarkSpec.mockReturnValueOnce({});
+
+  const manager = vi.mocked(new ExtensionManager([]));
+  manager.markExtensions.mockReturnValueOnce([extension1, extension2]);
+  manager.nodeExtensions.mockReturnValueOnce([docExtension]);
+
+  expect(() => new SchemaBuilder(manager)).toThrow(
+    'Two extensions (MarkExtension1 and MarkExtension2) both provide the ProseMirror mark "MARK".',
+  );
+});
+
+test("SchemaBuilder reports two different extensions sharing a name", () => {
+  expect.assertions(1);
+
+  // Two distinct classes can share a name, in which case naming them twice
+  // Would be more confusing than helpful.
+  const NodeExtension1 = class n<
+    UNode extends UnistNode,
+  > extends MockNodeExtension<UNode> {};
+  const NodeExtension2 = class n<
+    UNode extends UnistNode,
+  > extends MockNodeExtension<UNode> {};
+
+  const extension1 = vi.mocked(new NodeExtension1());
+  extension1.proseMirrorNodeName.mockReturnValueOnce("doc");
+  extension1.proseMirrorNodeSpec.mockReturnValueOnce({});
+  const extension2 = vi.mocked(new NodeExtension2());
+  extension2.proseMirrorNodeName.mockReturnValueOnce("doc");
+  extension2.proseMirrorNodeSpec.mockReturnValueOnce({});
+
+  const manager = vi.mocked(new ExtensionManager([]));
+  manager.markExtensions.mockReturnValueOnce([]);
+  manager.nodeExtensions.mockReturnValueOnce([extension1, extension2]);
+
+  expect(() => new SchemaBuilder(manager)).toThrow(
+    'Two different extensions named "n" both provide the ProseMirror node "doc".',
+  );
 });

@@ -1,3 +1,5 @@
+import type { Node as UnistNode } from "unist";
+
 import { type Mark, Schema } from "prosemirror-model";
 import { expect, test, vi } from "vitest";
 
@@ -784,6 +786,79 @@ test("Converts a node into multiple ProseMirror nodes", () => {
   // ProseMirror joins the adjacent text nodes back together.
   expect(converted.textContent).toBe("Hello World!Hello World!");
   expect(console.warn).not.toHaveBeenCalled();
+});
+
+test("Warns when multiple extensions can convert a node", () => {
+  expect.assertions(6);
+
+  class AmbiguousExtension1<
+    UNode extends UnistNode,
+  > extends MockSyntaxExtension<UNode> {}
+  class AmbiguousExtension2<
+    UNode extends UnistNode,
+  > extends MockSyntaxExtension<UNode> {}
+
+  const schema = new Schema<string, string>({
+    nodes: {
+      doc: { content: "text*" },
+      text: {},
+    },
+  });
+
+  const extension1 = vi.mocked(new AmbiguousExtension1());
+  extension1.unistToProseMirrorTest.mockImplementation(
+    (node) => node.type === "ambiguous",
+  );
+  extension1.unistNodeToProseMirrorNodes.mockImplementation(
+    (_node, proseMirrorSchema) => [proseMirrorSchema.text("first")],
+  );
+
+  const extension2 = vi.mocked(new AmbiguousExtension2());
+  extension2.unistToProseMirrorTest.mockImplementation(
+    (node) => node.type === "ambiguous",
+  );
+  extension2.unistNodeToProseMirrorNodes.mockImplementation(
+    (_node, proseMirrorSchema) => [proseMirrorSchema.text("second")],
+  );
+
+  const docExtension = vi.mocked(new MockSyntaxExtension());
+  docExtension.unistToProseMirrorTest.mockImplementation(
+    (node) => node.type === "root",
+  );
+  docExtension.unistNodeToProseMirrorNodes.mockImplementation(
+    (_node, proseMirrorSchema, convertedChildren) => [
+      proseMirrorSchema.nodes["doc"].create({}, convertedChildren),
+    ],
+  );
+
+  const manager = vi.mocked(new ExtensionManager([]));
+  manager.syntaxExtensions.mockReturnValue([
+    docExtension,
+    extension1,
+    extension2,
+  ]);
+
+  const converter = new UnistToProseMirrorConverter(manager, schema);
+
+  const rootUnistNode = {
+    children: [{ type: "ambiguous" }, { type: "ambiguous" }],
+    type: "root",
+  };
+
+  vi.spyOn(console, "warn").mockImplementation(() => {});
+
+  const converted = converter.convert(rootUnistNode);
+
+  // The first matching extension wins.
+  expect(converted.textContent).toBe("firstfirst");
+  expect(extension1.unistNodeToProseMirrorNodes).toHaveBeenCalledTimes(2);
+  expect(extension2.unistNodeToProseMirrorNodes).not.toHaveBeenCalled();
+  // The warning is not deduplicated, so it is reported for every node.
+  expect(console.warn).toHaveBeenCalledTimes(2);
+  expect(console.warn).toHaveBeenCalledWith(
+    'Multiple extensions (AmbiguousExtension1, AmbiguousExtension2) can convert the unist node of type "ambiguous" to a ProseMirror node, using AmbiguousExtension1.',
+  );
+  expect(extension2.unistToProseMirrorTest).toHaveBeenCalledTimes(3);
 });
 
 /* eslint-enable */

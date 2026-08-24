@@ -56,6 +56,8 @@ This class represents the adapter between ProseMirror and unified. To use the pa
 
 The constructor of `ProseMirrorUnified` takes only one parameter, a list of prosemirror-unified extensions to use.
 
+Every ProseMirror node and mark in the schema must be provided by exactly one extension. If two extensions return the same name from `proseMirrorNodeName()` or `proseMirrorMarkName()`, the constructor throws, as there would be no way to tell which of the two specs should be used.
+
 ##### `parse(source: string): ProseMirrorNode`
 
 Parses a source from a string with unified (so, for example, the source would contain markdown when using with prosemirror-remark) and returns the root node of the ProseMirror AST. This is useful when trying to set the contents of the editor, most notably when initializing it - see the example above.
@@ -93,13 +95,13 @@ To make up for this difference, prosemirror-unified provides two basic types of 
 
 ### Translating from unist to ProseMirror
 
-prosemirror-unified traverses an existing unist AST and creates a matching ProseMirror AST from the leaf nodes to the root. For each node, all extensions are checked to find one that can translate this type of node. Once an applicable extension is found, all the children of the node are translated first. Only after that is the actual node translated, so that it can use the already-prepared children and incorporate them in the ProseMirror tree. This process works the same for `NodeExtension`s and `MarkExtension`s as the extension can decide what the output node will look like and what marks it will have.
+prosemirror-unified traverses an existing unist AST and creates a matching ProseMirror AST from the leaf nodes to the root. For each node, all extensions are checked to find one that can translate this type of node. At most one extension should be applicable to any given node - if several extensions match, the first one is used and a warning is logged. Once an applicable extension is found, all the children of the node are translated first. Only after that is the actual node translated, so that it can use the already-prepared children and incorporate them in the ProseMirror tree. This process works the same for `NodeExtension`s and `MarkExtension`s as the extension can decide what the output node will look like and what marks it will have.
 
 As some extensions need to add information after the whole document is parsed, there is a global context that any extension can modify when translating a node. Additionally, a post-translation hook can be added to any extension.
 
 ### Translating from ProseMirror to unist
 
-prosemirror-unified traverses the existing unist AST and creates a matching unist AST from the leaf nodes to the root. For each node, all extensions are searched to find a `NodeExtension` that can translate this node. Once an applicable `NodeExtension` is found, all the children of the node are translated first. Only after that is the actual node translated, so that it can use the already-prepared children and incorporate then in the unist tree. If the original ProseMirror node had any marks, then for each mark a matching `MarkExtension` is found and that extension can post-process the already-translated unist node. For multiple marks, the order in which they are processes will is not guaranteed.
+prosemirror-unified traverses the existing ProseMirror AST and creates a matching unist AST from the leaf nodes to the root. For each node, all extensions are searched to find a `NodeExtension` that can translate this node. As when translating in the other direction, at most one `NodeExtension` should be applicable to any given node - if several match, the first one is used and a warning is logged. Once an applicable `NodeExtension` is found, all the children of the node are translated first. Only after that is the actual node translated, so that it can use the already-prepared children and incorporate then in the unist tree. If the original ProseMirror node had any marks, then for each mark a matching `MarkExtension` is found and that extension can post-process the already-translated unist node. Unlike node translation, this step is cumulative - each `MarkExtension` receives the result of the previous one - so a node with several marks is post-processed several times. For multiple marks, the order in which they are processes will is not guaranteed.
 
 #### Example
 
@@ -167,6 +169,8 @@ This method should return the type of the unist node this extension translates.
 
 This method is used to check whether the extension can translate a given unist node to a ProseMirror node. By default, it checks whether the node type matches `this.unistNodeName()`.
 
+When several extensions handle different variants of the same unist node type, their implementations of this method should be mutually exclusive, so that only one of them ever matches a given node. For example, an extension for ordered lists and an extension for unordered lists can both handle the unist `list` node, one testing for `ordered === true` and the other for `ordered !== true`.
+
 ##### `abstract unistNodeToProseMirrorNode(node: UNode, proseMirrorSchema: Schema<string, string>, convertedChildren: Array<ProseMirrorNode>, context: Partial<UnistToProseMirrorContext>): Array<ProseMirrorNode>`
 
 This method handles the translation from a unist node to a ProseMirror node. It receives the original unist node, the built ProseMirror schema, the already-translated children and the global translation context that it can modify. It should return an array of ProseMirror nodes (usually only one, but you can theoretically convert one unist node into multiple ProseMirror nodes).
@@ -207,7 +211,7 @@ This specifies the type of global context (shared across all extensions) that th
 
 ##### `proseMirrorToUnistTest(node: ProseMirrorNode): boolean`
 
-This method is used to check whether the extension can translate a given ProseMirror node to a unist node. By default, it checks whether the node name matches `this.proseMirrorNodeName()`.
+This method is used to check whether the extension can translate a given ProseMirror node to a unist node. By default, it checks whether the node name matches `this.proseMirrorNodeName()`. As with `unistToProseMirrorTest`, only one extension should ever match a given node.
 
 ##### `proseMirrorNodeView(): NodeViewConstructor | null`
 
@@ -215,7 +219,7 @@ This method should return a constructor of a node view associated with the Prose
 
 ##### `abstract proseMirrorNodeName(): string | null`
 
-This method should return the type of the ProseMirror node this extension translates or `null` if it doesn't produce any ProseMirror nodes.
+This method should return the type of the ProseMirror node this extension translates or `null` if it doesn't produce any ProseMirror nodes. No two extensions may return the same name - doing so throws when the schema is built.
 
 ##### `abstract proseMirrorNodeSpec(): NodeSpec | null`
 
@@ -249,7 +253,7 @@ This method is used to check whether the extension can post-process a given unis
 
 ##### `abstract proseMirrorMarkName(): string | null`
 
-This method should return the type of the ProseMirror mark this extension handles or `null` if it doesn't produce any ProseMirror marks.
+This method should return the type of the ProseMirror mark this extension handles or `null` if it doesn't produce any ProseMirror marks. No two extensions may return the same name - doing so throws when the schema is built.
 
 ##### `abstract proseMirrorMarkSpec(): MarkSpec | null`
 
