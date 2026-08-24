@@ -15,7 +15,7 @@ export interface UnistCallout extends UnistNode {
 }
 
 // The spec renders a span. A rendered aside therefore proves that the node
-// View was used instead of the spec.
+// view was used instead of the spec.
 export const calloutSpec: NodeSpec = {
   group: "inline",
   inline: true,

@@ -96,7 +96,7 @@ export class MarkInputRule extends InputRule {
     }
 
     // Add back the trailing text if there is any and it is not a newline,
-    // Otherwise omit it because newline is handled out of the text node.
+    // otherwise omit it because newline is handled out of the text node.
     if (trailing !== undefined && trailing !== "\n") {
       tr.insertText(trailing);
     }

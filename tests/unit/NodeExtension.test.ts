@@ -33,7 +33,7 @@ test("NodeExtension.proseMirrorNodeView has a default implementation", () => {
   expect.assertions(1);
 
   // MockNodeExtension replaces this method with a mock, so a real subclass is
-  // Needed to reach the default implementation.
+  // needed to reach the default implementation.
   class ConcreteNodeExtension extends NodeExtension<UnistNode> {
     public override proseMirrorNodeName(): string {
       return "node1";

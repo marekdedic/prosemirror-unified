@@ -45,7 +45,7 @@ const testerWithBoldRule = (): ProseMirrorTester => {
     ),
     {
       // Keymap plugin comes second so that the input rules get the Enter
-      // Key first, just like in ProseMirrorUnified.
+      // key first, just like in ProseMirrorUnified.
       plugins: [
         new InputRulesBuilder(manager, schemaWithBold).build(),
         new KeymapBuilder(manager, schemaWithBold).build(),

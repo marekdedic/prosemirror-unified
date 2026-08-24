@@ -17,7 +17,7 @@ const schema = new Schema<string, string>({
 });
 
 // The two extensions need distinct classes because ExtensionManager
-// Deduplicates extensions by their constructor name.
+// deduplicates extensions by their constructor name.
 class FirstExtension extends MockNodeExtension<{ type: "first" }> {
   public override proseMirrorKeymap = vi.fn<() => Record<string, Command>>(
     () => ({}),
