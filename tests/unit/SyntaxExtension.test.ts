@@ -24,3 +24,18 @@ test("SyntaxExtension.proseMirrorKeymap has a default implementation", () => {
 
   expect(extension.proseMirrorKeymap(schema)).toStrictEqual({});
 });
+
+test("SyntaxExtension.postUnistToProseMirrorHook has a default implementation", () => {
+  expect.assertions(1);
+
+  const extension = new MockSyntaxExtension<
+    { type: "node1" },
+    { value: string }
+  >();
+  const context = { value: "KEPT" };
+
+  extension.postUnistToProseMirrorHook(context);
+
+  // The default hook does nothing, leaving the context alone.
+  expect(context).toStrictEqual({ value: "KEPT" });
+});
