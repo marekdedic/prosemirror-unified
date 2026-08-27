@@ -29,6 +29,5 @@ export default defineConfig({
     },
     environment: "jsdom",
     mockReset: true,
-    setupFiles: ["tests/setup.ts"],
   },
 });
