@@ -40,6 +40,8 @@
   "scripts": {
     "prebuild": "npm run clean",
     "build": "vite build && cp dist/prosemirror-unified.d.ts dist/prosemirror-unified.d.cts",
+    "check": "run-p -c --aggregate-output check:*",
+    "check:js-compat": "es-check es2018 --module --checkFeatures 'dist/**/*.js' && es-check es2018 --checkFeatures 'dist/**/*.cjs'",
     "clean": "rimraf dist/*",
     "lint": "run-p -c --aggregate-output lint:*",
     "lint:attw": "attw --pack",
@@ -67,6 +69,7 @@
     "@types/node": "^26.0.0",
     "@vitest/coverage-v8": "^4.0.4",
     "@vitest/eslint-plugin": "^1.6.7",
+    "es-check": "^9.6.4",
     "eslint": "^10.0.2",
     "eslint-config-prettier": "^10.0.1",
     "eslint-plugin-package-json": "^1.1.0",
