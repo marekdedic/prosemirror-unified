@@ -5,9 +5,8 @@ This file provides guidance to coding agents when working with code in this repo
 ## Commands
 
 - `npm run build` — Vite library build (ESM + CJS) plus bundled `.d.ts`/`.d.cts`. `npm start` is the same in watch mode.
-- `npm run lint` — runs all `lint:*` in parallel: `lint:eslint` (ESLint, includes Prettier + JSON/Markdown linting), `lint:typecheck` (`tsc --noEmit`), `lint:attw` (are-the-types-wrong on a packed tarball; needs a build).
-- `npm test` — Vitest in watch mode. A positional arg filters by path substring: `npm test unit`, `npm test integration`, `npx vitest run tests/unit/SchemaBuilder.test.ts`, `npx vitest run -t "test name"`.
-- `npm run test-coverage` — single run with V8 coverage (CI runs `unit` and `integration` separately and uploads each as its own Codecov flag).
+- `npm run lint` — runs all `lint:*` in parallel: `lint:eslint` (ESLint, includes Prettier + JSON/Markdown linting) and the `lint:ts` group — `lint:ts:typecheck` (`tsc --noEmit`) and `lint:ts:attw` (are-the-types-wrong on a packed tarball; needs a build).
+- `npm test` — single run with V8 coverage (what CI runs; CI runs `unit` and `integration` separately and uploads each as its own Codecov flag). A positional arg filters by path substring: `npm test unit`, `npm test integration`, `npx vitest run tests/unit/SchemaBuilder.test.ts`, `npx vitest run -t "test name"`. `npm run test-watch` — Vitest in watch mode for the dev loop.
 
 ## Architecture
 

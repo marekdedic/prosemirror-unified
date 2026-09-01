@@ -88,7 +88,7 @@ jobs:
 
       - name: "Run unit tests"
         run: |
-          npm run test-coverage unit
+          npm run test unit
 
       - name: "Upload coverage results"
         uses: codecov/codecov-action@v7.0.0
@@ -99,7 +99,7 @@ jobs:
 
       - name: "Run integration tests"
         run: |
-          npm run test-coverage integration
+          npm run test integration
 
       - name: "Upload coverage results"
         uses: codecov/codecov-action@v7.0.0
