@@ -82,6 +82,7 @@
     "eslint-plugin-perfectionist": "^5.0.0",
     "eslint-plugin-prefer-arrow-functions": "^3.4.0",
     "eslint-plugin-prettier": "^5.0.0",
+    "jiti": "^2.7.0",
     "jsdom": "^30.0.0",
     "npm-run-all2": "^9.0.3",
     "prettier": "^3.0.0",
