@@ -93,7 +93,7 @@
     "typescript-eslint": "^8.25.0",
     "unplugin-dts": "^1.0.1",
     "vite": "^8.0.2",
-    "vitest": "^4.0.4",
+    "vitest": "^5.0.0",
     "vitest-prosemirror": "^0.3.1"
   },
   "peerDependencies": {
