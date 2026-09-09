@@ -2,10 +2,24 @@
 
 This page documents the classes and helpers you use to build an extension. For the concepts behind them — unist vs. ProseMirror, and the two translation directions — read the [Overview](/developing/overview) first.
 
-All the generic parameters below are only relevant when using TypeScript. Both `SyntaxExtension` subclasses share two:
+## Types
 
-- **`UNode extends UnistNode`** — the unist node type the extension handles.
-- **`UnistToProseMirrorContext extends Record<string, unknown>`** — the type of the global translation context the extension expects. Defaults to `Record<string, unknown>`.
+The signatures below are written in TypeScript and refer to a handful of types by name. Most come from ProseMirror, unist and unified; this package renames two of them to avoid a name clash. Here is where each one comes from:
+
+| Type                                                          | Where it comes from                                                                                                                                                         |
+| ------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ProseMirrorNode`                                             | [`Node`](https://prosemirror.net/docs/ref/#model.Node) from [prosemirror-model](https://prosemirror.net/docs/ref/#model) — aliased so it doesn't clash with unist's `Node`. |
+| `UnistNode`                                                   | [`Node`](https://github.com/syntax-tree/unist#node) from [unist](https://github.com/syntax-tree/unist) — likewise aliased.                                                  |
+| `Schema`, `Mark`, `MarkType`, `Attrs`, `NodeSpec`, `MarkSpec` | [prosemirror-model](https://prosemirror.net/docs/ref/#model). `Schema` is parameterised as `Schema<string, string>` (its node and mark names).                              |
+| `NodeViewConstructor`                                         | [prosemirror-view](https://prosemirror.net/docs/ref/#view.NodeViewConstructor).                                                                                             |
+| `InputRule`                                                   | [prosemirror-inputrules](https://prosemirror.net/docs/ref/#inputrules.InputRule).                                                                                           |
+| `Command`                                                     | [prosemirror-state](https://prosemirror.net/docs/ref/#state.Command).                                                                                                       |
+| `Processor`                                                   | [unified](https://github.com/unifiedjs/unified#processor).                                                                                                                  |
+
+Two more names are generic parameters of the extension classes rather than imported types — they stand for whatever types your own extension works with, and are only relevant when using TypeScript. Both `SyntaxExtension` subclasses share them:
+
+- **`UNode extends UnistNode`** — the unist node type your extension handles.
+- **`UnistToProseMirrorContext extends Record<string, unknown>`** — the type of the global translation context your extension expects. Defaults to `Record<string, unknown>`.
 
 ## `Extension`
 
@@ -121,13 +135,19 @@ Creates a rule that applies `markType` when input matches `matcher`. The `matche
 The `trailing` group may be made optional, so the rule also fires when nothing follows the closing delimiter — the rule then triggers as soon as the delimiter is typed:
 
 ```ts
-new MarkInputRule(/<b>(?<content>.*)<\/b>(?<trailing>.)?$/u, schema.marks["bold"]);
+new MarkInputRule(
+  /<b>(?<content>.*)<\/b>(?<trailing>.)?$/u,
+  schema.marks["bold"],
+);
 ```
 
 A rule that never has trailing text can use an empty group:
 
 ```ts
-new MarkInputRule(/<b>(?<content>.*)<\/b>(?<trailing>)?$/u, schema.marks["bold"]);
+new MarkInputRule(
+  /<b>(?<content>.*)<\/b>(?<trailing>)?$/u,
+  schema.marks["bold"],
+);
 ```
 
 Requiring trailing text is what lets a matcher with a variable-length delimiter resolve that delimiter unambiguously, so making `trailing` optional is only appropriate for marks with a fixed delimiter. Any other capturing groups are ignored and may be used freely.
