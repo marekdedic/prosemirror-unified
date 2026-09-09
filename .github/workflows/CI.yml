@@ -64,6 +64,32 @@ jobs:
         run: |
           npm run lint
 
+  docs:
+    name: "Docs"
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v7.0.1
+
+      - name: "Cache NPM dependencies"
+        uses: actions/cache@v6.1.0
+        with:
+          path: "~/.npm"
+          key: >-
+            npm-dependencies-${{ runner.os }}-${{ env.cache-version }}-${{
+            hashFiles('package.json') }}
+          restore-keys: |
+            npm-dependencies-${{ runner.os }}-${{ env.cache-version }}-${{ hashFiles('package.json') }}
+            npm-dependencies-${{ runner.os }}-${{ env.cache-version }}-
+
+      - name: "Install NPM dependencies"
+        run: |
+          npm ci
+
+      - name: "Build docs"
+        run: |
+          npm run docs:build
+
   test:
     name: "Test"
     runs-on: ubuntu-latest
