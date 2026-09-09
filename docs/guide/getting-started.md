@@ -66,4 +66,4 @@ const view = new EditorView(
 - **`inputRulesPlugin()`** and **`keymapPlugin()`** return ProseMirror plugins wiring up every extension's input rules (e.g. typing `**text**` to get bold) and keyboard shortcuts (e.g. Ctrl-b).
 - **`nodeViews()`** returns the node views registered by your extensions, for interactive elements such as task lists.
 
-That is the whole surface most users need. For anything markdown-specific, see the [prosemirror-remark documentation](https://github.com/marekdedic/prosemirror-remark).
+That is the whole surface most users need. The [API reference](/guide/api) documents each of these with its full signature and behaviour; for anything markdown-specific, see the [prosemirror-remark documentation](https://github.com/marekdedic/prosemirror-remark).

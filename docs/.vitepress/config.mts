@@ -24,6 +24,7 @@ export default withMermaid(
           items: [
             { link: "/guide/introduction", text: "Introduction" },
             { link: "/guide/getting-started", text: "Getting started" },
+            { link: "/guide/api", text: "API reference" },
           ],
           text: "Guide",
         },
