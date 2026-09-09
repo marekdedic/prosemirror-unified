@@ -180,6 +180,9 @@ A `MarkExtension` translates from unist like any node — `unistNodeToProseMirro
 Marks are also where editor affordances usually live. Override `proseMirrorInputRules` to rewrite typed text into a mark — [`MarkInputRule`](/developing/extensions#markinputrule) handles the mark-adding case — and `proseMirrorKeymap` to bind a shortcut:
 
 ```ts
+export class BoldExtension extends MarkExtension<UnistBold> {
+  // …the members shown above
+
   public override proseMirrorInputRules(
     proseMirrorSchema: Schema<string, string>,
   ): Array<InputRule> {
@@ -198,6 +201,7 @@ Marks are also where editor affordances usually live. Override `proseMirrorInput
       "Mod-b": toggleMark(proseMirrorSchema.marks[this.proseMirrorMarkName()]),
     };
   }
+}
 ```
 
 Both are also available on `NodeExtension`s — they live on the shared [`SyntaxExtension`](/developing/extensions#syntaxextension) base.
