@@ -15,7 +15,7 @@ The root class for all prosemirror-unified extensions. By itself it does little;
 
 Override this to declare other extensions that must be present for this one to work. For example, a list extension can declare a list-item extension as a dependency, and the `MarkdownExtension` from prosemirror-remark uses this to pull in all the individual markdown extensions. Defaults to `[]`.
 
-### `unifiedInitializationHook(processor): Processor`
+### `unifiedInitializationHook(processor: Processor<UnistNode, UnistNode, UnistNode, UnistNode, string>): Processor<UnistNode, UnistNode, UnistNode, UnistNode, string>`
 
 Called when the unified instance is created, so the extension can register unified plugins. To add remark, for example:
 
@@ -28,8 +28,8 @@ import type { Node as UnistNode } from "unist";
 
 class MarkdownExtension extends Extension {
   public unifiedInitializationHook(
-    processor: Processor<UnistNode, UnistNode, UnistNode, string>,
-  ): Processor<UnistNode, UnistNode, UnistNode, string> {
+    processor: Processor<UnistNode, UnistNode, UnistNode, UnistNode, string>,
+  ): Processor<UnistNode, UnistNode, UnistNode, UnistNode, string> {
     return processor.use(remarkParse).use(remarkStringify);
   }
 }
@@ -45,25 +45,25 @@ Abstract class extending `Extension`. You should rarely extend it directly — i
 
 Returns the unist node type this extension translates.
 
-### `unistToProseMirrorTest(node): boolean`
+### `unistToProseMirrorTest(node: UnistNode): boolean`
 
 Checks whether the extension can translate a given unist node. By default compares the node type against `unistNodeName()`.
 
 When several extensions handle different variants of the same unist node type, their implementations must be mutually exclusive so only one ever matches. For example, ordered- and unordered-list extensions can both handle the unist `list` node, one testing `ordered === true` and the other `ordered !== true`.
 
-### `abstract unistNodeToProseMirrorNode(node, proseMirrorSchema, convertedChildren, context): Array<ProseMirrorNode>`
+### `abstract unistNodeToProseMirrorNodes(node: UNode, schema: Schema<string, string>, convertedChildren: Array<ProseMirrorNode>, context: Partial<UnistToProseMirrorContext>): Array<ProseMirrorNode>`
 
 Translates a unist node to ProseMirror. Receives the original unist node, the built schema, the already-translated children, and the mutable global context. Returns an array of ProseMirror nodes (usually one, but you may produce several).
 
-### `postUnistToProseMirrorHook(context): void`
+### `postUnistToProseMirrorHook(context: Partial<UnistToProseMirrorContext>): void`
 
 Called after the whole document has been translated from unist to ProseMirror. Does nothing by default.
 
-### `proseMirrorInputRules(proseMirrorSchema): Array<InputRule>`
+### `proseMirrorInputRules(proseMirrorSchema: Schema<string, string>): Array<InputRule>`
 
 Override to add input rules to the editor. Receives the built schema. Defaults to `[]`. See [`MarkInputRule`](#markinputrule) for mark-adding rules.
 
-### `proseMirrorKeymap(proseMirrorSchema): Record<string, Command>`
+### `proseMirrorKeymap(proseMirrorSchema: Schema<string, string>): Record<string, Command>`
 
 Override to add keyboard shortcuts, keyed by shortcut. Receives the built schema. Defaults to `{}`.
 
@@ -79,11 +79,11 @@ Returns the ProseMirror node type this extension produces, or `null` if it produ
 
 Returns the ProseMirror node spec, or `null` if the extension produces no node.
 
-### `abstract proseMirrorNodeToUnistNodes(node, convertedChildren): Array<UNode>`
+### `abstract proseMirrorNodeToUnistNodes(node: ProseMirrorNode, convertedChildren: Array<UnistNode>): Array<UNode>`
 
 Translates a ProseMirror node to unist. Receives the original node and its already-translated children. Returns an array of unist nodes (usually one).
 
-### `proseMirrorToUnistTest(node): boolean`
+### `proseMirrorToUnistTest(node: ProseMirrorNode): boolean`
 
 Checks whether the extension can translate a given ProseMirror node. By default compares the node name against `proseMirrorNodeName()`. As with `unistToProseMirrorTest`, only one extension should match a given node.
 
@@ -103,7 +103,7 @@ Returns the ProseMirror mark type this extension handles, or `null` if it produc
 
 Returns the ProseMirror mark spec, or `null` if the extension produces no mark.
 
-### `abstract processConvertedUnistNode(convertedNode, originalMark): UNode`
+### `abstract processConvertedUnistNode(convertedNode: UnistNode, originalMark: Mark): UNode`
 
 Called when serializing from ProseMirror to unist. The ProseMirror node has already been translated by a `NodeExtension`; this method receives the resulting unist node together with the mark that was on the original ProseMirror node, and post-processes the unist node for that mark. It is called once per matching mark, and the node passed in may already have been post-processed by other marks' extensions.
 
@@ -132,6 +132,6 @@ new MarkInputRule(/<b>(?<content>.*)<\/b>(?<trailing>)?$/u, schema.marks["bold"]
 
 Requiring trailing text is what lets a matcher with a variable-length delimiter resolve that delimiter unambiguously, so making `trailing` optional is only appropriate for marks with a fixed delimiter. Any other capturing groups are ignored and may be used freely.
 
-## `createProseMirrorNode(nodeName, schema, children, attrs = {})`
+## `createProseMirrorNode(nodeName: string | null, schema: Schema<string, string>, children: Array<ProseMirrorNode>, attrs: Attrs = {})`
 
 Helper that creates a ProseMirror node named `nodeName` with the given children and attributes, returning `[]` if `nodeName` is `null`. Useful when writing a `NodeExtension`.
