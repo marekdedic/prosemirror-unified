@@ -31,6 +31,10 @@ export default withMermaid(
         {
           items: [
             { link: "/developing/overview", text: "Overview" },
+            {
+              link: "/developing/writing-an-extension",
+              text: "Writing an extension",
+            },
             { link: "/developing/extensions", text: "Extension API" },
           ],
           text: "Developing extensions",
