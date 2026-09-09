@@ -190,11 +190,11 @@ test("SchemaBuilder throws on a duplicate node name", () => {
   expect.assertions(1);
 
   class NodeExtension1<
-    UNode extends UnistNode,
-  > extends MockNodeExtension<UNode> {}
+    HandledUnistNode extends UnistNode,
+  > extends MockNodeExtension<HandledUnistNode> {}
   class NodeExtension2<
-    UNode extends UnistNode,
-  > extends MockNodeExtension<UNode> {}
+    HandledUnistNode extends UnistNode,
+  > extends MockNodeExtension<HandledUnistNode> {}
 
   const extension1 = vi.mocked(new NodeExtension1());
   extension1.proseMirrorNodeName.mockReturnValueOnce("doc");
@@ -216,11 +216,11 @@ test("SchemaBuilder throws on a duplicate mark name", () => {
   expect.assertions(1);
 
   class MarkExtension1<
-    UNode extends UnistNode,
-  > extends MockMarkExtension<UNode> {}
+    HandledUnistNode extends UnistNode,
+  > extends MockMarkExtension<HandledUnistNode> {}
   class MarkExtension2<
-    UNode extends UnistNode,
-  > extends MockMarkExtension<UNode> {}
+    HandledUnistNode extends UnistNode,
+  > extends MockMarkExtension<HandledUnistNode> {}
 
   const docExtension = vi.mocked(new MockNodeExtension());
   docExtension.proseMirrorNodeName.mockReturnValueOnce("doc");
@@ -247,11 +247,11 @@ test("SchemaBuilder reports two different extensions sharing a name", () => {
   // Two distinct classes can share a name, in which case naming them twice
   // would be more confusing than helpful.
   const NodeExtension1 = class n<
-    UNode extends UnistNode,
-  > extends MockNodeExtension<UNode> {};
+    HandledUnistNode extends UnistNode,
+  > extends MockNodeExtension<HandledUnistNode> {};
   const NodeExtension2 = class n<
-    UNode extends UnistNode,
-  > extends MockNodeExtension<UNode> {};
+    HandledUnistNode extends UnistNode,
+  > extends MockNodeExtension<HandledUnistNode> {};
 
   const extension1 = vi.mocked(new NodeExtension1());
   extension1.proseMirrorNodeName.mockReturnValueOnce("doc");

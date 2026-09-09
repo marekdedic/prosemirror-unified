@@ -389,11 +389,11 @@ test("Warns when multiple extensions can convert a node", () => {
   expect.assertions(6);
 
   class DocExtension1<
-    UNode extends UnistNode,
-  > extends MockNodeExtension<UNode> {}
+    HandledUnistNode extends UnistNode,
+  > extends MockNodeExtension<HandledUnistNode> {}
   class DocExtension2<
-    UNode extends UnistNode,
-  > extends MockNodeExtension<UNode> {}
+    HandledUnistNode extends UnistNode,
+  > extends MockNodeExtension<HandledUnistNode> {}
 
   const textUnistNode = { type: "text", value: "Hello World!" };
   const firstRootUnistNode = { children: [textUnistNode], type: "first" };
@@ -451,11 +451,11 @@ test("Warns when multiple extensions can convert a mark", () => {
   expect.assertions(5);
 
   class MarkExtension1<
-    UNode extends UnistNode,
-  > extends MockMarkExtension<UNode> {}
+    HandledUnistNode extends UnistNode,
+  > extends MockMarkExtension<HandledUnistNode> {}
   class MarkExtension2<
-    UNode extends UnistNode,
-  > extends MockMarkExtension<UNode> {}
+    HandledUnistNode extends UnistNode,
+  > extends MockMarkExtension<HandledUnistNode> {}
 
   const textUnistNode = { type: "text", value: "Hello World!" };
   const markedUnistNode = { marked: true, type: "text" };

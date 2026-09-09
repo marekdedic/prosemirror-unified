@@ -11,12 +11,12 @@ import { vi } from "vitest";
 import { NodeExtension } from "../../src/NodeExtension";
 
 export class MockNodeExtension<
-  UNode extends UnistNode,
+  HandledUnistNode extends UnistNode,
   UnistToProseMirrorContext extends Record<string, unknown> = Record<
     string,
     never
   >,
-> extends NodeExtension<UNode, UnistToProseMirrorContext> {
+> extends NodeExtension<HandledUnistNode, UnistToProseMirrorContext> {
   public proseMirrorNodeName = vi.fn<() => string | null>();
 
   public proseMirrorNodeSpec = vi.fn<() => NodeSpec | null>();
@@ -26,18 +26,18 @@ export class MockNodeExtension<
       (
         node: ProseMirrorNode,
         convertedChildren: Array<UnistNode>,
-      ) => Array<UNode>
+      ) => Array<HandledUnistNode>
     >();
 
   public override proseMirrorNodeView =
     vi.fn<() => NodeViewConstructor | null>();
 
-  public unistNodeName = vi.fn<() => UNode["type"]>();
+  public unistNodeName = vi.fn<() => HandledUnistNode["type"]>();
 
   public unistNodeToProseMirrorNodes =
     vi.fn<
       (
-        node: UNode,
+        node: HandledUnistNode,
         schema: Schema<string, string>,
         convertedChildern: Array<ProseMirrorNode>,
         context: Partial<UnistToProseMirrorContext>,

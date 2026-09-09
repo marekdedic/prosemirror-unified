@@ -11,25 +11,25 @@ import { vi } from "vitest";
 import { MarkExtension } from "../../src/MarkExtension";
 
 export class MockMarkExtension<
-  UNode extends UnistNode,
+  HandledUnistNode extends UnistNode,
   UnistToProseMirrorContext extends Record<string, unknown> = Record<
     string,
     never
   >,
-> extends MarkExtension<UNode, UnistToProseMirrorContext> {
+> extends MarkExtension<HandledUnistNode, UnistToProseMirrorContext> {
   public processConvertedUnistNode =
-    vi.fn<(convertedNode: UnistNode, originalMark: Mark) => UNode>();
+    vi.fn<(convertedNode: UnistNode, originalMark: Mark) => HandledUnistNode>();
 
   public proseMirrorMarkName = vi.fn<() => string | null>();
 
   public proseMirrorMarkSpec = vi.fn<() => MarkSpec | null>();
 
-  public unistNodeName = vi.fn<() => UNode["type"]>();
+  public unistNodeName = vi.fn<() => HandledUnistNode["type"]>();
 
   public unistNodeToProseMirrorNodes =
     vi.fn<
       (
-        node: UNode,
+        node: HandledUnistNode,
         schema: Schema<string, string>,
         convertedChildren: Array<ProseMirrorNode>,
         context: Partial<UnistToProseMirrorContext>,

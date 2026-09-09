@@ -792,11 +792,11 @@ test("Warns when multiple extensions can convert a node", () => {
   expect.assertions(6);
 
   class AmbiguousExtension1<
-    UNode extends UnistNode,
-  > extends MockSyntaxExtension<UNode> {}
+    HandledUnistNode extends UnistNode,
+  > extends MockSyntaxExtension<HandledUnistNode> {}
   class AmbiguousExtension2<
-    UNode extends UnistNode,
-  > extends MockSyntaxExtension<UNode> {}
+    HandledUnistNode extends UnistNode,
+  > extends MockSyntaxExtension<HandledUnistNode> {}
 
   const schema = new Schema<string, string>({
     nodes: {

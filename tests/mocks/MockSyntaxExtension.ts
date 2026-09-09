@@ -6,18 +6,18 @@ import { vi } from "vitest";
 import { SyntaxExtension } from "../../src/SyntaxExtension";
 
 export class MockSyntaxExtension<
-  UNode extends UnistNode,
+  HandledUnistNode extends UnistNode,
   UnistToProseMirrorContext extends Record<string, unknown> = Record<
     string,
     never
   >,
-> extends SyntaxExtension<UNode, UnistToProseMirrorContext> {
-  public unistNodeName = vi.fn<() => UNode["type"]>();
+> extends SyntaxExtension<HandledUnistNode, UnistToProseMirrorContext> {
+  public unistNodeName = vi.fn<() => HandledUnistNode["type"]>();
 
   public unistNodeToProseMirrorNodes =
     vi.fn<
       (
-        node: UNode,
+        node: HandledUnistNode,
         schema: Schema<string, string>,
         convertedChildren: Array<ProseMirrorNode>,
         context: Partial<UnistToProseMirrorContext>,

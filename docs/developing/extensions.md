@@ -18,7 +18,7 @@ The signatures below are written in TypeScript and refer to a handful of types b
 
 Two more names are generic parameters of the extension classes rather than imported types — they stand for whatever types your own extension works with, and are only relevant when using TypeScript. Both `SyntaxExtension` subclasses share them:
 
-- **`UNode extends UnistNode`** — the unist node type your extension handles.
+- **`HandledUnistNode extends UnistNode`** — the unist node type your extension handles.
 - **`UnistToProseMirrorContext extends Record<string, unknown>`** — the type of the global translation context your extension expects. Defaults to `Record<string, unknown>`.
 
 ## `Extension`
@@ -55,7 +55,7 @@ By default returns the `processor` unchanged.
 
 Abstract class extending `Extension`. You should rarely extend it directly — it holds the machinery shared by `NodeExtension` and `MarkExtension`.
 
-### `abstract unistNodeName(): UNode["type"]`
+### `abstract unistNodeName(): HandledUnistNode["type"]`
 
 Returns the unist node type this extension translates.
 
@@ -65,7 +65,7 @@ Checks whether the extension can translate a given unist node. By default compar
 
 When several extensions handle different variants of the same unist node type, their implementations must be mutually exclusive so only one ever matches. For example, ordered- and unordered-list extensions can both handle the unist `list` node, one testing `ordered === true` and the other `ordered !== true`.
 
-### `abstract unistNodeToProseMirrorNodes(node: UNode, schema: Schema<string, string>, convertedChildren: Array<ProseMirrorNode>, context: Partial<UnistToProseMirrorContext>): Array<ProseMirrorNode>`
+### `abstract unistNodeToProseMirrorNodes(node: HandledUnistNode, schema: Schema<string, string>, convertedChildren: Array<ProseMirrorNode>, context: Partial<UnistToProseMirrorContext>): Array<ProseMirrorNode>`
 
 Translates a unist node to ProseMirror. Receives the original unist node, the built schema, the already-translated children, and the mutable global context. Returns an array of ProseMirror nodes (usually one, but you may produce several).
 
@@ -93,7 +93,7 @@ Returns the ProseMirror node type this extension produces, or `null` if it produ
 
 Returns the ProseMirror node spec, or `null` if the extension produces no node.
 
-### `abstract proseMirrorNodeToUnistNodes(node: ProseMirrorNode, convertedChildren: Array<UnistNode>): Array<UNode>`
+### `abstract proseMirrorNodeToUnistNodes(node: ProseMirrorNode, convertedChildren: Array<UnistNode>): Array<HandledUnistNode>`
 
 Translates a ProseMirror node to unist. Receives the original node and its already-translated children. Returns an array of unist nodes (usually one).
 
@@ -117,7 +117,7 @@ Returns the ProseMirror mark type this extension handles, or `null` if it produc
 
 Returns the ProseMirror mark spec, or `null` if the extension produces no mark.
 
-### `abstract processConvertedUnistNode(convertedNode: UnistNode, originalMark: Mark): UNode`
+### `abstract processConvertedUnistNode(convertedNode: UnistNode, originalMark: Mark): HandledUnistNode`
 
 Called when serializing from ProseMirror to unist. The ProseMirror node has already been translated by a `NodeExtension`; this method receives the resulting unist node together with the mark that was on the original ProseMirror node, and post-processes the unist node for that mark. It is called once per matching mark, and the node passed in may already have been post-processed by other marks' extensions.
 
