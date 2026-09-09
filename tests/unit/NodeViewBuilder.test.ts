@@ -7,13 +7,17 @@ import { ExtensionManager } from "../../src/ExtensionManager";
 import { NodeViewBuilder } from "../../src/NodeViewBuilder";
 import { MockNodeExtension } from "../mocks/MockNodeExtension";
 
-class DocExtension<UNode extends UnistNode> extends MockNodeExtension<UNode> {}
+class DocExtension<
+  HandledUnistNode extends UnistNode,
+> extends MockNodeExtension<HandledUnistNode> {}
 
 class Node1Extension<
-  UNode extends UnistNode,
-> extends MockNodeExtension<UNode> {}
+  HandledUnistNode extends UnistNode,
+> extends MockNodeExtension<HandledUnistNode> {}
 
-class TextExtension<UNode extends UnistNode> extends MockNodeExtension<UNode> {}
+class TextExtension<
+  HandledUnistNode extends UnistNode,
+> extends MockNodeExtension<HandledUnistNode> {}
 
 test("NodeViewBuilder collects the node views of the extensions", () => {
   const textNodeView = (): NodeView => ({

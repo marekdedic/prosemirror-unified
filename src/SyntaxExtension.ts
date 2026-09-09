@@ -6,7 +6,7 @@ import type { Node as UnistNode } from "unist";
 import { Extension } from "./Extension";
 
 export abstract class SyntaxExtension<
-  UNode extends UnistNode,
+  HandledUnistNode extends UnistNode,
   UnistToProseMirrorContext extends Record<string, unknown> = Record<
     string,
     never
@@ -33,10 +33,10 @@ export abstract class SyntaxExtension<
   }
   /* eslint-enable */
 
-  public abstract unistNodeName(): UNode["type"];
+  public abstract unistNodeName(): HandledUnistNode["type"];
 
   public abstract unistNodeToProseMirrorNodes(
-    node: UNode,
+    node: HandledUnistNode,
     schema: Schema<string, string>,
     convertedChildren: Array<ProseMirrorNode>,
     context: Partial<UnistToProseMirrorContext>,

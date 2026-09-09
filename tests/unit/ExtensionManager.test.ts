@@ -46,17 +46,17 @@ test("ExtensionManager manages other extensions", () => {
 
 test("ExtensionManager manages mark and node extensions", () => {
   class MarkExtension1<
-    UNode extends UnistNode,
-  > extends MockMarkExtension<UNode> {}
+    HandledUnistNode extends UnistNode,
+  > extends MockMarkExtension<HandledUnistNode> {}
   class MarkExtension2<
-    UNode extends UnistNode,
-  > extends MockMarkExtension<UNode> {}
+    HandledUnistNode extends UnistNode,
+  > extends MockMarkExtension<HandledUnistNode> {}
   class NodeExtension1<
-    UNode extends UnistNode,
-  > extends MockNodeExtension<UNode> {}
+    HandledUnistNode extends UnistNode,
+  > extends MockNodeExtension<HandledUnistNode> {}
   class NodeExtension2<
-    UNode extends UnistNode,
-  > extends MockNodeExtension<UNode> {}
+    HandledUnistNode extends UnistNode,
+  > extends MockNodeExtension<HandledUnistNode> {}
   class MockExtension1 extends Extension {}
   class MockExtension2 extends Extension {}
   const markExtension1 = vi.mocked(new MarkExtension1());
@@ -106,17 +106,17 @@ test("ExtensionManager manages mark and node extensions", () => {
 
 test("ExtensionManager distinguishes extensions with the same constructor name", () => {
   const MarkExtension1 = class n<
-    UNode extends UnistNode,
-  > extends MockMarkExtension<UNode> {};
+    HandledUnistNode extends UnistNode,
+  > extends MockMarkExtension<HandledUnistNode> {};
   const MarkExtension2 = class n<
-    UNode extends UnistNode,
-  > extends MockMarkExtension<UNode> {};
+    HandledUnistNode extends UnistNode,
+  > extends MockMarkExtension<HandledUnistNode> {};
   const NodeExtension1 = class n<
-    UNode extends UnistNode,
-  > extends MockNodeExtension<UNode> {};
+    HandledUnistNode extends UnistNode,
+  > extends MockNodeExtension<HandledUnistNode> {};
   const NodeExtension2 = class n<
-    UNode extends UnistNode,
-  > extends MockNodeExtension<UNode> {};
+    HandledUnistNode extends UnistNode,
+  > extends MockNodeExtension<HandledUnistNode> {};
   const Extension1 = class n extends Extension {};
   const Extension2 = class n extends Extension {};
   const markExtension1 = vi.mocked(new MarkExtension1());
@@ -171,17 +171,17 @@ test("ExtensionManager deduplicates instances of the same extension", () => {
 
 test("ExtensionManager manages extensions with dependencies", () => {
   class MarkExtension1<
-    UNode extends UnistNode,
-  > extends MockMarkExtension<UNode> {}
+    HandledUnistNode extends UnistNode,
+  > extends MockMarkExtension<HandledUnistNode> {}
   class MarkExtension2<
-    UNode extends UnistNode,
-  > extends MockMarkExtension<UNode> {}
+    HandledUnistNode extends UnistNode,
+  > extends MockMarkExtension<HandledUnistNode> {}
   class NodeExtension1<
-    UNode extends UnistNode,
-  > extends MockNodeExtension<UNode> {}
+    HandledUnistNode extends UnistNode,
+  > extends MockNodeExtension<HandledUnistNode> {}
   class NodeExtension2<
-    UNode extends UnistNode,
-  > extends MockNodeExtension<UNode> {}
+    HandledUnistNode extends UnistNode,
+  > extends MockNodeExtension<HandledUnistNode> {}
   class MockExtension1 extends Extension {}
   const markExtension1 = vi.mocked(new MarkExtension1());
   markExtension1.dependencies.mockReturnValueOnce([]);
@@ -227,11 +227,11 @@ test("ExtensionManager manages transitive dependencies", () => {
   expect.assertions(4);
 
   class LeafExtension<
-    UNode extends UnistNode,
-  > extends MockNodeExtension<UNode> {}
+    HandledUnistNode extends UnistNode,
+  > extends MockNodeExtension<HandledUnistNode> {}
   class MiddleExtension<
-    UNode extends UnistNode,
-  > extends MockNodeExtension<UNode> {}
+    HandledUnistNode extends UnistNode,
+  > extends MockNodeExtension<HandledUnistNode> {}
   class TopExtension extends Extension {}
 
   const leafExtension = vi.mocked(new LeafExtension());
@@ -264,20 +264,20 @@ test("ExtensionManager deduplicates a shared transitive dependency", () => {
   expect.assertions(3);
 
   class FirstNodeExtension<
-    UNode extends UnistNode,
-  > extends MockNodeExtension<UNode> {}
+    HandledUnistNode extends UnistNode,
+  > extends MockNodeExtension<HandledUnistNode> {}
   class SharedExtension<
-    UNode extends UnistNode,
-  > extends MockNodeExtension<UNode> {}
+    HandledUnistNode extends UnistNode,
+  > extends MockNodeExtension<HandledUnistNode> {}
   class LastNodeExtension<
-    UNode extends UnistNode,
-  > extends MockNodeExtension<UNode> {}
+    HandledUnistNode extends UnistNode,
+  > extends MockNodeExtension<HandledUnistNode> {}
   class DependerExtension1<
-    UNode extends UnistNode,
-  > extends MockMarkExtension<UNode> {}
+    HandledUnistNode extends UnistNode,
+  > extends MockMarkExtension<HandledUnistNode> {}
   class DependerExtension2<
-    UNode extends UnistNode,
-  > extends MockMarkExtension<UNode> {}
+    HandledUnistNode extends UnistNode,
+  > extends MockMarkExtension<HandledUnistNode> {}
   class TopExtension extends Extension {}
 
   const firstNodeExtension = vi.mocked(new FirstNodeExtension());

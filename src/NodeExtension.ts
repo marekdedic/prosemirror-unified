@@ -5,12 +5,12 @@ import type { Node as UnistNode } from "unist";
 import { SyntaxExtension } from "./SyntaxExtension";
 
 export abstract class NodeExtension<
-  UNode extends UnistNode,
+  HandledUnistNode extends UnistNode,
   UnistToProseMirrorContext extends Record<string, unknown> = Record<
     string,
     never
   >,
-> extends SyntaxExtension<UNode, UnistToProseMirrorContext> {
+> extends SyntaxExtension<HandledUnistNode, UnistToProseMirrorContext> {
   public abstract proseMirrorNodeName(): string | null;
 
   public abstract proseMirrorNodeSpec(): NodeSpec | null;
@@ -18,7 +18,7 @@ export abstract class NodeExtension<
   public abstract proseMirrorNodeToUnistNodes(
     node: ProseMirrorNode,
     convertedChildren: Array<UnistNode>,
-  ): Array<UNode>;
+  ): Array<HandledUnistNode>;
 
   // eslint-disable-next-line @typescript-eslint/class-methods-use-this -- Inalid for an interface
   public proseMirrorNodeView(): NodeViewConstructor | null {
