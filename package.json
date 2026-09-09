@@ -87,6 +87,7 @@
     "eslint-plugin-prettier": "^5.0.0",
     "jiti": "^2.7.0",
     "jsdom": "^30.0.0",
+    "mermaid": "^11.17.2",
     "npm-run-all2": "^9.0.3",
     "prettier": "^3.0.0",
     "prosemirror-model": "^1.25.4",
@@ -97,6 +98,7 @@
     "unplugin-dts": "^1.0.1",
     "vite": "^8.0.2",
     "vitepress": "^1.6.4",
+    "vitepress-plugin-mermaid": "^2.0.17",
     "vitest": "^4.0.4",
     "vitest-prosemirror": "^0.3.1"
   },
