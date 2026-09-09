@@ -1,21 +1,23 @@
 # Getting started
 
+This page shows the quickest path to a working markdown editor, using [prosemirror-remark](https://github.com/marekdedic/prosemirror-remark). If you need to support a syntax other than markdown, see [Developing extensions](/developing/overview) instead.
+
 ## Installation
 
-prosemirror-unified is the framework; on its own it supports no concrete syntax. To do anything useful you also need at least one extension package. For markdown, that is [prosemirror-remark](https://github.com/marekdedic/prosemirror-remark):
+Install prosemirror-remark; prosemirror-unified comes with it as a dependency:
 
 ::: code-group
 
 ```sh [npm]
-npm install prosemirror-unified prosemirror-remark
+npm install prosemirror-remark
 ```
 
 ```sh [pnpm]
-pnpm add prosemirror-unified prosemirror-remark
+pnpm add prosemirror-remark
 ```
 
 ```sh [yarn]
-yarn add prosemirror-unified prosemirror-remark
+yarn add prosemirror-remark
 ```
 
 :::
@@ -24,7 +26,7 @@ You will also need ProseMirror's own packages (`prosemirror-state`, `prosemirror
 
 ## Wiring up an editor
 
-The `ProseMirrorUnified` class is the adapter between ProseMirror and unified. You construct it with the list of extensions you want, then use it to build the schema, parse the initial content, and register input rules, keymaps and node views on your `EditorView`.
+Construct a `ProseMirrorUnified` adapter with the `MarkdownExtension` from prosemirror-remark, then use it to build the schema, parse the initial content, and register input rules, keymaps and node views on your `EditorView`:
 
 ```ts
 import { MarkdownExtension } from "prosemirror-remark";
@@ -58,10 +60,10 @@ const view = new EditorView(
 
 ## What the adapter gives you
 
-- **`parse(source)`** turns a source string (markdown, when using prosemirror-remark) into a ProseMirror document — useful for setting the editor's initial contents.
+- **`parse(source)`** turns a source string (markdown, here) into a ProseMirror document — useful for setting the editor's initial contents.
 - **`serialize(doc)`** does the inverse, turning the editor's document back into a source string — useful for saving.
 - **`schema()`** returns a ProseMirror schema supporting all the extensions you passed in.
 - **`inputRulesPlugin()`** and **`keymapPlugin()`** return ProseMirror plugins wiring up every extension's input rules (e.g. typing `**text**` to get bold) and keyboard shortcuts (e.g. Ctrl-b).
 - **`nodeViews()`** returns the node views registered by your extensions, for interactive elements such as task lists.
 
-For the full API and for writing your own extensions, see the [README](https://github.com/marekdedic/prosemirror-unified#readme).
+That is the whole surface most users need. For anything markdown-specific, see the [prosemirror-remark documentation](https://github.com/marekdedic/prosemirror-remark).

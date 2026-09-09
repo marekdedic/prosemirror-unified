@@ -1,26 +1,18 @@
 # Introduction
 
-prosemirror-unified connects the [unified](https://github.com/unifiedjs/unified) ecosystem of parsers and transformers with the [ProseMirror](https://prosemirror.net/) rich-text editor. It lets you load a document written in some concrete syntax (such as markdown) into a ProseMirror editor and serialize the editor's contents back out again.
+prosemirror-unified connects the [unified](https://github.com/unifiedjs/unified) ecosystem of parsers and transformers with the [ProseMirror](https://prosemirror.net/) rich-text editor. It lets you load a document written in some concrete syntax into a ProseMirror editor and serialize the editor's contents back out again.
 
-## A framework, not a syntax
+## Do you need this package directly?
 
-Just as unified is a general framework that has to be extended for a particular syntax — remark for markdown, rehype for HTML, and so on — prosemirror-unified is a general framework for connecting unified with ProseMirror that has to be extended to support a particular syntax.
+prosemirror-unified is a **framework**. On its own it supports no concrete syntax — no markdown, no HTML, nothing. That knowledge lives in separate extension packages, and you almost always want one of those rather than prosemirror-unified by itself.
 
-The core package knows nothing about markdown, HTML or any other concrete syntax. That knowledge lives in **extensions**, which you pass to the `ProseMirrorUnified` adapter. You only pull in the syntaxes you actually need.
+If you want to edit **markdown** in ProseMirror — which is the common case — reach for [**prosemirror-remark**](https://github.com/marekdedic/prosemirror-remark). It bundles all the extensions for markdown and is the package you install and use day to day. prosemirror-unified comes along as its dependency.
 
-Currently, the [prosemirror-remark](https://github.com/marekdedic/prosemirror-remark) package provides markdown support. If you want to support another syntax, you can write your own extensions — see [Creating your own extensions](https://github.com/marekdedic/prosemirror-unified#creating-your-own-extensions) in the README.
-
-## unist and ProseMirror
-
-unified represents documents as an abstract syntax tree of nodes, called [unist](https://github.com/syntax-tree/unist), starting from a root node for the whole document. ProseMirror works much the same way, with one important difference: ProseMirror has a concept of **marks** that can be applied to a node — bold text, for example, is a text node carrying a bold mark. unist has no marks; there, bold text is a `strong` node that contains a text node.
-
-To bridge this difference, prosemirror-unified provides two kinds of extension:
-
-- A **`NodeExtension`** translates between a unist node and a ProseMirror node — a paragraph, for example.
-- A **`MarkExtension`** translates between a unist node and a ProseMirror mark — bold text, for example.
-
-Both translate in both directions, so the same set of extensions is used to parse a document into the editor and to serialize it back out.
+::: tip
+Most users should head straight to [prosemirror-remark](https://github.com/marekdedic/prosemirror-remark). You only work with prosemirror-unified directly if you are **building support for a new syntax** — see [Developing extensions](/developing/overview).
+:::
 
 ## Next steps
 
-Head to [Getting started](/guide/getting-started) to install the package and wire up an editor.
+- [Getting started](/guide/getting-started) — wire up a markdown editor with prosemirror-remark.
+- [Developing extensions](/developing/overview) — add support for a syntax that doesn't have an extension yet.

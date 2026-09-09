@@ -10,7 +10,10 @@ export default defineConfig({
         "https://github.com/marekdedic/prosemirror-unified/edit/master/docs/:path",
       text: "Edit this page on GitHub",
     },
-    nav: [{ link: "/guide/introduction", text: "Guide" }],
+    nav: [
+      { link: "/guide/introduction", text: "Guide" },
+      { link: "/developing/overview", text: "Developing extensions" },
+    ],
     search: {
       provider: "local",
     },
@@ -21,6 +24,13 @@ export default defineConfig({
           { link: "/guide/getting-started", text: "Getting started" },
         ],
         text: "Guide",
+      },
+      {
+        items: [
+          { link: "/developing/overview", text: "Overview" },
+          { link: "/developing/extensions", text: "Extension API" },
+        ],
+        text: "Developing extensions",
       },
     ],
     socialLinks: [
