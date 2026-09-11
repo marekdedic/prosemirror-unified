@@ -31,5 +31,6 @@ export default defineConfig({
     },
     environment: "jsdom",
     mockReset: true,
+    setupFiles: ["vitest-prosemirror/setup"],
   },
 });

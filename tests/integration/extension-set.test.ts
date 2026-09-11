@@ -1,5 +1,6 @@
+import { builders } from "prosemirror-test-builder";
 import { expect, test, vi } from "vitest";
-import { ProseMirrorTester } from "vitest-prosemirror";
+import { renderProseMirror } from "vitest-prosemirror";
 
 import { Extension } from "../../src/Extension";
 import { ProseMirrorUnified } from "../../src/ProseMirrorUnified";
@@ -39,21 +40,12 @@ test("Parsing a document with an extension set", () => {
 
   const pmu = new ProseMirrorUnified([parserProvider, new SetExtension()]);
 
-  const proseMirrorTree = pmu
-    .schema()
-    .nodes["doc"].create(
-      {},
-      pmu
-        .schema()
-        .nodes["paragraph"].createAndFill(
-          {},
-          pmu.schema().text("Hello World!"),
-        ),
-    );
+  const { doc, paragraph } = builders(pmu.schema());
+  const proseMirrorTree = doc(paragraph("Hello World!"));
 
   vi.spyOn(console, "warn").mockImplementation(() => {});
   const proseMirrorRoot = pmu.parse(source);
-  const testEditor = new ProseMirrorTester(proseMirrorRoot);
+  const testEditor = renderProseMirror(proseMirrorRoot);
 
   expect(testEditor.state.schema.spec.marks.size).toBe(0);
   expect(testEditor.state.schema.spec.nodes.size).toBe(3);

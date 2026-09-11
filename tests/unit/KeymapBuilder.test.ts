@@ -2,7 +2,7 @@ import type { Command } from "prosemirror-state";
 
 import { type DOMOutputSpec, Schema } from "prosemirror-model";
 import { expect, test, vi } from "vitest";
-import { ProseMirrorTester } from "vitest-prosemirror";
+import { type ProseMirrorEditor, renderProseMirror } from "vitest-prosemirror";
 
 import { ExtensionManager } from "../../src/ExtensionManager";
 import { KeymapBuilder } from "../../src/KeymapBuilder";
@@ -33,7 +33,7 @@ class SecondExtension extends MockNodeExtension<{ type: "second" }> {
 const pressKey = (
   keymaps: Array<Record<string, Command>>,
   key: string,
-): ProseMirrorTester => {
+): ProseMirrorEditor => {
   const first = new FirstExtension();
   first.proseMirrorKeymap.mockReturnValue(keymaps[0]);
   const second = new SecondExtension();
@@ -43,13 +43,13 @@ const pressKey = (
     new ExtensionManager([first, second]),
     schema,
   );
-  const testEditor = new ProseMirrorTester(
+  const testEditor = renderProseMirror(
     schema.nodes["doc"].create(null, schema.nodes["paragraph"].create()),
-    { plugins: [builder.build()] },
+    { editorProps: { plugins: [builder.build()] } },
   );
 
-  testEditor.selectText("end");
-  testEditor.insertText(key);
+  testEditor.setSelection("end");
+  testEditor.type(key);
 
   return testEditor;
 };
