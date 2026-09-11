@@ -76,7 +76,7 @@
     "@eslint/markdown": "^8.0.0",
     "@microsoft/api-extractor": "^7.34.9",
     "@types/node": "^26.0.0",
-    "@vitest/coverage-v8": "^4.0.4",
+    "@vitest/coverage-v8": "^5.0.0",
     "@vitest/eslint-plugin": "^1.6.7",
     "es-check": "^9.6.4",
     "eslint": "^10.0.2",
@@ -99,8 +99,8 @@
     "vite": "^8.0.2",
     "vitepress": "^1.6.4",
     "vitepress-plugin-mermaid": "^2.0.17",
-    "vitest": "^4.0.4",
-    "vitest-prosemirror": "^0.3.1"
+    "vitest": "^5.0.0",
+    "vitest-prosemirror": "^0.4.0"
   },
   "peerDependencies": {
     "prosemirror-model": "^1.24.1",
