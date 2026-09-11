@@ -1,3 +1,4 @@
+import { builders } from "prosemirror-test-builder";
 import { expect, test, vi } from "vitest";
 import { renderProseMirror } from "vitest-prosemirror";
 
@@ -54,21 +55,8 @@ test("Parsing a document with a paragraph", () => {
 
   const proseMirrorRoot = pmu.parse(source);
 
-  const proseMirrorTree = pmu
-    .schema()
-    .nodes["doc"].create(
-      {},
-      pmu
-        .schema()
-        .nodes["paragraph"].createAndFill({}, [
-          pmu.schema().text("Hello "),
-          pmu
-            .schema()
-            .text("World")
-            .mark([pmu.schema().marks["bold"].create()]),
-          pmu.schema().text("!"),
-        ]),
-    );
+  const { bold, doc, paragraph } = builders(pmu.schema());
+  const proseMirrorTree = doc(paragraph("Hello ", bold("World"), "!"));
 
   vi.spyOn(console, "warn").mockImplementation(() => {});
   const testEditor = renderProseMirror(proseMirrorRoot);
@@ -151,21 +139,8 @@ test("Adding a mark with an input rule", () => {
 
   const proseMirrorRoot = pmu.parse(source);
 
-  const proseMirrorTree = pmu
-    .schema()
-    .nodes["doc"].create(
-      {},
-      pmu
-        .schema()
-        .nodes["paragraph"].createAndFill({}, [
-          pmu.schema().text("Hello "),
-          pmu
-            .schema()
-            .text("World")
-            .mark([pmu.schema().marks["bold"].create()]),
-          pmu.schema().text("!"),
-        ]),
-    );
+  const { bold, doc, paragraph } = builders(pmu.schema());
+  const proseMirrorTree = doc(paragraph("Hello ", bold("World"), "!"));
 
   vi.spyOn(console, "warn").mockImplementation(() => {});
   const testEditor = renderProseMirror(proseMirrorRoot, {
@@ -254,21 +229,8 @@ test("Adding a mark with a key binding", () => {
 
   const proseMirrorRoot = pmu.parse(source);
 
-  const proseMirrorTree = pmu
-    .schema()
-    .nodes["doc"].create(
-      {},
-      pmu
-        .schema()
-        .nodes["paragraph"].createAndFill({}, [
-          pmu.schema().text("Hello "),
-          pmu
-            .schema()
-            .text("World")
-            .mark([pmu.schema().marks["bold"].create()]),
-          pmu.schema().text("!"),
-        ]),
-    );
+  const { bold, doc, paragraph } = builders(pmu.schema());
+  const proseMirrorTree = doc(paragraph("Hello ", bold("World"), "!"));
 
   const testEditor = renderProseMirror(proseMirrorRoot, {
     editorProps: {

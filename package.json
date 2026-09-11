@@ -92,6 +92,7 @@
     "prettier": "^3.0.0",
     "prosemirror-model": "^1.25.4",
     "prosemirror-state": "^1.4.4",
+    "prosemirror-test-builder": "^1.1.1",
     "rimraf": "^6.0.1",
     "typescript": "^6.0.2",
     "typescript-eslint": "^8.25.0",

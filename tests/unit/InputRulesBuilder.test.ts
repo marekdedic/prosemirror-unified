@@ -1,6 +1,7 @@
 import type { InputRule } from "prosemirror-inputrules";
 
 import { type DOMOutputSpec, Schema } from "prosemirror-model";
+import { builders } from "prosemirror-test-builder";
 import { expect, test } from "vitest";
 import { type ProseMirrorEditor, renderProseMirror } from "vitest-prosemirror";
 
@@ -21,6 +22,8 @@ const schemaWithBold = new Schema<string, string>({
   },
 });
 
+const { bold, doc, paragraph } = builders(schemaWithBold);
+
 class BoldInputRuleExtension extends MockNodeExtension<{ type: "bold" }> {
   public override proseMirrorInputRules(
     proseMirrorSchema: Schema<string, string>,
@@ -38,22 +41,16 @@ const testerWithBoldRule = (): ProseMirrorEditor => {
   const extension = new BoldInputRuleExtension();
   const manager = new ExtensionManager([extension]);
 
-  return renderProseMirror(
-    schemaWithBold.nodes["doc"].create(
-      null,
-      schemaWithBold.nodes["paragraph"].create(),
-    ),
-    {
-      editorProps: {
-        // Keymap plugin comes second so that the input rules get the Enter
-        // key first, just like in ProseMirrorUnified.
-        plugins: [
-          new InputRulesBuilder(manager, schemaWithBold).build(),
-          new KeymapBuilder(manager, schemaWithBold).build(),
-        ],
-      },
+  return renderProseMirror(doc(paragraph()), {
+    editorProps: {
+      // Keymap plugin comes second so that the input rules get the Enter
+      // key first, just like in ProseMirrorUnified.
+      plugins: [
+        new InputRulesBuilder(manager, schemaWithBold).build(),
+        new KeymapBuilder(manager, schemaWithBold).build(),
+      ],
     },
-  );
+  });
 };
 
 test("InputRulesBuilder applies an input rule on Enter", () => {
@@ -64,15 +61,7 @@ test("InputRulesBuilder applies an input rule on Enter", () => {
   testEditor.type("Hello <b>World</b>");
   testEditor.type("{Enter}");
 
-  const expectedDoc = schemaWithBold.nodes["doc"].create(null, [
-    schemaWithBold.nodes["paragraph"].create(null, [
-      schemaWithBold.text("Hello "),
-      schemaWithBold
-        .text("World")
-        .mark([schemaWithBold.marks["bold"].create()]),
-    ]),
-    schemaWithBold.nodes["paragraph"].create(),
-  ]);
+  const expectedDoc = doc(paragraph("Hello ", bold("World")), paragraph());
 
   expect(testEditor.doc).toEqualProseMirrorNode(expectedDoc);
 });
@@ -85,12 +74,7 @@ test("InputRulesBuilder only splits the block when Enter matches no rule", () =>
   testEditor.type("Hello");
   testEditor.type("{Enter}");
 
-  const expectedDoc = schemaWithBold.nodes["doc"].create(null, [
-    schemaWithBold.nodes["paragraph"].create(null, [
-      schemaWithBold.text("Hello"),
-    ]),
-    schemaWithBold.nodes["paragraph"].create(),
-  ]);
+  const expectedDoc = doc(paragraph("Hello"), paragraph());
 
   expect(testEditor.doc).toEqualProseMirrorNode(expectedDoc);
 });

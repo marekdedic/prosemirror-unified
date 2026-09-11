@@ -1,3 +1,4 @@
+import { builders } from "prosemirror-test-builder";
 import { expect, test, vi } from "vitest";
 import { renderProseMirror } from "vitest-prosemirror";
 
@@ -39,17 +40,8 @@ test("Parsing a document with a paragraph", () => {
 
   const proseMirrorRoot = pmu.parse(source);
 
-  const proseMirrorTree = pmu
-    .schema()
-    .nodes["doc"].create(
-      {},
-      pmu
-        .schema()
-        .nodes["paragraph"].createAndFill(
-          {},
-          pmu.schema().text("Hello World!"),
-        ),
-    );
+  const { doc, paragraph } = builders(pmu.schema());
+  const proseMirrorTree = doc(paragraph("Hello World!"));
 
   vi.spyOn(console, "warn").mockImplementation(() => {});
   const testEditor = renderProseMirror(proseMirrorRoot);
@@ -143,14 +135,8 @@ test("Parsing a document with no link node", () => {
     new ParagraphExtension(),
   ]);
 
-  const targetProseMirrorTree = pmu
-    .schema()
-    .nodes["doc"].create(
-      {},
-      pmu
-        .schema()
-        .nodes["paragraph"].createAndFill({}, pmu.schema().text("Hello !")),
-    );
+  const { doc, paragraph } = builders(pmu.schema());
+  const targetProseMirrorTree = doc(paragraph("Hello !"));
 
   vi.spyOn(console, "warn").mockImplementation(() => {});
   const proseMirrorRoot = pmu.parse(source);
