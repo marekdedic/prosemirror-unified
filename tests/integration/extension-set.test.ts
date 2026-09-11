@@ -55,11 +55,13 @@ test("Parsing a document with an extension set", () => {
   const proseMirrorRoot = pmu.parse(source);
   const testEditor = new ProseMirrorTester(proseMirrorRoot);
 
-  expect(testEditor.schema.spec.marks.size).toBe(0);
-  expect(testEditor.schema.spec.nodes.size).toBe(3);
-  expect(testEditor.schema.spec.nodes.get("doc")).toBe(rootSpec);
-  expect(testEditor.schema.spec.nodes.get("paragraph")).toBe(paragraphSpec);
-  expect(testEditor.schema.spec.nodes.get("text")).toBe(textSpec);
+  expect(testEditor.state.schema.spec.marks.size).toBe(0);
+  expect(testEditor.state.schema.spec.nodes.size).toBe(3);
+  expect(testEditor.state.schema.spec.nodes.get("doc")).toBe(rootSpec);
+  expect(testEditor.state.schema.spec.nodes.get("paragraph")).toBe(
+    paragraphSpec,
+  );
+  expect(testEditor.state.schema.spec.nodes.get("text")).toBe(textSpec);
   expect(testEditor.doc).toEqualProseMirrorNode(proseMirrorTree);
   expect(parserProvider.parsed).toStrictEqual([source]);
   expect(parserProvider.transformed).toHaveLength(1);
