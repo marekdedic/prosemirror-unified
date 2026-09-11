@@ -73,12 +73,14 @@ test("Parsing a document with a paragraph", () => {
   vi.spyOn(console, "warn").mockImplementation(() => {});
   const testEditor = new ProseMirrorTester(proseMirrorRoot);
 
-  expect(testEditor.schema.spec.marks.size).toBe(1);
-  expect(testEditor.schema.spec.marks.get("bold")).toBe(boldSpec);
-  expect(testEditor.schema.spec.nodes.size).toBe(3);
-  expect(testEditor.schema.spec.nodes.get("doc")).toBe(rootSpec);
-  expect(testEditor.schema.spec.nodes.get("paragraph")).toBe(paragraphSpec);
-  expect(testEditor.schema.spec.nodes.get("text")).toBe(textSpec);
+  expect(testEditor.state.schema.spec.marks.size).toBe(1);
+  expect(testEditor.state.schema.spec.marks.get("bold")).toBe(boldSpec);
+  expect(testEditor.state.schema.spec.nodes.size).toBe(3);
+  expect(testEditor.state.schema.spec.nodes.get("doc")).toBe(rootSpec);
+  expect(testEditor.state.schema.spec.nodes.get("paragraph")).toBe(
+    paragraphSpec,
+  );
+  expect(testEditor.state.schema.spec.nodes.get("text")).toBe(textSpec);
   expect(testEditor.doc).toEqualProseMirrorNode(proseMirrorTree);
   expect(parserProvider.parsed).toStrictEqual([source]);
   expect(parserProvider.transformed).toHaveLength(1);
@@ -172,12 +174,14 @@ test("Adding a mark with an input rule", () => {
   testEditor.selectText("end");
   testEditor.insertText("<b>World</b>!");
 
-  expect(testEditor.schema.spec.marks.size).toBe(1);
-  expect(testEditor.schema.spec.marks.get("bold")).toBe(boldSpec);
-  expect(testEditor.schema.spec.nodes.size).toBe(3);
-  expect(testEditor.schema.spec.nodes.get("doc")).toBe(rootSpec);
-  expect(testEditor.schema.spec.nodes.get("paragraph")).toBe(paragraphSpec);
-  expect(testEditor.schema.spec.nodes.get("text")).toBe(textSpec);
+  expect(testEditor.state.schema.spec.marks.size).toBe(1);
+  expect(testEditor.state.schema.spec.marks.get("bold")).toBe(boldSpec);
+  expect(testEditor.state.schema.spec.nodes.size).toBe(3);
+  expect(testEditor.state.schema.spec.nodes.get("doc")).toBe(rootSpec);
+  expect(testEditor.state.schema.spec.nodes.get("paragraph")).toBe(
+    paragraphSpec,
+  );
+  expect(testEditor.state.schema.spec.nodes.get("text")).toBe(textSpec);
   expect(testEditor.doc).toEqualProseMirrorNode(proseMirrorTree);
   expect(parserProvider.parsed).toStrictEqual([source]);
   expect(parserProvider.transformed).toHaveLength(1);
@@ -267,15 +271,17 @@ test("Adding a mark with a key binding", () => {
   const testEditor = new ProseMirrorTester(proseMirrorRoot, {
     plugins: [pmu.keymapPlugin()],
   });
-  testEditor.selectText({ from: 7, to: 12 });
-  testEditor.insertText("b", { ctrlKey: true });
+  testEditor.selectText({ anchor: 7, head: 12 });
+  testEditor.insertText("{Mod-b}");
 
-  expect(testEditor.schema.spec.marks.size).toBe(1);
-  expect(testEditor.schema.spec.marks.get("bold")).toBe(boldSpec);
-  expect(testEditor.schema.spec.nodes.size).toBe(3);
-  expect(testEditor.schema.spec.nodes.get("doc")).toBe(rootSpec);
-  expect(testEditor.schema.spec.nodes.get("paragraph")).toBe(paragraphSpec);
-  expect(testEditor.schema.spec.nodes.get("text")).toBe(textSpec);
+  expect(testEditor.state.schema.spec.marks.size).toBe(1);
+  expect(testEditor.state.schema.spec.marks.get("bold")).toBe(boldSpec);
+  expect(testEditor.state.schema.spec.nodes.size).toBe(3);
+  expect(testEditor.state.schema.spec.nodes.get("doc")).toBe(rootSpec);
+  expect(testEditor.state.schema.spec.nodes.get("paragraph")).toBe(
+    paragraphSpec,
+  );
+  expect(testEditor.state.schema.spec.nodes.get("text")).toBe(textSpec);
   expect(testEditor.doc).toEqualProseMirrorNode(proseMirrorTree);
   expect(parserProvider.parsed).toStrictEqual([source]);
   expect(parserProvider.transformed).toHaveLength(1);
