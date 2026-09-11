@@ -1,5 +1,5 @@
 import { expect, test, vi } from "vitest";
-import { ProseMirrorTester } from "vitest-prosemirror";
+import { renderProseMirror } from "vitest-prosemirror";
 
 import { ProseMirrorUnified } from "../../src/ProseMirrorUnified";
 import { ParagraphExtension, paragraphSpec } from "./ParagraphExtension";
@@ -52,7 +52,7 @@ test("Parsing a document with a paragraph", () => {
     );
 
   vi.spyOn(console, "warn").mockImplementation(() => {});
-  const testEditor = new ProseMirrorTester(proseMirrorRoot);
+  const testEditor = renderProseMirror(proseMirrorRoot);
 
   expect(testEditor.state.schema.spec.marks.size).toBe(0);
   expect(testEditor.state.schema.spec.nodes.size).toBe(3);
@@ -154,7 +154,7 @@ test("Parsing a document with no link node", () => {
 
   vi.spyOn(console, "warn").mockImplementation(() => {});
   const proseMirrorRoot = pmu.parse(source);
-  const testEditor = new ProseMirrorTester(proseMirrorRoot);
+  const testEditor = renderProseMirror(proseMirrorRoot);
 
   expect(testEditor.state.schema.spec.marks.size).toBe(0);
   expect(testEditor.state.schema.spec.nodes.size).toBe(3);

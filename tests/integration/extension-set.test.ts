@@ -1,5 +1,5 @@
 import { expect, test, vi } from "vitest";
-import { ProseMirrorTester } from "vitest-prosemirror";
+import { renderProseMirror } from "vitest-prosemirror";
 
 import { Extension } from "../../src/Extension";
 import { ProseMirrorUnified } from "../../src/ProseMirrorUnified";
@@ -53,7 +53,7 @@ test("Parsing a document with an extension set", () => {
 
   vi.spyOn(console, "warn").mockImplementation(() => {});
   const proseMirrorRoot = pmu.parse(source);
-  const testEditor = new ProseMirrorTester(proseMirrorRoot);
+  const testEditor = renderProseMirror(proseMirrorRoot);
 
   expect(testEditor.state.schema.spec.marks.size).toBe(0);
   expect(testEditor.state.schema.spec.nodes.size).toBe(3);

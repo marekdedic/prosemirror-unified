@@ -1,5 +1,5 @@
 import { expect, test, vi } from "vitest";
-import { ProseMirrorTester } from "vitest-prosemirror";
+import { renderProseMirror } from "vitest-prosemirror";
 
 import { ProseMirrorUnified } from "../../src/ProseMirrorUnified";
 import { BoldExtension, boldSpec } from "./BoldExtension";
@@ -71,7 +71,7 @@ test("Parsing a document with a paragraph", () => {
     );
 
   vi.spyOn(console, "warn").mockImplementation(() => {});
-  const testEditor = new ProseMirrorTester(proseMirrorRoot);
+  const testEditor = renderProseMirror(proseMirrorRoot);
 
   expect(testEditor.state.schema.spec.marks.size).toBe(1);
   expect(testEditor.state.schema.spec.marks.get("bold")).toBe(boldSpec);
@@ -168,11 +168,13 @@ test("Adding a mark with an input rule", () => {
     );
 
   vi.spyOn(console, "warn").mockImplementation(() => {});
-  const testEditor = new ProseMirrorTester(proseMirrorRoot, {
-    plugins: [pmu.inputRulesPlugin()],
+  const testEditor = renderProseMirror(proseMirrorRoot, {
+    editorProps: {
+      plugins: [pmu.inputRulesPlugin()],
+    },
   });
-  testEditor.selectText("end");
-  testEditor.insertText("<b>World</b>!");
+  testEditor.setSelection("end");
+  testEditor.type("<b>World</b>!");
 
   expect(testEditor.state.schema.spec.marks.size).toBe(1);
   expect(testEditor.state.schema.spec.marks.get("bold")).toBe(boldSpec);
@@ -268,11 +270,13 @@ test("Adding a mark with a key binding", () => {
         ]),
     );
 
-  const testEditor = new ProseMirrorTester(proseMirrorRoot, {
-    plugins: [pmu.keymapPlugin()],
+  const testEditor = renderProseMirror(proseMirrorRoot, {
+    editorProps: {
+      plugins: [pmu.keymapPlugin()],
+    },
   });
-  testEditor.selectText({ anchor: 7, head: 12 });
-  testEditor.insertText("{Mod-b}");
+  testEditor.setSelection({ anchor: 7, head: 12 });
+  testEditor.type("{Mod-b}");
 
   expect(testEditor.state.schema.spec.marks.size).toBe(1);
   expect(testEditor.state.schema.spec.marks.get("bold")).toBe(boldSpec);

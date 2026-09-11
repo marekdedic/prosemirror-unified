@@ -1,7 +1,7 @@
 import { inputRules } from "prosemirror-inputrules";
 import { type DOMOutputSpec, Schema } from "prosemirror-model";
 import { describe, expect, test } from "vitest";
-import { ProseMirrorTester } from "vitest-prosemirror";
+import { type ProseMirrorEditor, renderProseMirror } from "vitest-prosemirror";
 
 import { MarkInputRule } from "../../src/MarkInputRule";
 
@@ -40,20 +40,22 @@ describe("MarkInputRule works", () => {
     ruleSchema: Schema<"doc" | "paragraph" | "text", "bold">,
     matcher: RegExp,
     text: string,
-  ): ProseMirrorTester => {
-    const testEditor = new ProseMirrorTester(
+  ): ProseMirrorEditor => {
+    const testEditor = renderProseMirror(
       ruleSchema.nodes.doc.create(null, ruleSchema.nodes.paragraph.create()),
       {
-        plugins: [
-          inputRules({
-            rules: [new MarkInputRule(matcher, ruleSchema.marks.bold)],
-          }),
-        ],
+        editorProps: {
+          plugins: [
+            inputRules({
+              rules: [new MarkInputRule(matcher, ruleSchema.marks.bold)],
+            }),
+          ],
+        },
       },
     );
 
-    testEditor.selectText("end");
-    testEditor.insertText(text);
+    testEditor.setSelection("end");
+    testEditor.type(text);
 
     return testEditor;
   };
