@@ -17,6 +17,7 @@ export default defineConfig(
     "dist/",
     "docs/.vitepress/cache/",
     "docs/.vitepress/dist/",
+    "docs/.vitepress/**/*.ts",
     "package-lock.json",
   ]),
   packageJson.configs.recommended,

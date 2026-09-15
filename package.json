@@ -99,7 +99,6 @@
     "unplugin-dts": "^1.0.1",
     "vite": "^8.0.2",
     "vitepress": "^1.6.4",
-    "vitepress-plugin-mermaid": "^2.0.17",
     "vitest": "^5.0.0",
     "vitest-prosemirror": "^1.1.0"
   },
