@@ -20,7 +20,7 @@ export class UnistToProseMirrorConverter {
   }
 
   public convert(unist: UnistNode): ProseMirrorNode {
-    const context: Partial<unknown> = {};
+    const context: Partial<Record<string, never>> = {};
     const rootNode = this.convertNode(unist, context);
     for (const extension of this.extensionManager.syntaxExtensions()) {
       extension.postUnistToProseMirrorHook(context);
@@ -33,7 +33,7 @@ export class UnistToProseMirrorConverter {
 
   private convertNode(
     node: UnistNode,
-    context: Partial<unknown>,
+    context: Partial<Record<string, never>>,
   ): Array<ProseMirrorNode> {
     const matches = this.extensionManager
       .syntaxExtensions()
