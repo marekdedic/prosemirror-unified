@@ -1,0 +1,31 @@
+import type { NodeSpec, Node as ProseMirrorNode } from "prosemirror-model";
+import type { NodeViewConstructor } from "prosemirror-view";
+import type { Node as UnistNode } from "unist";
+
+import { SyntaxExtension } from "./SyntaxExtension";
+
+export abstract class NodeExtension<
+  HandledUnistNode extends UnistNode,
+  UnistToProseMirrorContext extends Record<string, unknown> = Record<
+    string,
+    never
+  >,
+> extends SyntaxExtension<HandledUnistNode, UnistToProseMirrorContext> {
+  public abstract proseMirrorNodeName(): string | null;
+
+  public abstract proseMirrorNodeSpec(): NodeSpec | null;
+
+  public abstract proseMirrorNodeToUnistNodes(
+    node: ProseMirrorNode,
+    convertedChildren: Array<UnistNode>,
+  ): Array<HandledUnistNode>;
+
+  // eslint-disable-next-line @typescript-eslint/class-methods-use-this -- Inalid for an interface
+  public proseMirrorNodeView(): NodeViewConstructor | null {
+    return null;
+  }
+
+  public proseMirrorToUnistTest(node: ProseMirrorNode): boolean {
+    return this.proseMirrorNodeName() === node.type.name;
+  }
+}
