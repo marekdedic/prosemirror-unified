@@ -20,9 +20,9 @@ export const codeSpec: MarkSpec = {
 };
 
 export class CodeExtension extends MarkExtension<UnistCode> {
-  public override processConvertedUnistNode(
-    convertedNode: UnistText,
-  ): UnistCode {
+  public override processConvertedUnistNodes([
+    convertedNode,
+  ]: Array<UnistText>): UnistCode {
     return { type: this.unistNodeName(), value: convertedNode.value };
   }
 

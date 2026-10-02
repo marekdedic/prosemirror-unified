@@ -21,10 +21,10 @@ export const italicSpec: MarkSpec = {
 };
 
 export class ItalicExtension extends MarkExtension<UnistItalic> {
-  public override processConvertedUnistNode(
-    convertedNode: UnistBold | UnistText,
+  public override processConvertedUnistNodes(
+    convertedNodes: Array<UnistBold | UnistText>,
   ): UnistItalic {
-    return { children: [convertedNode], type: this.unistNodeName() };
+    return { children: convertedNodes, type: this.unistNodeName() };
   }
 
   public override proseMirrorMarkName(): string {
