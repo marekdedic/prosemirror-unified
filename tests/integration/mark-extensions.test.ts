@@ -4,6 +4,7 @@ import { renderProseMirror } from "vitest-prosemirror";
 
 import { ProseMirrorUnified } from "../../src/ProseMirrorUnified";
 import { BoldExtension, boldSpec } from "./BoldExtension";
+import { CodeExtension } from "./CodeExtension";
 import { ItalicExtension } from "./ItalicExtension";
 import { ParagraphExtension, paragraphSpec } from "./ParagraphExtension";
 import { ParserProviderExtension } from "./ParserProviderExtension";
@@ -384,6 +385,110 @@ test("Serializing separate runs of the same mark", () => {
   expect(
     pmu.serialize(doc(paragraph(bold("a"), " b ", bold("c ", italic("d"))))),
   ).toBe(source);
+  expect(parserProvider.stringified).toStrictEqual([unistTree]);
+  expect(console.warn).not.toHaveBeenCalled();
+});
+
+test("Serializing a leaf mark ranked after a mark around it", () => {
+  const source = "<b><code>x</code></b>";
+  const unistTree: UnistRoot = {
+    children: [
+      {
+        children: [{ children: [{ type: "code", value: "x" }], type: "bold" }],
+        type: "paragraph",
+      },
+    ],
+    type: "root",
+  };
+
+  const parserProvider = new ParserProviderExtension(unistTree, source);
+
+  const pmu = new ProseMirrorUnified([
+    parserProvider,
+    new BoldExtension(),
+    new CodeExtension(),
+    new RootExtension(),
+    new TextExtension(),
+    new ParagraphExtension(),
+  ]);
+
+  const { bold, code, doc, paragraph } = builders(pmu.schema());
+
+  vi.spyOn(console, "warn").mockImplementation(() => {});
+
+  expect(pmu.serialize(doc(paragraph(bold(code("x")))))).toBe(source);
+  expect(parserProvider.stringified).toStrictEqual([unistTree]);
+  expect(console.warn).not.toHaveBeenCalled();
+});
+
+test("Serializing a leaf mark ranked before a mark around it", () => {
+  const source = "<b><code>x</code></b>";
+  const unistTree: UnistRoot = {
+    children: [
+      {
+        children: [{ children: [{ type: "code", value: "x" }], type: "bold" }],
+        type: "paragraph",
+      },
+    ],
+    type: "root",
+  };
+
+  const parserProvider = new ParserProviderExtension(unistTree, source);
+
+  const pmu = new ProseMirrorUnified([
+    parserProvider,
+    new CodeExtension(),
+    new BoldExtension(),
+    new RootExtension(),
+    new TextExtension(),
+    new ParagraphExtension(),
+  ]);
+
+  const { bold, code, doc, paragraph } = builders(pmu.schema());
+
+  vi.spyOn(console, "warn").mockImplementation(() => {});
+
+  expect(pmu.serialize(doc(paragraph(bold(code("x")))))).toBe(source);
+  expect(parserProvider.stringified).toStrictEqual([unistTree]);
+  expect(console.warn).not.toHaveBeenCalled();
+});
+
+test("Serializing a mark spanning several nodes around a leaf mark", () => {
+  const source = "<b>a <code>b</code></b>";
+  const unistTree: UnistRoot = {
+    children: [
+      {
+        children: [
+          {
+            children: [
+              { type: "text", value: "a " },
+              { type: "code", value: "b" },
+            ],
+            type: "bold",
+          },
+        ],
+        type: "paragraph",
+      },
+    ],
+    type: "root",
+  };
+
+  const parserProvider = new ParserProviderExtension(unistTree, source);
+
+  const pmu = new ProseMirrorUnified([
+    parserProvider,
+    new BoldExtension(),
+    new CodeExtension(),
+    new RootExtension(),
+    new TextExtension(),
+    new ParagraphExtension(),
+  ]);
+
+  const { bold, code, doc, paragraph } = builders(pmu.schema());
+
+  vi.spyOn(console, "warn").mockImplementation(() => {});
+
+  expect(pmu.serialize(doc(paragraph(bold("a ", code("b")))))).toBe(source);
   expect(parserProvider.stringified).toStrictEqual([unistTree]);
   expect(console.warn).not.toHaveBeenCalled();
 });

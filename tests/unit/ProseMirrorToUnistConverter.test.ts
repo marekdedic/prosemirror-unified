@@ -645,4 +645,139 @@ test("Doesn't group neighbouring nodes with marks that differ in attributes", ()
   expect(console.warn).not.toHaveBeenCalled();
 });
 
+test("Applies leaf marks innermost regardless of their rank", () => {
+  const textExtension = vi.mocked(new MockNodeExtension());
+  textExtension.proseMirrorNodeName.mockReturnValue("text");
+  const textUnistNode = { type: "text", value: "Hello World!" };
+  textExtension.proseMirrorNodeToUnistNodes.mockReturnValueOnce([
+    textUnistNode,
+  ]);
+
+  const wrapperExtension = vi.mocked(new MockMarkExtension());
+  wrapperExtension.proseMirrorMarkName.mockReturnValue("wrapper");
+  wrapperExtension.unistNodeIsLeaf.mockReturnValue(false);
+  wrapperExtension.processConvertedUnistNode.mockImplementation(
+    (convertedNode) => ({ children: [convertedNode], type: "wrapper" }),
+  );
+
+  const leafExtension = vi.mocked(new MockMarkExtension());
+  leafExtension.proseMirrorMarkName.mockReturnValue("leaf");
+  leafExtension.unistNodeIsLeaf.mockReturnValue(true);
+  const leafUnistNode = { type: "leaf", value: "Hello World!" };
+  leafExtension.processConvertedUnistNode.mockReturnValueOnce(leafUnistNode);
+
+  const docExtension = vi.mocked(new MockNodeExtension());
+  docExtension.proseMirrorNodeName.mockReturnValue("doc");
+  docExtension.proseMirrorNodeToUnistNodes.mockImplementation(
+    (_, convertedChildren) => [{ children: convertedChildren, type: "root" }],
+  );
+
+  const manager = vi.mocked(new ExtensionManager([]));
+  manager.markExtensions.mockReturnValue([wrapperExtension, leafExtension]);
+  manager.nodeExtensions.mockReturnValue([docExtension, textExtension]);
+
+  const converter = new ProseMirrorToUnistConverter(manager);
+
+  // The wrapper mark ranks before the leaf mark.
+  const schema = new Schema({
+    marks: {
+      wrapper: {},
+      // eslint-disable-next-line perfectionist/sort-objects -- Mark order is rank order
+      leaf: {},
+    },
+    nodes: {
+      doc: { content: "text*" },
+      text: {},
+    },
+  });
+  const textProseMirrorNode = schema
+    .text("Hello World!")
+    .mark([schema.marks.wrapper.create(), schema.marks.leaf.create()]);
+  const rootProseMirrorNode = schema.nodes.doc.create({}, [
+    textProseMirrorNode,
+  ]);
+
+  vi.spyOn(console, "warn").mockImplementation(() => {});
+
+  expect(converter.convert(rootProseMirrorNode)).toStrictEqual({
+    children: [{ children: [leafUnistNode], type: "wrapper" }],
+    type: "root",
+  });
+  expect(leafExtension.processConvertedUnistNode).toHaveBeenCalledWith(
+    textUnistNode,
+    textProseMirrorNode.marks[1],
+  );
+  expect(wrapperExtension.processConvertedUnistNode).toHaveBeenCalledWith(
+    leafUnistNode,
+    textProseMirrorNode.marks[0],
+  );
+  expect(console.warn).not.toHaveBeenCalled();
+});
+
+test("Warns about and drops all but the first leaf mark on a node", () => {
+  const textExtension = vi.mocked(new MockNodeExtension());
+  textExtension.proseMirrorNodeName.mockReturnValue("text");
+  const textUnistNode = { type: "text", value: "Hello World!" };
+  textExtension.proseMirrorNodeToUnistNodes.mockReturnValueOnce([
+    textUnistNode,
+  ]);
+
+  const leafOneExtension = vi.mocked(new MockMarkExtension());
+  leafOneExtension.proseMirrorMarkName.mockReturnValue("leafOne");
+  leafOneExtension.unistNodeIsLeaf.mockReturnValue(true);
+  const leafOneUnistNode = { type: "leafOne", value: "Hello World!" };
+  leafOneExtension.processConvertedUnistNode.mockReturnValueOnce(
+    leafOneUnistNode,
+  );
+
+  const leafTwoExtension = vi.mocked(new MockMarkExtension());
+  leafTwoExtension.proseMirrorMarkName.mockReturnValue("leafTwo");
+  leafTwoExtension.unistNodeIsLeaf.mockReturnValue(true);
+
+  const docExtension = vi.mocked(new MockNodeExtension());
+  docExtension.proseMirrorNodeName.mockReturnValue("doc");
+  docExtension.proseMirrorNodeToUnistNodes.mockImplementation(
+    (_, convertedChildren) => [{ children: convertedChildren, type: "root" }],
+  );
+
+  const manager = vi.mocked(new ExtensionManager([]));
+  manager.markExtensions.mockReturnValue([leafOneExtension, leafTwoExtension]);
+  manager.nodeExtensions.mockReturnValue([docExtension, textExtension]);
+
+  const converter = new ProseMirrorToUnistConverter(manager);
+
+  const schema = new Schema({
+    marks: {
+      leafOne: {},
+      leafTwo: {},
+    },
+    nodes: {
+      doc: { content: "text*" },
+      text: {},
+    },
+  });
+  const textProseMirrorNode = schema
+    .text("Hello World!")
+    .mark([schema.marks.leafOne.create(), schema.marks.leafTwo.create()]);
+  const rootProseMirrorNode = schema.nodes.doc.create({}, [
+    textProseMirrorNode,
+  ]);
+
+  vi.spyOn(console, "warn").mockImplementation(() => {});
+
+  expect(converter.convert(rootProseMirrorNode)).toStrictEqual({
+    children: [leafOneUnistNode],
+    type: "root",
+  });
+  expect(leafOneExtension.processConvertedUnistNode).toHaveBeenCalledWith(
+    textUnistNode,
+    textProseMirrorNode.marks[0],
+  );
+  expect(leafTwoExtension.processConvertedUnistNode).not.toHaveBeenCalled();
+  expect(console.warn).toHaveBeenCalledTimes(1);
+  expect(console.warn).toHaveBeenCalledWith(
+    'Couldn\'t convert ProseMirror mark of type "leafTwo" to a unist node, as the ProseMirror node of type "text" already has the leaf mark "leafOne".',
+  );
+});
+
 /* eslint-enable */

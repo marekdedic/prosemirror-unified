@@ -24,6 +24,8 @@ export class MockMarkExtension<
 
   public proseMirrorMarkSpec = vi.fn<() => MarkSpec | null>();
 
+  public override unistNodeIsLeaf = vi.fn<() => boolean>();
+
   public unistNodeName = vi.fn<() => HandledUnistNode["type"]>();
 
   public unistNodeToProseMirrorNodes =

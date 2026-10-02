@@ -18,4 +18,9 @@ export abstract class MarkExtension<
   public abstract proseMirrorMarkName(): string | null;
 
   public abstract proseMirrorMarkSpec(): MarkSpec | null;
+
+  // eslint-disable-next-line @typescript-eslint/class-methods-use-this -- Meant to be overridden
+  public unistNodeIsLeaf(): boolean {
+    return false;
+  }
 }

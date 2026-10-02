@@ -121,6 +121,10 @@ Returns the ProseMirror mark spec, or `null` if the extension produces no mark.
 
 Called when serializing from ProseMirror to unist. The ProseMirror node has already been translated by a `NodeExtension`; this method receives the resulting unist node together with the mark that was on the original ProseMirror node, and post-processes the unist node for that mark. It is called once per matching mark, and the node passed in may already have been post-processed by other marks' extensions.
 
+### `unistNodeIsLeaf(): boolean`
+
+Whether the unist node this mark converts to is a leaf (for example an mdast `inlineCode`), which can't contain the unist nodes produced by other marks. Leaf marks are applied first, regardless of their rank in the schema, so their `processConvertedUnistNode` always receives the node produced by the `NodeExtension` and is never wrapped by other marks. A ProseMirror node can't be converted with more than one leaf mark — only the first one is applied and the others are dropped with a warning. Defaults to `false`.
+
 ## `MarkInputRule`
 
 Extends ProseMirror's `InputRule`, for input rules that add marks.
