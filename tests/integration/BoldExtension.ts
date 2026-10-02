@@ -10,13 +10,14 @@ import type { Node as UnistNode } from "unist";
 
 import { toggleMark } from "prosemirror-commands";
 
+import type { UnistItalic } from "./ItalicExtension";
 import type { UnistText } from "./TextExtension";
 
 import { MarkInputRule } from "../../src";
 import { MarkExtension } from "../../src/MarkExtension";
 
 export interface UnistBold extends UnistNode {
-  children: Array<UnistText>;
+  children: Array<UnistItalic | UnistText>;
   type: "bold";
 }
 
@@ -26,7 +27,7 @@ export const boldSpec: MarkSpec = {
 
 export class BoldExtension extends MarkExtension<UnistBold> {
   public override processConvertedUnistNode(
-    convertedNode: UnistText,
+    convertedNode: UnistItalic | UnistText,
   ): UnistBold {
     return { children: [convertedNode], type: this.unistNodeName() };
   }

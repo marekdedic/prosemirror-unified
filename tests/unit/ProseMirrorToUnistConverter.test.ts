@@ -507,4 +507,142 @@ test("Warns when multiple extensions can convert a mark", () => {
   );
 });
 
+test("Groups neighbouring nodes sharing an equal mark", () => {
+  const textExtension = vi.mocked(new MockNodeExtension());
+  textExtension.proseMirrorNodeName.mockReturnValue("text");
+  textExtension.proseMirrorNodeToUnistNodes.mockImplementation((node) => [
+    { type: "text", value: node.text },
+  ]);
+
+  const linkExtension = vi.mocked(new MockMarkExtension());
+  linkExtension.proseMirrorMarkName.mockReturnValue("link");
+  linkExtension.processConvertedUnistNode.mockImplementation(
+    (convertedNode, mark) => ({
+      children: [convertedNode],
+      type: "link",
+      url: mark.attrs["href"] as string,
+    }),
+  );
+
+  const boldExtension = vi.mocked(new MockMarkExtension());
+  boldExtension.proseMirrorMarkName.mockReturnValue("bold");
+  boldExtension.processConvertedUnistNode.mockImplementation(
+    (convertedNode) => ({ children: [convertedNode], type: "bold" }),
+  );
+
+  const docExtension = vi.mocked(new MockNodeExtension());
+  docExtension.proseMirrorNodeName.mockReturnValue("doc");
+  docExtension.proseMirrorNodeToUnistNodes.mockImplementation(
+    (_, convertedChildren) => [{ children: convertedChildren, type: "root" }],
+  );
+
+  const manager = vi.mocked(new ExtensionManager([]));
+  manager.markExtensions.mockReturnValue([boldExtension, linkExtension]);
+  manager.nodeExtensions.mockReturnValue([docExtension, textExtension]);
+
+  const converter = new ProseMirrorToUnistConverter(manager);
+
+  const schema = new Schema({
+    marks: {
+      bold: {},
+      link: { attrs: { href: {} } },
+    },
+    nodes: {
+      doc: { content: "text*" },
+      text: {},
+    },
+  });
+  const link = schema.marks.link.create({ href: "https://example.test" });
+  const rootProseMirrorNode = schema.nodes.doc.create({}, [
+    schema.text("a ", [link]),
+    schema.text("bold", [schema.marks.bold.create(), link]),
+    schema.text(" part", [link]),
+  ]);
+
+  vi.spyOn(console, "warn").mockImplementation(() => {});
+
+  expect(converter.convert(rootProseMirrorNode)).toStrictEqual({
+    children: [
+      {
+        children: [
+          { type: "text", value: "a " },
+          { children: [{ type: "text", value: "bold" }], type: "bold" },
+          { type: "text", value: " part" },
+        ],
+        type: "link",
+        url: "https://example.test",
+      },
+    ],
+    type: "root",
+  });
+  expect(console.warn).not.toHaveBeenCalled();
+});
+
+test("Doesn't group neighbouring nodes with marks that differ in attributes", () => {
+  const textExtension = vi.mocked(new MockNodeExtension());
+  textExtension.proseMirrorNodeName.mockReturnValue("text");
+  textExtension.proseMirrorNodeToUnistNodes.mockImplementation((node) => [
+    { type: "text", value: node.text },
+  ]);
+
+  const linkExtension = vi.mocked(new MockMarkExtension());
+  linkExtension.proseMirrorMarkName.mockReturnValue("link");
+  linkExtension.processConvertedUnistNode.mockImplementation(
+    (convertedNode, mark) => ({
+      children: [convertedNode],
+      type: "link",
+      url: mark.attrs["href"] as string,
+    }),
+  );
+
+  const docExtension = vi.mocked(new MockNodeExtension());
+  docExtension.proseMirrorNodeName.mockReturnValue("doc");
+  docExtension.proseMirrorNodeToUnistNodes.mockImplementation(
+    (_, convertedChildren) => [{ children: convertedChildren, type: "root" }],
+  );
+
+  const manager = vi.mocked(new ExtensionManager([]));
+  manager.markExtensions.mockReturnValue([linkExtension]);
+  manager.nodeExtensions.mockReturnValue([docExtension, textExtension]);
+
+  const converter = new ProseMirrorToUnistConverter(manager);
+
+  const schema = new Schema({
+    marks: {
+      link: { attrs: { href: {} } },
+    },
+    nodes: {
+      doc: { content: "text*" },
+      text: {},
+    },
+  });
+  const rootProseMirrorNode = schema.nodes.doc.create({}, [
+    schema.text("one", [
+      schema.marks.link.create({ href: "https://one.test" }),
+    ]),
+    schema.text("two", [
+      schema.marks.link.create({ href: "https://two.test" }),
+    ]),
+  ]);
+
+  vi.spyOn(console, "warn").mockImplementation(() => {});
+
+  expect(converter.convert(rootProseMirrorNode)).toStrictEqual({
+    children: [
+      {
+        children: [{ type: "text", value: "one" }],
+        type: "link",
+        url: "https://one.test",
+      },
+      {
+        children: [{ type: "text", value: "two" }],
+        type: "link",
+        url: "https://two.test",
+      },
+    ],
+    type: "root",
+  });
+  expect(console.warn).not.toHaveBeenCalled();
+});
+
 /* eslint-enable */
