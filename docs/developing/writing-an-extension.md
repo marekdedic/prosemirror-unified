@@ -164,16 +164,16 @@ export class BoldExtension extends MarkExtension<UnistBold> {
     );
   }
 
-  // ProseMirror → unist: wrap the already-converted text node in a bold node
-  public override processConvertedUnistNode(
-    convertedNode: UnistText,
+  // ProseMirror → unist: wrap the already-converted nodes in a bold node
+  public override processConvertedUnistNodes(
+    convertedNodes: Array<UnistText>,
   ): UnistBold {
-    return { type: this.unistNodeName(), children: [convertedNode] };
+    return { type: this.unistNodeName(), children: convertedNodes };
   }
 }
 ```
 
-A `MarkExtension` translates from unist like any node — `unistNodeToProseMirrorNodes` here attaches the mark to its children rather than producing a new node. Going the other way it does **not** convert a node itself; instead `processConvertedUnistNode` post-processes the unist node that the text's `NodeExtension` already produced, wrapping it in a `bold` node.
+A `MarkExtension` translates from unist like any node — `unistNodeToProseMirrorNodes` here attaches the mark to its children rather than producing a new node. Going the other way it does **not** convert a node itself; instead `processConvertedUnistNodes` wraps the unist nodes that the text's `NodeExtension` already produced in a `bold` node.
 
 ### Input rules and keymaps
 

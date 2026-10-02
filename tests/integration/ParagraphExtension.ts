@@ -8,6 +8,8 @@ import type { Node as UnistNode } from "unist";
 
 import type { UnistBold } from "./BoldExtension";
 import type { UnistCallout } from "./CalloutExtension";
+import type { UnistCode } from "./CodeExtension";
+import type { UnistItalic } from "./ItalicExtension";
 import type { UnistLink } from "./LinkExtension";
 import type { UnistText } from "./TextExtension";
 
@@ -15,7 +17,9 @@ import { createProseMirrorNode } from "../../src/createProseMirrorNode";
 import { NodeExtension } from "../../src/NodeExtension";
 
 export interface UnistParagraph extends UnistNode {
-  children: Array<UnistBold | UnistCallout | UnistLink | UnistText>;
+  children: Array<
+    UnistBold | UnistCallout | UnistCode | UnistItalic | UnistLink | UnistText
+  >;
   type: "paragraph";
 }
 

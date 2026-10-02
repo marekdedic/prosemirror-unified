@@ -44,7 +44,7 @@ classDiagram
     <<abstract>>
     unist node ⇄ ProseMirror mark
     proseMirrorMarkSpec()
-    processConvertedUnistNode()
+    processConvertedUnistNodes()
   }
 ```
 
@@ -89,7 +89,7 @@ The context is a single object shared across every extension for the whole docum
 
 Serializing is the mirror image. prosemirror-unified traverses the ProseMirror tree from the leaves up, and for each node finds the one `NodeExtension` that can translate it (again, at most one should match). Children are translated first.
 
-Marks are handled afterwards: if the original ProseMirror node carried any marks, each one is matched to a `MarkExtension`, whose `processConvertedUnistNode` post-processes the already-translated unist node. A node carrying several marks is post-processed once per mark, each `MarkExtension` receiving the result of the previous one; the order in which multiple marks are processed is not guaranteed.
+Marks are handled afterwards. ProseMirror marks are flat, while unist has no marks and nests nodes instead, so prosemirror-unified rebuilds the nesting when it translates a node's children. Each mark is matched to a `MarkExtension`, whose `processConvertedUnistNodes` wraps the already-translated unist nodes. Neighbouring nodes that share an equal mark are wrapped together, so a mark spanning several ProseMirror nodes becomes a single unist node. Where marks overlap, the mark covering the most neighbouring nodes goes outermost; on a tie, the mark that comes first in the schema does. Marks whose `MarkExtension` declares a leaf unist node (`unistNodeIsLeaf`) are the exception: they always wrap a single node and go innermost.
 
 ### Example
 

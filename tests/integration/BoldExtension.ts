@@ -10,13 +10,15 @@ import type { Node as UnistNode } from "unist";
 
 import { toggleMark } from "prosemirror-commands";
 
+import type { UnistCode } from "./CodeExtension";
+import type { UnistItalic } from "./ItalicExtension";
 import type { UnistText } from "./TextExtension";
 
 import { MarkInputRule } from "../../src";
 import { MarkExtension } from "../../src/MarkExtension";
 
 export interface UnistBold extends UnistNode {
-  children: Array<UnistText>;
+  children: Array<UnistCode | UnistItalic | UnistText>;
   type: "bold";
 }
 
@@ -25,10 +27,10 @@ export const boldSpec: MarkSpec = {
 };
 
 export class BoldExtension extends MarkExtension<UnistBold> {
-  public override processConvertedUnistNode(
-    convertedNode: UnistText,
+  public override processConvertedUnistNodes(
+    convertedNodes: Array<UnistCode | UnistItalic | UnistText>,
   ): UnistBold {
-    return { children: [convertedNode], type: this.unistNodeName() };
+    return { children: convertedNodes, type: this.unistNodeName() };
   }
 
   public override proseMirrorInputRules(
