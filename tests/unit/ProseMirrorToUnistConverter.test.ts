@@ -174,7 +174,7 @@ test("Converts a document with marks", () => {
     type: "text",
     value: "Hello World!",
   };
-  markOneExtension.processConvertedUnistNode.mockReturnValueOnce(
+  markOneExtension.processConvertedUnistNodes.mockReturnValueOnce(
     bothMarksUnistNode,
   );
 
@@ -185,7 +185,7 @@ test("Converts a document with marks", () => {
     type: "text",
     value: "Hello World!",
   };
-  markTwoExtension.processConvertedUnistNode.mockReturnValueOnce(
+  markTwoExtension.processConvertedUnistNodes.mockReturnValueOnce(
     markTwoUnistNode,
   );
 
@@ -215,9 +215,11 @@ test("Converts a document with marks", () => {
       text: {},
     },
   });
-  const textProseMirrorNode = schema
-    .text("Hello World!")
-    .mark([schema.marks.markTwo.create(), schema.marks.markOne.create()]);
+  // Mark sets are sorted by rank, so markOne comes first and goes outermost.
+  const textProseMirrorNode = schema.text("Hello World!", [
+    schema.marks.markTwo.create(),
+    schema.marks.markOne.create(),
+  ]);
   const rootProseMirrorNode = schema.nodes.doc.create({}, [
     textProseMirrorNode,
   ]);
@@ -231,15 +233,15 @@ test("Converts a document with marks", () => {
   );
 
   expect(markOneExtension.proseMirrorMarkName.mock.calls).toHaveLength(2);
-  expect(markOneExtension.processConvertedUnistNode).toHaveBeenCalledWith(
-    markTwoUnistNode,
-    textProseMirrorNode.marks[1],
+  expect(markOneExtension.processConvertedUnistNodes).toHaveBeenCalledWith(
+    [markTwoUnistNode],
+    textProseMirrorNode.marks[0],
   );
 
   expect(markTwoExtension.proseMirrorMarkName.mock.calls).toHaveLength(2);
-  expect(markTwoExtension.processConvertedUnistNode).toHaveBeenCalledWith(
-    textUnistNode,
-    textProseMirrorNode.marks[0],
+  expect(markTwoExtension.processConvertedUnistNodes).toHaveBeenCalledWith(
+    [textUnistNode],
+    textProseMirrorNode.marks[1],
   );
 
   expect(docExtension.proseMirrorNodeToUnistNodes).toHaveBeenCalledWith(
@@ -467,7 +469,7 @@ test("Warns when multiple extensions can convert a mark", () => {
 
   const extension1 = vi.mocked(new MarkExtension1());
   extension1.proseMirrorMarkName.mockReturnValue("mark");
-  extension1.processConvertedUnistNode.mockReturnValue(markedUnistNode);
+  extension1.processConvertedUnistNodes.mockReturnValue(markedUnistNode);
 
   const extension2 = vi.mocked(new MarkExtension2());
   extension2.proseMirrorMarkName.mockReturnValue("mark");
@@ -499,8 +501,8 @@ test("Warns when multiple extensions can convert a mark", () => {
 
   // The first matching extension wins.
   expect(converted).toStrictEqual(rootUnistNode);
-  expect(extension1.processConvertedUnistNode).toHaveBeenCalledTimes(1);
-  expect(extension2.processConvertedUnistNode).not.toHaveBeenCalled();
+  expect(extension1.processConvertedUnistNodes).toHaveBeenCalledTimes(1);
+  expect(extension2.processConvertedUnistNodes).not.toHaveBeenCalled();
   expect(console.warn).toHaveBeenCalledTimes(1);
   expect(console.warn).toHaveBeenCalledWith(
     'Multiple extensions (MarkExtension1, MarkExtension2) can convert the ProseMirror mark of type "mark" to a unist node, using MarkExtension1.',
@@ -516,9 +518,9 @@ test("Groups neighbouring nodes sharing an equal mark", () => {
 
   const linkExtension = vi.mocked(new MockMarkExtension());
   linkExtension.proseMirrorMarkName.mockReturnValue("link");
-  linkExtension.processConvertedUnistNode.mockImplementation(
-    (convertedNode, mark) => ({
-      children: [convertedNode],
+  linkExtension.processConvertedUnistNodes.mockImplementation(
+    (convertedNodes, mark) => ({
+      children: convertedNodes,
       type: "link",
       url: mark.attrs["href"] as string,
     }),
@@ -526,8 +528,8 @@ test("Groups neighbouring nodes sharing an equal mark", () => {
 
   const boldExtension = vi.mocked(new MockMarkExtension());
   boldExtension.proseMirrorMarkName.mockReturnValue("bold");
-  boldExtension.processConvertedUnistNode.mockImplementation(
-    (convertedNode) => ({ children: [convertedNode], type: "bold" }),
+  boldExtension.processConvertedUnistNodes.mockImplementation(
+    (convertedNodes) => ({ children: convertedNodes, type: "bold" }),
   );
 
   const docExtension = vi.mocked(new MockNodeExtension());
@@ -587,9 +589,9 @@ test("Doesn't group neighbouring nodes with marks that differ in attributes", ()
 
   const linkExtension = vi.mocked(new MockMarkExtension());
   linkExtension.proseMirrorMarkName.mockReturnValue("link");
-  linkExtension.processConvertedUnistNode.mockImplementation(
-    (convertedNode, mark) => ({
-      children: [convertedNode],
+  linkExtension.processConvertedUnistNodes.mockImplementation(
+    (convertedNodes, mark) => ({
+      children: convertedNodes,
       type: "link",
       url: mark.attrs["href"] as string,
     }),
@@ -656,15 +658,15 @@ test("Applies leaf marks innermost regardless of their rank", () => {
   const wrapperExtension = vi.mocked(new MockMarkExtension());
   wrapperExtension.proseMirrorMarkName.mockReturnValue("wrapper");
   wrapperExtension.unistNodeIsLeaf.mockReturnValue(false);
-  wrapperExtension.processConvertedUnistNode.mockImplementation(
-    (convertedNode) => ({ children: [convertedNode], type: "wrapper" }),
+  wrapperExtension.processConvertedUnistNodes.mockImplementation(
+    (convertedNodes) => ({ children: convertedNodes, type: "wrapper" }),
   );
 
   const leafExtension = vi.mocked(new MockMarkExtension());
   leafExtension.proseMirrorMarkName.mockReturnValue("leaf");
   leafExtension.unistNodeIsLeaf.mockReturnValue(true);
   const leafUnistNode = { type: "leaf", value: "Hello World!" };
-  leafExtension.processConvertedUnistNode.mockReturnValueOnce(leafUnistNode);
+  leafExtension.processConvertedUnistNodes.mockReturnValueOnce(leafUnistNode);
 
   const docExtension = vi.mocked(new MockNodeExtension());
   docExtension.proseMirrorNodeName.mockReturnValue("doc");
@@ -703,12 +705,12 @@ test("Applies leaf marks innermost regardless of their rank", () => {
     children: [{ children: [leafUnistNode], type: "wrapper" }],
     type: "root",
   });
-  expect(leafExtension.processConvertedUnistNode).toHaveBeenCalledWith(
-    textUnistNode,
+  expect(leafExtension.processConvertedUnistNodes).toHaveBeenCalledWith(
+    [textUnistNode],
     textProseMirrorNode.marks[1],
   );
-  expect(wrapperExtension.processConvertedUnistNode).toHaveBeenCalledWith(
-    leafUnistNode,
+  expect(wrapperExtension.processConvertedUnistNodes).toHaveBeenCalledWith(
+    [leafUnistNode],
     textProseMirrorNode.marks[0],
   );
   expect(console.warn).not.toHaveBeenCalled();
@@ -726,7 +728,7 @@ test("Warns about and drops all but the first leaf mark on a node", () => {
   leafOneExtension.proseMirrorMarkName.mockReturnValue("leafOne");
   leafOneExtension.unistNodeIsLeaf.mockReturnValue(true);
   const leafOneUnistNode = { type: "leafOne", value: "Hello World!" };
-  leafOneExtension.processConvertedUnistNode.mockReturnValueOnce(
+  leafOneExtension.processConvertedUnistNodes.mockReturnValueOnce(
     leafOneUnistNode,
   );
 
@@ -769,11 +771,11 @@ test("Warns about and drops all but the first leaf mark on a node", () => {
     children: [leafOneUnistNode],
     type: "root",
   });
-  expect(leafOneExtension.processConvertedUnistNode).toHaveBeenCalledWith(
-    textUnistNode,
+  expect(leafOneExtension.processConvertedUnistNodes).toHaveBeenCalledWith(
+    [textUnistNode],
     textProseMirrorNode.marks[0],
   );
-  expect(leafTwoExtension.processConvertedUnistNode).not.toHaveBeenCalled();
+  expect(leafTwoExtension.processConvertedUnistNodes).not.toHaveBeenCalled();
   expect(console.warn).toHaveBeenCalledTimes(1);
   expect(console.warn).toHaveBeenCalledWith(
     'Couldn\'t convert ProseMirror mark of type "leafTwo" to a unist node, as the ProseMirror node of type "text" already has the leaf mark "leafOne".',

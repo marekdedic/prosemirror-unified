@@ -17,8 +17,10 @@ export class MockMarkExtension<
     never
   >,
 > extends MarkExtension<HandledUnistNode, UnistToProseMirrorContext> {
-  public processConvertedUnistNode =
-    vi.fn<(convertedNode: UnistNode, originalMark: Mark) => HandledUnistNode>();
+  public processConvertedUnistNodes =
+    vi.fn<
+      (convertedNodes: Array<UnistNode>, originalMark: Mark) => HandledUnistNode
+    >();
 
   public proseMirrorMarkName = vi.fn<() => string | null>();
 

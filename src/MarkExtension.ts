@@ -10,8 +10,8 @@ export abstract class MarkExtension<
     never
   >,
 > extends SyntaxExtension<HandledUnistNode, UnistToProseMirrorContext> {
-  public abstract processConvertedUnistNode(
-    convertedNode: UnistNode,
+  public abstract processConvertedUnistNodes(
+    convertedNodes: Array<UnistNode>,
     originalMark: Mark,
   ): HandledUnistNode;
 

@@ -345,6 +345,46 @@ test("Serializing a mark spanning several nodes around a mark of lower rank", ()
   expect(console.warn).not.toHaveBeenCalled();
 });
 
+test("Serializing overlapping marks where the mark of higher rank runs longer", () => {
+  const source = "<i><b>a</b> b</i>";
+  const unistTree: UnistRoot = {
+    children: [
+      {
+        children: [
+          {
+            children: [
+              { children: [{ type: "text", value: "a" }], type: "bold" },
+              { type: "text", value: " b" },
+            ],
+            type: "italic",
+          },
+        ],
+        type: "paragraph",
+      },
+    ],
+    type: "root",
+  };
+
+  const parserProvider = new ParserProviderExtension(unistTree, source);
+
+  const pmu = new ProseMirrorUnified([
+    parserProvider,
+    new BoldExtension(),
+    new ItalicExtension(),
+    new RootExtension(),
+    new TextExtension(),
+    new ParagraphExtension(),
+  ]);
+
+  const { bold, doc, italic, paragraph } = builders(pmu.schema());
+
+  vi.spyOn(console, "warn").mockImplementation(() => {});
+
+  expect(pmu.serialize(doc(paragraph(italic(bold("a"), " b"))))).toBe(source);
+  expect(parserProvider.stringified).toStrictEqual([unistTree]);
+  expect(console.warn).not.toHaveBeenCalled();
+});
+
 test("Serializing separate runs of the same mark", () => {
   const source = "<b>a</b> b <b>c <i>d</i></b>";
   const unistTree: UnistRoot = {
