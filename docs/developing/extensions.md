@@ -117,9 +117,11 @@ Returns the ProseMirror mark type this extension handles, or `null` if it produc
 
 Returns the ProseMirror mark spec, or `null` if the extension produces no mark.
 
-### `abstract processConvertedUnistNodes(convertedNodes: Array<UnistNode>, originalMark: Mark): HandledUnistNode`
+### `abstract processConvertedUnistNodes(convertedNodes: Array<UnistNode>, originalMark: Mark): UnistNode`
 
 Called when serializing from ProseMirror to unist. Receives the unist nodes carrying the mark together with the mark itself, and returns a single unist node wrapping them. Neighbouring ProseMirror nodes sharing an equal mark are passed together in one call, so a mark spanning several ProseMirror nodes produces a single unist node. The nodes passed in may already be wrapped by other marks: where marks overlap, the mark covering the most neighbouring nodes goes outermost, and on a tie, the mark that comes first in the schema does.
+
+The returned node is usually of the extension's own unist type, and an override may declare that narrower return type. It doesn't have to be, though: for example, a leaf mark that can't apply to the node it receives (such as inline code on an image) can return that node unchanged.
 
 ### `unistNodeIsLeaf(): boolean`
 

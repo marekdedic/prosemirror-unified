@@ -13,7 +13,7 @@ export abstract class MarkExtension<
   public abstract processConvertedUnistNodes(
     convertedNodes: Array<UnistNode>,
     originalMark: Mark,
-  ): HandledUnistNode;
+  ): UnistNode;
 
   public abstract proseMirrorMarkName(): string | null;
 
