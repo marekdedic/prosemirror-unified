@@ -117,9 +117,15 @@ Returns the ProseMirror mark type this extension handles, or `null` if it produc
 
 Returns the ProseMirror mark spec, or `null` if the extension produces no mark.
 
-### `abstract processConvertedUnistNode(convertedNode: UnistNode, originalMark: Mark): HandledUnistNode`
+### `abstract processConvertedUnistNodes(convertedNodes: Array<UnistNode>, originalMark: Mark): UnistNode`
 
-Called when serializing from ProseMirror to unist. The ProseMirror node has already been translated by a `NodeExtension`; this method receives the resulting unist node together with the mark that was on the original ProseMirror node, and post-processes the unist node for that mark. It is called once per matching mark, and the node passed in may already have been post-processed by other marks' extensions.
+Called when serializing from ProseMirror to unist. Receives the unist nodes carrying the mark together with the mark itself, and returns a single unist node wrapping them. Neighbouring ProseMirror nodes sharing an equal mark are passed together in one call, so a mark spanning several ProseMirror nodes produces a single unist node. The nodes passed in may already be wrapped by other marks: where marks overlap, the mark covering the most neighbouring nodes goes outermost, and on a tie, the mark that comes first in the schema does.
+
+The returned node is usually of the extension's own unist type, and an override may declare that narrower return type. It doesn't have to be, though: for example, a leaf mark that can't apply to the node it receives (such as inline code on an image) can return that node unchanged.
+
+### `unistNodeIsLeaf(): boolean`
+
+Whether the unist node this mark converts to is a leaf (for example an mdast `inlineCode`), which can't contain the unist nodes produced by other marks. Leaf marks are applied first, regardless of their rank in the schema, so their `processConvertedUnistNodes` always receives exactly one node, the one produced by the `NodeExtension`, and leaf marks are never grouped across neighbouring nodes. A ProseMirror node can't be converted with more than one leaf mark — only the first one is applied and the others are dropped with a warning. Defaults to `false`.
 
 ## `MarkInputRule`
 

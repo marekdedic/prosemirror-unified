@@ -10,12 +10,17 @@ export abstract class MarkExtension<
     never
   >,
 > extends SyntaxExtension<HandledUnistNode, UnistToProseMirrorContext> {
-  public abstract processConvertedUnistNode(
-    convertedNode: UnistNode,
+  public abstract processConvertedUnistNodes(
+    convertedNodes: Array<UnistNode>,
     originalMark: Mark,
-  ): HandledUnistNode;
+  ): UnistNode;
 
   public abstract proseMirrorMarkName(): string | null;
 
   public abstract proseMirrorMarkSpec(): MarkSpec | null;
+
+  // eslint-disable-next-line @typescript-eslint/class-methods-use-this -- Meant to be overridden
+  public unistNodeIsLeaf(): boolean {
+    return false;
+  }
 }
