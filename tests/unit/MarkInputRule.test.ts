@@ -17,7 +17,7 @@ import {
 
 describe("MarkInputRule works", () => {
   const errorMessage =
-    'A MarkInputRule matcher must contain the named capturing groups "opening", "content", "closing" and "trailing".';
+    'A MarkInputRule matcher must consist of exactly the named capturing groups "opening", "content", "closing" and "trailing", in this order, followed by "$".';
 
   const boldMatcher =
     /(?<opening><b>)(?<content>.*)(?<closing><\/b>)(?<trailing>.)$/u;
@@ -116,73 +116,101 @@ describe("MarkInputRule works", () => {
     schema.text("b</b>"),
   ];
 
-  test("throws when the matcher is missing all named groups", () => {
-    expect(
-      () => new MarkInputRule(/<b>(.*)<\/b>(.)$/u, schema.marks.bold),
-    ).toThrow(errorMessage);
-  });
-
-  test("throws when the matcher is missing the content group", () => {
-    expect(
-      () =>
-        new MarkInputRule(
-          /(?<opening><b>)(.*)(?<closing><\/b>)(?<trailing>.)$/u,
-          schema.marks.bold,
-        ),
-    ).toThrow(errorMessage);
-  });
-
-  test("throws when the matcher is missing the trailing group", () => {
-    expect(
-      () =>
-        new MarkInputRule(
-          /(?<opening><b>)(?<content>.*)(?<closing><\/b>)(.)$/u,
-          schema.marks.bold,
-        ),
-    ).toThrow(errorMessage);
-  });
-
-  test("throws when the matcher is missing the opening group", () => {
-    expect(
-      () =>
-        new MarkInputRule(
-          /<b>(?<content>.*)(?<closing><\/b>)(?<trailing>.)$/u,
-          schema.marks.bold,
-        ),
-    ).toThrow(errorMessage);
-  });
-
-  test("throws when the matcher is missing the closing group", () => {
-    expect(
-      () =>
-        new MarkInputRule(
-          /(?<opening><b>)(?<content>.*)<\/b>(?<trailing>.)$/u,
-          schema.marks.bold,
-        ),
-    ).toThrow(errorMessage);
-  });
-
-  test("throws when a named group is misspelled", () => {
-    expect(
-      () =>
-        new MarkInputRule(
-          /(?<opening><b>)(?<content>.*)(?<closing><\/b>)(?<trailng>.)?$/u,
-          schema.marks.bold,
-        ),
-    ).toThrow(errorMessage);
-  });
-
-  test("throws when the named groups are not adjacent at the end of the match", () => {
-    expect(() =>
-      typeText(
-        schema,
-        /(?<opening><b>)(?<content>.*)(?<closing><\/b>)(?<trailing>.)!$/u,
-        "<b>bold</b> !",
-      ),
-    ).toThrow(
-      'The named capturing groups "opening", "content", "closing" and "trailing" of a MarkInputRule matcher must be adjacent and in this order at the end of the match.',
+  test.each([
+    ["has no named groups", /<b>(.*)<\/b>(.)$/u],
+    [
+      "is missing the opening group",
+      /<b>(?<content>.*)(?<closing><\/b>)(?<trailing>.)$/u,
+    ],
+    [
+      "is missing the content group",
+      /(?<opening><b>)(.*)(?<closing><\/b>)(?<trailing>.)$/u,
+    ],
+    [
+      "is missing the closing group",
+      /(?<opening><b>)(?<content>.*)<\/b>(?<trailing>.)$/u,
+    ],
+    [
+      "is missing the trailing group",
+      /(?<opening><b>)(?<content>.*)(?<closing><\/b>)(.)$/u,
+    ],
+    [
+      "has a misspelled group",
+      /(?<opening><b>)(?<content>.*)(?<closing><\/b>)(?<trailng>.)$/u,
+    ],
+    [
+      "has the groups out of order",
+      /(?<content>.*)(?<opening><b>)(?<closing><\/b>)(?<trailing>.)$/u,
+    ],
+    [
+      "has an extra group",
+      /(?<opening><b>)(?<content>.*)(?<closing><\/b>)(?<trailing>.)(x)$/u,
+    ],
+    [
+      "has a quantifier after a group",
+      /(?<opening><b>)(?<content>.*)(?<closing><\/b>)(?<trailing>.)?$/u,
+    ],
+    [
+      "has text before the groups",
+      /\s(?<opening><b>)(?<content>.*)(?<closing><\/b>)(?<trailing>.)$/u,
+    ],
+    [
+      "has text between the groups",
+      /(?<opening><b>)(?<content>.*)<\/b>(?<closing>)(?<trailing>.)$/u,
+    ],
+    [
+      "has no $ anchor",
+      /(?<opening><b>)(?<content>.*)(?<closing><\/b>)(?<trailing>.)/u,
+    ],
+    [
+      "has text after the $ anchor",
+      /(?<opening><b>)(?<content>.*)(?<closing><\/b>)(?<trailing>.)$x/u,
+    ],
+  ])("throws when the matcher %s", (_, matcher) => {
+    expect(() => new MarkInputRule(matcher, schema.marks.bold)).toThrow(
+      errorMessage,
     );
   });
+
+  test.each([
+    [
+      "escaped parentheses",
+      /(?<opening>\()(?<content>[^)]+)(?<closing>\))(?<trailing>.)$/u,
+    ],
+    [
+      "parentheses in a character class",
+      /(?<opening>[(])(?<content>[^\])]+)(?<closing>[)])(?<trailing>.)$/u,
+    ],
+    [
+      "nested character classes",
+      // eslint-disable-next-line prefer-regex-literals -- A regular expression literal with the v flag is a type error when targeting ES2018
+      new RegExp(
+        String.raw`(?<opening>[[\(]--[\)]])(?<content>[^\)]+)(?<closing>[\)])(?<trailing>.)$`,
+        "v",
+      ),
+    ],
+    [
+      "nested groups",
+      /(?<opening>(?<!\*)(?:\*\*))(?<content>(?:\S)+)(?<closing>\*\*)(?<trailing>.)$/u,
+    ],
+  ])("accepts a matcher with %s", (_, matcher) => {
+    expect(() => new MarkInputRule(matcher, schema.marks.bold)).not.toThrow();
+  });
+
+  test.each(["g", "m", "y"])(
+    "throws when the matcher has the %s flag",
+    (flag) => {
+      expect(
+        () =>
+          new MarkInputRule(
+            new RegExp(boldMatcher.source, `u${flag}`),
+            schema.marks.bold,
+          ),
+      ).toThrow(
+        'A MarkInputRule matcher must not have the "g", "m" or "y" flag.',
+      );
+    },
+  );
 
   test("strips the delimiters and applies the mark", () => {
     const testEditor = typeText(schema, boldMatcher, "<b>bold</b> ");
@@ -196,7 +224,7 @@ describe("MarkInputRule works", () => {
   test("does not apply the mark to text typed after the rule", () => {
     const testEditor = typeText(
       schema,
-      /(?<opening><b>)(?<content>.*)(?<closing><\/b>)(?<trailing>.)?$/u,
+      /(?<opening><b>)(?<content>.*)(?<closing><\/b>)(?<trailing>.?)$/u,
       "<b>bold</b>x",
     );
 
@@ -216,16 +244,29 @@ describe("MarkInputRule works", () => {
     expect(testEditor.doc.nodeAt(1)?.marks).toHaveLength(1);
   });
 
-  test("keeps text matched before the opening delimiter", () => {
+  test("keeps text matched by a lookbehind before the opening delimiter", () => {
     const testEditor = typeText(
       schema,
-      /(?:^|\s)(?<opening>\*)(?<content>[^*]+)(?<closing>\*)(?<trailing>.)$/u,
+      /(?<opening>(?<=^|\s)\*)(?<content>[^*]+)(?<closing>\*)(?<trailing>.)$/u,
       "x *bold* ",
     );
 
     expect(testEditor.doc.textContent).toBe("x bold ");
     expect(testEditor.doc.nodeAt(1)?.marks).toHaveLength(0);
     expect(testEditor.doc.nodeAt(3)?.marks).toHaveLength(1);
+  });
+
+  test("matches a lookbehind for a leaf node before the opening delimiter", () => {
+    const testEditor = typeText(
+      schema,
+      /(?<opening>(?<=^|[\s\uFFFC])\*)(?<content>[^*]+)(?<closing>\*)(?<trailing>.)$/u,
+      "*bold* ",
+      { initialContent: [schema.nodes.hardBreak.create()] },
+    );
+
+    expect(testEditor.doc.textContent).toBe("bold ");
+    expect(testEditor.doc.child(0).child(0).type.name).toBe("hardBreak");
+    expect(testEditor.doc.nodeAt(2)?.marks).toHaveLength(1);
   });
 
   test("keeps marks already present on the content", () => {
@@ -291,7 +332,7 @@ describe("MarkInputRule works", () => {
   test("works with an optional trailing group that does not match", () => {
     const testEditor = typeText(
       schema,
-      /(?<opening><b>)(?<content>.*)(?<closing><\/b>)(?<trailing>.)?$/u,
+      /(?<opening><b>)(?<content>.*)(?<closing><\/b>)(?<trailing>.?)$/u,
       "<b>bold</b>",
     );
 
@@ -302,7 +343,7 @@ describe("MarkInputRule works", () => {
   test("works with a matcher that has no trailing text at all", () => {
     const testEditor = typeText(
       schema,
-      /(?<opening><b>)(?<content>.*)(?<closing><\/b>)(?<trailing>)?$/u,
+      /(?<opening><b>)(?<content>.*)(?<closing><\/b>)(?<trailing>)$/u,
       "<b>bold</b>",
     );
 

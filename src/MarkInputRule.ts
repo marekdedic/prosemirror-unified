@@ -33,6 +33,44 @@ export interface MarkInputRuleOptions {
   undoable?: boolean;
 }
 
+/**
+ * Whether a regular expression source consists of exactly top-level named capturing groups with the given names, in this order, followed by "$".
+ * Inside a group, escapes and character classes are skipped, so parentheses in them don't count.
+ * Nested character classes (with the v flag) need no special handling, because parentheses in them must be escaped.
+ */
+const consistsOfNamedGroups = (
+  source: string,
+  names: Array<string>,
+): boolean => {
+  let groupCount = 0;
+  let groupDepth = 0;
+  let inClass = false;
+  for (let i = 0; i < source.length; i++) {
+    const char = source[i];
+    if (groupDepth === 0) {
+      if (groupCount === names.length) {
+        return source.slice(i) === "$";
+      }
+      if (!source.startsWith(`(?<${names[groupCount]}>`, i)) {
+        return false;
+      }
+      groupCount++;
+      groupDepth++;
+    } else if (char === "\\") {
+      i++;
+    } else if (inClass) {
+      inClass = char !== "]";
+    } else if (char === "[") {
+      inClass = true;
+    } else if (char === "(") {
+      groupDepth++;
+    } else if (char === ")") {
+      groupDepth--;
+    }
+  }
+  return false;
+};
+
 export class MarkInputRule extends InputRule {
   private readonly allowLeafNodes: boolean;
   private readonly mark: Mark;
@@ -44,12 +82,21 @@ export class MarkInputRule extends InputRule {
   ) {
     const { allowLeafNodes, ...inputRuleOptions } = options;
     if (
-      !["opening", "content", "closing", "trailing"].every((group) =>
-        matcher.source.includes(`(?<${group}>`),
-      )
+      !consistsOfNamedGroups(matcher.source, [
+        "opening",
+        "content",
+        "closing",
+        "trailing",
+      ])
     ) {
       throw new Error(
-        'A MarkInputRule matcher must contain the named capturing groups "opening", "content", "closing" and "trailing".',
+        'A MarkInputRule matcher must consist of exactly the named capturing groups "opening", "content", "closing" and "trailing", in this order, followed by "$".',
+      );
+    }
+    // With these flags, the matcher would be stateful between runs (g, y), or "$" could match before the cursor (m).
+    if (matcher.global || matcher.sticky || matcher.multiline) {
+      throw new Error(
+        'A MarkInputRule matcher must not have the "g", "m" or "y" flag.',
       );
     }
     super(
@@ -88,13 +135,11 @@ export class MarkInputRule extends InputRule {
     start: number,
     end: number,
   ): Transaction | null {
-    // The constructor guarantees that all named groups are present in the matcher.
-    // The trailing group may be optional and therefore not participate in the match.
     const { closing, content, opening, trailing } = match.groups as {
       closing: string;
       content: string;
       opening: string;
-      trailing?: string;
+      trailing: string;
     };
 
     // An empty mark would just delete the delimiters, and the delimiters must never delete a leaf node. The trailing text is not deleted, so it may contain leaf nodes.
@@ -107,39 +152,20 @@ export class MarkInputRule extends InputRule {
       return null;
     }
 
-    // Locate the groups in the match, counting back from its end.
-    const matchedText = match[0];
-    if (!matchedText.endsWith(opening + content + closing + (trailing ?? ""))) {
-      throw new Error(
-        'The named capturing groups "opening", "content", "closing" and "trailing" of a MarkInputRule matcher must be adjacent and in this order at the end of the match.',
-      );
-    }
-    const closingOffset =
-      matchedText.length - (trailing?.length ?? 0) - closing.length;
-    const openingOffset = closingOffset - content.length - opening.length;
-    const openingFrom = start + openingOffset;
-
     // The document holds the match up to `end`. The rest of it is the typed text, which isn't in the document yet - multi-character input (e.g. from autocorrect) may reach into the content or further.
     // The parts of the groups in the document are deleted, marked or kept in place, and the typed parts of the content and the trailing text are inserted.
-    if (openingFrom > end) {
-      return null;
-    }
-    const openingTo = Math.min(openingFrom + opening.length, end);
+    const openingTo = Math.min(start + opening.length, end);
     const contentTo = Math.min(openingTo + content.length, end);
     const closingTo = Math.min(contentTo + closing.length, end);
     const typedContent = content.slice(contentTo - openingTo);
     const trailingInDocument = end - closingTo;
-    const typedTrailing = (trailing ?? "").slice(trailingInDocument);
+    const typedTrailing = trailing.slice(trailingInDocument);
 
     // Everything from the opening delimiter up to `end` gets deleted, marked or kept, so the document must hold exactly the matched text there.
     // It doesn't e.g. when the typed text replaces a selection or when the match contains an inline node with content.
     if (
-      state.doc.textBetween(
-        openingFrom,
-        end,
-        undefined,
-        LEAF_NODE_PLACEHOLDER,
-      ) !== matchedText.slice(openingOffset, end - start)
+      state.doc.textBetween(start, end, undefined, LEAF_NODE_PLACEHOLDER) !==
+      match[0].slice(0, end - start)
     ) {
       return null;
     }
@@ -160,13 +186,11 @@ export class MarkInputRule extends InputRule {
     }
 
     // Remove the delimiters (e.g. the asterisks around italic). Deleting the closing delimiter first keeps the positions of the opening one valid.
-    const tr = state.tr
-      .delete(contentTo, closingTo)
-      .delete(openingFrom, openingTo);
+    const tr = state.tr.delete(contentTo, closingTo).delete(start, openingTo);
 
     // Add the mark to the content in place, which keeps any leaf nodes and marks already in it, and insert the typed rest of the content with it
-    const contentInDocumentTo = openingFrom + (contentTo - openingTo);
-    tr.addMark(openingFrom, contentInDocumentTo, mark);
+    const contentInDocumentTo = start + (contentTo - openingTo);
+    tr.addMark(start, contentInDocumentTo, mark);
     if (typedContent !== "") {
       tr.insert(
         contentInDocumentTo,

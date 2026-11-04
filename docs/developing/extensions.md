@@ -133,27 +133,29 @@ Extends ProseMirror's `InputRule`, for input rules that add marks.
 
 ### `constructor(matcher: RegExp, markType: MarkType, options: MarkInputRuleOptions = {})`
 
-Creates a rule that applies `markType` when input matches `matcher`. The `matcher` must end with `$` and contain four named capturing groups, which must be adjacent, in this order, at the end of the match:
+Creates a rule that applies `markType` when input matches `matcher`. The `matcher` must consist of exactly four named capturing groups, in this order, followed by `$`, with nothing else outside them — no text, quantifiers or other groups — and must not have the `g`, `m` or `y` flag. The constructor throws otherwise.
 
 - **`opening`** — the opening delimiter (e.g. the asterisks before bold text). It is removed.
-- **`content`** — the text the mark is applied to. The mark is added to it in place, so marks already on the content are kept.
+- **`content`** — the text the mark is applied to. The mark is added to it in place, so marks already on the content are kept, except those the new mark excludes (see the `excludes` property of its mark spec). These are removed, the same as when the mark is added in any other way.
 - **`closing`** — the closing delimiter. It is removed.
 - **`trailing`** — the text after the closing delimiter. May be longer than one character. Any part of it already in the document is kept as it is, and the typed rest is inserted after the mark is applied, without the mark. If the typed rest is a single newline, it is not inserted, since the newline is handled outside the text node.
 
-Anything the matcher consumes before `opening` is left in the document. A delimiter defined through a backreference can be wrapped in a group:
+Everything else goes inside the groups. Conditions on the text before the opening delimiter are lookbehinds inside `opening`, so they don't consume (and remove) that text, and a delimiter defined through a backreference is a group nested in `opening`:
 
 ```ts
 new MarkInputRule(
-  /(?<opening>(?<delimiter>`+))(?<content>[^`]+)(?<closing>\k<delimiter>)(?<trailing>.)$/u,
+  /(?<opening>(?<=^|[\s\uFFFC])(?<delimiter>`+))(?<content>[^`]+)(?<closing>\k<delimiter>)(?<trailing>.)$/u,
   schema.marks["code"],
 );
 ```
 
-The `trailing` group may be made optional, so the rule also fires when nothing follows the closing delimiter — the rule then triggers as soon as the delimiter is typed:
+In the text the rule is matched against, every inline leaf node, such as a hard break, is replaced by the character U+FFFC (see below). The lookbehind accepts U+FFFC too, so that the rule also applies right after a leaf node.
+
+The `opening`, `closing` and `trailing` groups may be empty (the rule never applies to empty `content`), but optionality must be expressed inside a group — `(?<trailing>.?)`, not `(?<trailing>.)?`. If `closing` and `trailing` can both be empty, though, the rule applies as soon as any `content` is typed, so a matcher should not leave both of them empty. An optional `trailing` group lets the rule also fire when nothing follows the closing delimiter — the rule then triggers as soon as the delimiter is typed:
 
 ```ts
 new MarkInputRule(
-  /(?<opening><b>)(?<content>.*)(?<closing><\/b>)(?<trailing>.)?$/u,
+  /(?<opening><b>)(?<content>.*)(?<closing><\/b>)(?<trailing>.?)$/u,
   schema.marks["bold"],
 );
 ```
@@ -162,12 +164,12 @@ A rule that never has trailing text can use an empty group:
 
 ```ts
 new MarkInputRule(
-  /(?<opening><b>)(?<content>.*)(?<closing><\/b>)(?<trailing>)?$/u,
+  /(?<opening><b>)(?<content>.*)(?<closing><\/b>)(?<trailing>)$/u,
   schema.marks["bold"],
 );
 ```
 
-Requiring trailing text is what lets a matcher with a variable-length delimiter resolve that delimiter unambiguously, so making `trailing` optional is only appropriate for marks with a fixed delimiter. Any other capturing groups are ignored and may be used freely.
+Requiring trailing text is what lets a matcher with a variable-length delimiter resolve that delimiter unambiguously, so making `trailing` optional is only appropriate for marks with a fixed delimiter. Groups nested inside the four named ones are ignored and may be used freely.
 
 ProseMirror matches input rules against the text before the cursor with every inline leaf node (an image, a hard break) replaced by U+FFFC, the Unicode "object replacement character", which stands in for an embedded object that has no text of its own. So a `content` group such as `.*` or `\S+` also matches across leaf nodes. By default, the rule doesn't apply when `content` contains U+FFFC. Set `allowLeafNodes` to `true` for marks that may contain leaf nodes (e.g. bold); the leaf nodes are then kept and get the mark too. Leave it `false` for marks whose unist node can't contain them (e.g. inline code). Regardless of `allowLeafNodes`, the rule never applies when `opening` or `closing` contains U+FFFC, nor when `content` is empty. Leaf nodes in `trailing` are kept.
 
