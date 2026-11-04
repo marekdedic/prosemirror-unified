@@ -131,18 +131,29 @@ Whether the unist node this mark converts to is a leaf (for example an mdast `in
 
 Extends ProseMirror's `InputRule`, for input rules that add marks.
 
-### `constructor(matcher: RegExp, markType: MarkType)`
+### `constructor(matcher: RegExp, markType: MarkType, options: MarkInputRuleOptions = {})`
 
-Creates a rule that applies `markType` when input matches `matcher`. The `matcher` must end with `$` and contain two named capturing groups:
+Creates a rule that applies `markType` when input matches `matcher`. The `matcher` must end with `$` and contain four named capturing groups, which must be adjacent, in this order, at the end of the match:
 
-- **`content`** — the text the mark is applied to. The whole match is replaced by this group, which is how the surrounding delimiters (e.g. the asterisks around bold text) get removed.
-- **`trailing`** — the text typed after the closing delimiter, re-inserted verbatim after the mark is applied. May be longer than one character. A `trailing` match of a single newline is not re-inserted, since the newline is handled outside the text node.
+- **`opening`** — the opening delimiter (e.g. the asterisks before bold text). It is removed.
+- **`content`** — the text the mark is applied to. The mark is added to it in place, so marks already on the content are kept.
+- **`closing`** — the closing delimiter. It is removed.
+- **`trailing`** — the text after the closing delimiter. May be longer than one character. Any part of it already in the document is kept as it is, and the typed rest is inserted after the mark is applied, without the mark. If the typed rest is a single newline, it is not inserted, since the newline is handled outside the text node.
+
+Anything the matcher consumes before `opening` is left in the document. A delimiter defined through a backreference can be wrapped in a group:
+
+```ts
+new MarkInputRule(
+  /(?<opening>(?<delimiter>`+))(?<content>[^`]+)(?<closing>\k<delimiter>)(?<trailing>.)$/u,
+  schema.marks["code"],
+);
+```
 
 The `trailing` group may be made optional, so the rule also fires when nothing follows the closing delimiter — the rule then triggers as soon as the delimiter is typed:
 
 ```ts
 new MarkInputRule(
-  /<b>(?<content>.*)<\/b>(?<trailing>.)?$/u,
+  /(?<opening><b>)(?<content>.*)(?<closing><\/b>)(?<trailing>.)?$/u,
   schema.marks["bold"],
 );
 ```
@@ -151,12 +162,21 @@ A rule that never has trailing text can use an empty group:
 
 ```ts
 new MarkInputRule(
-  /<b>(?<content>.*)<\/b>(?<trailing>)?$/u,
+  /(?<opening><b>)(?<content>.*)(?<closing><\/b>)(?<trailing>)?$/u,
   schema.marks["bold"],
 );
 ```
 
 Requiring trailing text is what lets a matcher with a variable-length delimiter resolve that delimiter unambiguously, so making `trailing` optional is only appropriate for marks with a fixed delimiter. Any other capturing groups are ignored and may be used freely.
+
+ProseMirror matches input rules against the text before the cursor with every inline leaf node (an image, a hard break) replaced by U+FFFC, the Unicode "object replacement character", which stands in for an embedded object that has no text of its own. So a `content` group such as `.*` or `\S+` also matches across leaf nodes. By default, the rule doesn't apply when `content` contains U+FFFC. Set `allowLeafNodes` to `true` for marks that may contain leaf nodes (e.g. bold); the leaf nodes are then kept and get the mark too. Leave it `false` for marks whose unist node can't contain them (e.g. inline code). Regardless of `allowLeafNodes`, the rule never applies when `opening` or `closing` contains U+FFFC, nor when `content` is empty. Leaf nodes in `trailing` are kept.
+
+The rule also doesn't apply when the mark can't be added to all of the content, e.g. because part of it has a mark that excludes this one.
+
+`options` takes:
+
+- **`allowLeafNodes`** — see above. Defaults to `false`.
+- **`inCode`**, **`inCodeMark`**, **`undoable`** — passed through to ProseMirror's [`InputRule`](https://prosemirror.net/docs/ref/#inputrules.InputRule.constructor). For example, a rule for inline code can set `inCodeMark: false` so it doesn't fire inside text that already has the code mark.
 
 ## `createProseMirrorNode(nodeName: string | null, schema: Schema<string, string>, children: Array<ProseMirrorNode>, attrs: Attrs = {})`
 

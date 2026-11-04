@@ -30,7 +30,7 @@ class BoldInputRuleExtension extends MockNodeExtension<{ type: "bold" }> {
   ): Array<InputRule> {
     return [
       new MarkInputRule(
-        /<b>(?<content>[^\s](?:.*[^\s])?)<\/b>(?<trailing>[\s\S])$/u,
+        /(?<opening><b>)(?<content>[^\s](?:.*[^\s])?)(?<closing><\/b>)(?<trailing>[\s\S])$/u,
         proseMirrorSchema.marks["bold"],
       ),
     ];

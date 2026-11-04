@@ -38,8 +38,9 @@ export class BoldExtension extends MarkExtension<UnistBold> {
   ): Array<InputRule> {
     return [
       new MarkInputRule(
-        /<b>(?<content>[^\s](?:.*[^\s])?)<\/b>(?<trailing>.)$/u,
+        /(?<opening><b>)(?<content>[^\s](?:.*[^\s])?)(?<closing><\/b>)(?<trailing>.)$/u,
         proseMirrorSchema.marks[this.proseMirrorMarkName()],
+        { allowLeafNodes: true },
       ),
     ];
   }
