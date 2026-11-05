@@ -23,7 +23,7 @@ This is a *framework* library: it has no knowledge of any concrete syntax. Every
 
 The unist/ProseMirror asymmetry drives the class hierarchy: unist has no marks, so `MarkExtension` maps a unist node (e.g. `strong`) to a ProseMirror *mark*, while `NodeExtension` maps to a ProseMirror *node*. Shared machinery lives in `SyntaxExtension`; `Extension` itself only carries `dependencies()` and the unified hook. `MarkInputRule` and `createProseMirrorNode` are helpers for extension authors.
 
-`README.md` doubles as the API reference — any change to a public class, method signature, or default behaviour must be reflected there.
+The API reference is the VitePress site in `docs/` (`npm run docs:dev` to preview): `docs/guide/api.md` covers `ProseMirrorUnified`, and `docs/developing/extensions.md` covers the extension classes and helpers. Any change to a public class, method signature, or default behaviour must be reflected there. `README.md` only links to the site and shows a usage example.
 
 ## Conventions
 
