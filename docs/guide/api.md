@@ -46,15 +46,18 @@ Returns a ProseMirror plugin containing every extension's keyboard shortcuts —
 
 ## `pastePlugin(): Plugin`
 
-Returns a ProseMirror plugin that parses pasted text the same way as `parse`, instead of inserting it as it is. It only applies when the clipboard holds nothing but plain text; otherwise, ProseMirror handles the paste as usual. A single trailing line break is dropped, and pasted content is merged into the surrounding content where possible — a single pasted line becomes part of the current paragraph rather than a new one.
+Returns a ProseMirror plugin that parses pasted text the same way as `parse`, instead of inserting it as it is. It only applies when the clipboard holds nothing but plain text; otherwise, ProseMirror handles the paste as usual. The same applies to plain text dropped into the editor by drag and drop. A single trailing line break is dropped, and pasted content is merged into the surrounding content where possible — a single pasted line becomes part of the current paragraph rather than a new one. As with ProseMirror's default plain text paste, the pasted content keeps the marks at the cursor, such as bold, wherever they are allowed and don't conflict with the pasted content's own marks.
 
 Some cases are left to ProseMirror's default behaviour, which inserts the text as it is with one paragraph per line:
 
-- Pasting as plain text (Ctrl-Shift-V), which gives users a way to paste source syntax literally.
+- Pasting as plain text (Ctrl-Shift-V), which gives users a way to paste source syntax literally. There is no equivalent for drag and drop.
 - Pasting into a code block.
-- Pasting text that cannot be parsed into a document.
+- Pasting only whitespace.
+- Pasting text that cannot be parsed into a document, including the case described below.
 
-Content that no extension can convert is dropped from the pasted text, the same as when parsing a document with `parse`. Use ProseMirror's [`transformPastedText`](https://prosemirror.net/docs/ref/#view.EditorProps.transformPastedText) prop if you need to adjust the text before it is parsed.
+Unlike with `parse`, content that no extension can convert isn't dropped: its source text is kept as plain text instead. This needs the parser to record the position of each node in the source; content without a position is dropped with a warning, the same as with `parse`. If the text can't be kept faithfully, because it spans multiple lines, or can't be placed where the content was, because the content isn't inline (e.g. a whole unsupported block), the whole pasted text is inserted as it is.
+
+Use ProseMirror's [`transformPastedText`](https://prosemirror.net/docs/ref/#view.EditorProps.transformPastedText) prop if you need to adjust the text before it is parsed.
 
 ## `nodeViews(): Record<string, NodeViewConstructor>`
 
