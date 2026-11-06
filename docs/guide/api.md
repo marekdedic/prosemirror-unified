@@ -44,6 +44,18 @@ Returns a ProseMirror plugin containing every extension's input rules. Input rul
 
 Returns a ProseMirror plugin containing every extension's keyboard shortcuts — for example Ctrl-b for bold — layered on top of the prosemirror-commands base keymap.
 
+## `pastePlugin(): Plugin`
+
+Returns a ProseMirror plugin that parses pasted text the same way as `parse`, instead of inserting it as it is. It only applies when the clipboard holds nothing but plain text; otherwise, ProseMirror handles the paste as usual. A single trailing line break is dropped, and pasted content is merged into the surrounding content where possible — a single pasted line becomes part of the current paragraph rather than a new one.
+
+Some cases are left to ProseMirror's default behaviour, which inserts the text as it is with one paragraph per line:
+
+- Pasting as plain text (Ctrl-Shift-V), which gives users a way to paste source syntax literally.
+- Pasting into a code block.
+- Pasting text that cannot be parsed into a document.
+
+Content that no extension can convert is dropped from the pasted text, the same as when parsing a document with `parse`. Use ProseMirror's [`transformPastedText`](https://prosemirror.net/docs/ref/#view.EditorProps.transformPastedText) prop if you need to adjust the text before it is parsed.
+
 ## `nodeViews(): Record<string, NodeViewConstructor>`
 
 Returns the node views registered by all the extensions, keyed by node name. Node views back richer, often interactive elements in the editor, such as clickable task lists. Pass the result to your `EditorView`.

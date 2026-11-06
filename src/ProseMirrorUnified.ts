@@ -1,8 +1,13 @@
-import type { Node as ProseMirrorNode, Schema } from "prosemirror-model";
-import type { Plugin } from "prosemirror-state";
-import type { NodeViewConstructor } from "prosemirror-view";
+import type { EditorProps, NodeViewConstructor } from "prosemirror-view";
 import type { Processor } from "unified";
 import type { Node as UnistNode } from "unist";
+
+import {
+  type Node as ProseMirrorNode,
+  type Schema,
+  Slice,
+} from "prosemirror-model";
+import { Plugin } from "prosemirror-state";
 
 import type { Extension } from "./Extension";
 
@@ -65,6 +70,27 @@ export class ProseMirrorUnified {
     const unist = this.unified.runSync(this.unified.parse(source));
     const ret = this.unistToProseMirrorConverter.convert(unist);
     return ret;
+  }
+
+  public pastePlugin(): Plugin {
+    return new Plugin({
+      props: {
+        // Typed as always returning a Slice, but ProseMirror falls back to its
+        // default plain text handling when the parser returns null.
+        clipboardTextParser: ((text, _, plain): Slice | null => {
+          if (plain) {
+            return null;
+          }
+          try {
+            const doc = this.parse(text.replace(/\r?\n$/u, ""));
+            // ProseMirror opens the slice as far as possible afterwards.
+            return new Slice(doc.content, 0, 0);
+          } catch {
+            return null;
+          }
+        }) as NonNullable<EditorProps["clipboardTextParser"]>,
+      },
+    });
   }
 
   public schema(): Schema<string, string> {

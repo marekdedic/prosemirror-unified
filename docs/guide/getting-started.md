@@ -44,7 +44,7 @@ const view = new EditorView(
     state: EditorState.create({
       // Set the initial content of the editor from sourceMarkdown
       doc: pmu.parse(sourceMarkdown),
-      plugins: [pmu.inputRulesPlugin(), pmu.keymapPlugin()],
+      plugins: [pmu.inputRulesPlugin(), pmu.keymapPlugin(), pmu.pastePlugin()],
       schema: pmu.schema(),
     }),
     // Add interactive elements (task lists etc.)
@@ -64,6 +64,7 @@ const view = new EditorView(
 - **`serialize(doc)`** does the inverse, turning the editor's document back into a source string — useful for saving.
 - **`schema()`** returns a ProseMirror schema supporting all the extensions you passed in.
 - **`inputRulesPlugin()`** and **`keymapPlugin()`** return ProseMirror plugins wiring up every extension's input rules (e.g. typing `**text**` to get bold) and keyboard shortcuts (e.g. Ctrl-b).
+- **`pastePlugin()`** returns a ProseMirror plugin that parses pasted plain text the same way as `parse()`, instead of inserting it as it is.
 - **`nodeViews()`** returns the node views registered by your extensions, for interactive elements such as task lists.
 
 That is the whole surface most users need. The [API reference](/guide/api) documents each of these with its full signature and behaviour; for anything markdown-specific, see the [prosemirror-remark documentation](https://github.com/marekdedic/prosemirror-remark).
