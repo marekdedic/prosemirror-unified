@@ -10,6 +10,7 @@ import { ExtensionManager } from "./ExtensionManager";
 import { InputRulesBuilder } from "./InputRulesBuilder";
 import { KeymapBuilder } from "./KeymapBuilder";
 import { NodeViewBuilder } from "./NodeViewBuilder";
+import { PastePluginBuilder } from "./PastePluginBuilder";
 import { ProseMirrorToUnistConverter } from "./ProseMirrorToUnistConverter";
 import { SchemaBuilder } from "./SchemaBuilder";
 import { UnifiedBuilder } from "./UnifiedBuilder";
@@ -20,6 +21,7 @@ export class ProseMirrorUnified {
   private readonly inputRulesBuilder: InputRulesBuilder;
   private readonly keymapBuilder: KeymapBuilder;
   private readonly nodeViewBuilder: NodeViewBuilder;
+  private readonly pastePluginBuilder: PastePluginBuilder;
   private readonly proseMirrorToUnistConverter: ProseMirrorToUnistConverter;
   private readonly unified: Processor<
     UnistNode,
@@ -47,6 +49,10 @@ export class ProseMirrorUnified {
       extensionManager,
     );
     this.unified = new UnifiedBuilder(extensionManager).build();
+    this.pastePluginBuilder = new PastePluginBuilder(
+      this.unistToProseMirrorConverter,
+      (source) => this.parseToUnist(source),
+    );
   }
 
   public inputRulesPlugin(): Plugin {
@@ -62,9 +68,11 @@ export class ProseMirrorUnified {
   }
 
   public parse(source: string): ProseMirrorNode {
-    const unist = this.unified.runSync(this.unified.parse(source));
-    const ret = this.unistToProseMirrorConverter.convert(unist);
-    return ret;
+    return this.unistToProseMirrorConverter.convert(this.parseToUnist(source));
+  }
+
+  public pastePlugin(): Plugin {
+    return this.pastePluginBuilder.build();
   }
 
   public schema(): Schema<string, string> {
@@ -75,5 +83,9 @@ export class ProseMirrorUnified {
     const unist = this.proseMirrorToUnistConverter.convert(doc);
     const source: string = this.unified.stringify(unist);
     return source;
+  }
+
+  private parseToUnist(source: string): UnistNode {
+    return this.unified.runSync(this.unified.parse(source));
   }
 }

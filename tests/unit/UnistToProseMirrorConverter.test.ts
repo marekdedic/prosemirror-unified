@@ -3,6 +3,7 @@ import type { Node as UnistNode } from "unist";
 import { type Mark, Schema } from "prosemirror-model";
 import { expect, test, vi } from "vitest";
 
+import { createProseMirrorNode } from "../../src/createProseMirrorNode";
 import { ExtensionManager } from "../../src/ExtensionManager";
 import { UnistToProseMirrorConverter } from "../../src/UnistToProseMirrorConverter";
 import { MockSyntaxExtension } from "../mocks/MockSyntaxExtension";
@@ -859,6 +860,368 @@ test("Warns when multiple extensions can convert a node", () => {
     'Multiple extensions (AmbiguousExtension1, AmbiguousExtension2) can convert the unist node of type "ambiguous" to a ProseMirror node, using AmbiguousExtension1.',
   );
   expect(extension2.unistToProseMirrorTest).toHaveBeenCalledTimes(3);
+});
+
+interface UnistText extends UnistNode {
+  value: string;
+}
+
+const fallbackSchema = new Schema<string, string>({
+  marks: { bold: {} },
+  nodes: {
+    blockquote: { content: "paragraph*" },
+    box: { content: "paragraph*" },
+    cell: { content: "paragraph" },
+    doc: { content: "(paragraph | blockquote | box | cell)*" },
+    paragraph: { content: "text*" },
+    text: {},
+  },
+});
+
+const fallbackConverter = (): {
+  converter: UnistToProseMirrorConverter;
+  extensions: Array<
+    Pick<MockSyntaxExtension<UnistNode>, "postUnistToProseMirrorHook">
+  >;
+} => {
+  const nodeExtension = (
+    unistType: string,
+    proseMirrorType: string,
+  ): MockSyntaxExtension<UnistNode> => {
+    const extension = vi.mocked(new MockSyntaxExtension());
+    extension.unistToProseMirrorTest.mockImplementation(
+      (node) => node.type === unistType,
+    );
+    extension.unistNodeToProseMirrorNodes.mockImplementation(
+      (_, schema, children) =>
+        createProseMirrorNode(proseMirrorType, schema, children),
+    );
+    return extension;
+  };
+
+  // Wraps its inline children in a paragraph of its own.
+  const cellExtension = vi.mocked(new MockSyntaxExtension());
+  cellExtension.unistToProseMirrorTest.mockImplementation(
+    (node) => node.type === "cell",
+  );
+  cellExtension.unistNodeToProseMirrorNodes.mockImplementation(
+    (_, schema, children) => [
+      schema.nodes["cell"].create(
+        {},
+        schema.nodes["paragraph"].create({}, children),
+      ),
+    ],
+  );
+
+  // Creates its node without checking the content.
+  const boxExtension = vi.mocked(new MockSyntaxExtension());
+  boxExtension.unistToProseMirrorTest.mockImplementation(
+    (node) => node.type === "box",
+  );
+  boxExtension.unistNodeToProseMirrorNodes.mockImplementation(
+    (_, schema, children) => [schema.nodes["box"].create({}, children)],
+  );
+
+  const textExtension = vi.mocked(new MockSyntaxExtension<UnistText>());
+  textExtension.unistToProseMirrorTest.mockImplementation(
+    (node) => node.type === "text",
+  );
+  textExtension.unistNodeToProseMirrorNodes.mockImplementation(
+    (node, schema) => [schema.text(node.value)],
+  );
+
+  const boldExtension = vi.mocked(new MockSyntaxExtension());
+  boldExtension.unistToProseMirrorTest.mockImplementation(
+    (node) => node.type === "bold",
+  );
+  boldExtension.unistNodeToProseMirrorNodes.mockImplementation(
+    (_, schema, children) =>
+      children.map((child) =>
+        child.mark(schema.marks["bold"].create().addToSet(child.marks)),
+      ),
+  );
+
+  const manager = vi.mocked(new ExtensionManager([]));
+  const extensions = [
+    nodeExtension("root", "doc"),
+    nodeExtension("paragraph", "paragraph"),
+    nodeExtension("blockquote", "blockquote"),
+    boxExtension,
+    cellExtension,
+    textExtension,
+    boldExtension,
+  ];
+  manager.syntaxExtensions.mockReturnValue(extensions);
+  return {
+    converter: new UnistToProseMirrorConverter(manager, fallbackSchema),
+    extensions,
+  };
+};
+
+const at = (start: number, end: number): UnistNode["position"] => ({
+  end: { column: end + 1, line: 1, offset: end },
+  start: { column: start + 1, line: 1, offset: start },
+});
+
+test("Keeps the source text of an unconvertible inline node", () => {
+  const { converter } = fallbackConverter();
+  const rootUnistNode = {
+    children: [
+      {
+        children: [
+          { type: "text", value: "Hello " },
+          { children: [], position: at(6, 13), type: "unknown" },
+          { type: "text", value: "!" },
+        ],
+        type: "paragraph",
+      },
+    ],
+    type: "root",
+  };
+
+  vi.spyOn(console, "warn").mockImplementation(() => {});
+
+  expect(
+    converter.convertKeepingSource(rootUnistNode, "Hello {World}!")?.toJSON(),
+  ).toStrictEqual(
+    fallbackSchema.nodes["doc"]
+      .create({}, [
+        fallbackSchema.nodes["paragraph"].create(
+          {},
+          fallbackSchema.text("Hello {World}!"),
+        ),
+      ])
+      .toJSON(),
+  );
+  expect(console.warn).not.toHaveBeenCalled();
+});
+
+test("Keeps the source text of an unconvertible node inside an inline node", () => {
+  const { converter } = fallbackConverter();
+  const rootUnistNode = {
+    children: [
+      {
+        children: [
+          {
+            children: [{ position: at(0, 7), type: "unknown" }],
+            type: "bold",
+          },
+        ],
+        type: "paragraph",
+      },
+    ],
+    type: "root",
+  };
+
+  vi.spyOn(console, "warn").mockImplementation(() => {});
+
+  expect(
+    converter.convertKeepingSource(rootUnistNode, "{World}")?.toJSON(),
+  ).toStrictEqual(
+    fallbackSchema.nodes["doc"]
+      .create({}, [
+        fallbackSchema.nodes["paragraph"].create(
+          {},
+          fallbackSchema.text("{World}", [
+            fallbackSchema.marks["bold"].create(),
+          ]),
+        ),
+      ])
+      .toJSON(),
+  );
+  expect(console.warn).not.toHaveBeenCalled();
+});
+
+test("Keeps the source text of an unconvertible node wrapped by an extension", () => {
+  const { converter } = fallbackConverter();
+  const rootUnistNode = {
+    children: [
+      {
+        children: [
+          { type: "text", value: "Hello " },
+          { position: at(6, 13), type: "unknown" },
+        ],
+        type: "cell",
+      },
+    ],
+    type: "root",
+  };
+
+  vi.spyOn(console, "warn").mockImplementation(() => {});
+
+  expect(
+    converter.convertKeepingSource(rootUnistNode, "Hello {World}")?.toJSON(),
+  ).toStrictEqual(
+    fallbackSchema.nodes["doc"]
+      .create({}, [
+        fallbackSchema.nodes["cell"].create(
+          {},
+          fallbackSchema.nodes["paragraph"].create(
+            {},
+            fallbackSchema.text("Hello {World}"),
+          ),
+        ),
+      ])
+      .toJSON(),
+  );
+  expect(console.warn).not.toHaveBeenCalled();
+});
+
+test("Drops an unconvertible node with empty source text", () => {
+  const { converter } = fallbackConverter();
+  const rootUnistNode = {
+    children: [
+      {
+        children: [
+          { type: "text", value: "Hello" },
+          { position: at(5, 5), type: "unknown" },
+        ],
+        type: "paragraph",
+      },
+    ],
+    type: "root",
+  };
+
+  vi.spyOn(console, "warn").mockImplementation(() => {});
+
+  expect(
+    converter.convertKeepingSource(rootUnistNode, "Hello")?.toJSON(),
+  ).toStrictEqual(
+    fallbackSchema.nodes["doc"]
+      .create({}, [
+        fallbackSchema.nodes["paragraph"].create(
+          {},
+          fallbackSchema.text("Hello"),
+        ),
+      ])
+      .toJSON(),
+  );
+  expect(console.warn).not.toHaveBeenCalled();
+});
+
+test("Gives up when the source text of an unconvertible node can't be placed", () => {
+  const { converter } = fallbackConverter();
+  const rootUnistNode = {
+    children: [{ position: at(0, 7), type: "unknown" }],
+    type: "root",
+  };
+
+  vi.spyOn(console, "warn").mockImplementation(() => {});
+
+  expect(converter.convertKeepingSource(rootUnistNode, "{World}")).toBeNull();
+  expect(console.warn).not.toHaveBeenCalled();
+});
+
+test("Gives up when the source text of a nested unconvertible node can't be placed", () => {
+  const { converter } = fallbackConverter();
+  const rootUnistNode = {
+    children: [
+      {
+        children: [{ position: at(0, 7), type: "unknown" }],
+        type: "blockquote",
+      },
+    ],
+    type: "root",
+  };
+
+  vi.spyOn(console, "warn").mockImplementation(() => {});
+
+  expect(converter.convertKeepingSource(rootUnistNode, "{World}")).toBeNull();
+  expect(console.warn).not.toHaveBeenCalled();
+});
+
+test("Gives up when an extension places the source text where it isn't allowed", () => {
+  const { converter } = fallbackConverter();
+  const rootUnistNode = {
+    children: [
+      {
+        children: [{ position: at(0, 7), type: "unknown" }],
+        type: "box",
+      },
+    ],
+    type: "root",
+  };
+
+  vi.spyOn(console, "warn").mockImplementation(() => {});
+
+  expect(converter.convertKeepingSource(rootUnistNode, "{World}")).toBeNull();
+  expect(console.warn).not.toHaveBeenCalled();
+});
+
+test("Gives up when the source text of an unconvertible node spans multiple lines", () => {
+  const { converter } = fallbackConverter();
+  const rootUnistNode = {
+    children: [
+      {
+        children: [
+          { type: "text", value: "Hello " },
+          {
+            position: {
+              end: { column: 4, line: 2, offset: 13 },
+              start: { column: 7, line: 1, offset: 6 },
+            },
+            type: "unknown",
+          },
+        ],
+        type: "paragraph",
+      },
+    ],
+    type: "root",
+  };
+
+  vi.spyOn(console, "warn").mockImplementation(() => {});
+
+  expect(
+    converter.convertKeepingSource(rootUnistNode, "Hello {Wor\nld}"),
+  ).toBeNull();
+  expect(console.warn).not.toHaveBeenCalled();
+});
+
+test("Runs the post-conversion hooks when giving up", () => {
+  const { converter, extensions } = fallbackConverter();
+  const rootUnistNode = {
+    children: [{ position: at(0, 7), type: "unknown" }],
+    type: "root",
+  };
+
+  vi.spyOn(console, "warn").mockImplementation(() => {});
+
+  expect(converter.convertKeepingSource(rootUnistNode, "{World}")).toBeNull();
+
+  for (const extension of extensions) {
+    expect(extension.postUnistToProseMirrorHook).toHaveBeenCalledTimes(1);
+  }
+});
+
+test("Gives up when the root node is unconvertible, even with its source text", () => {
+  const { converter } = fallbackConverter();
+  const rootUnistNode = { position: at(0, 7), type: "unknown" };
+
+  vi.spyOn(console, "warn").mockImplementation(() => {});
+
+  expect(converter.convertKeepingSource(rootUnistNode, "{World}")).toBeNull();
+  expect(console.warn).not.toHaveBeenCalled();
+});
+
+test("Drops an unconvertible node without a position", () => {
+  const { converter } = fallbackConverter();
+  const rootUnistNode = {
+    children: [{ children: [{ type: "unknown" }], type: "paragraph" }],
+    type: "root",
+  };
+
+  vi.spyOn(console, "warn").mockImplementation(() => {});
+
+  expect(
+    converter.convertKeepingSource(rootUnistNode, "{World}")?.toJSON(),
+  ).toStrictEqual(
+    fallbackSchema.nodes["doc"]
+      .create({}, [fallbackSchema.nodes["paragraph"].create()])
+      .toJSON(),
+  );
+  expect(console.warn).toHaveBeenCalledWith(
+    'Couldn\'t find any way to convert unist node of type "unknown" to a ProseMirror node.',
+  );
 });
 
 /* eslint-enable */
