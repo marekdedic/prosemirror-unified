@@ -110,3 +110,18 @@ test("PluginsBuilder collects the plugins once, on the first call", () => {
 
   expect(builder.build()).toStrictEqual([plugin]);
 });
+
+test("PluginsBuilder calls the hooks again after one throws", () => {
+  const plugin = new Plugin({});
+  const extension = new OtherPluginExtension();
+  extension.proseMirrorPlugins
+    .mockImplementationOnce(() => {
+      throw new Error("Failed");
+    })
+    .mockReturnValueOnce([plugin]);
+  const builder = new PluginsBuilder(new ExtensionManager([extension]), schema);
+
+  expect(() => builder.build()).toThrow("Failed");
+  expect(builder.build()).toStrictEqual([plugin]);
+  expect(extension.proseMirrorPlugins).toHaveBeenCalledTimes(2);
+});
