@@ -15,7 +15,9 @@ export function buildKeymapPlugin(
     const map = extension.proseMirrorKeymap(proseMirrorSchema);
     for (const key in map) {
       if (Object.prototype.hasOwnProperty.call(map, key)) {
-        commandsByKey.set(key, [...(commandsByKey.get(key) ?? []), map[key]]);
+        const commands = commandsByKey.get(key) ?? [];
+        commands.push(map[key]);
+        commandsByKey.set(key, commands);
       }
     }
   }

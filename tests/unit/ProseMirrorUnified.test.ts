@@ -32,13 +32,23 @@ vi.mock("prosemirror-keymap");
 interface EditorPart {
   // The number of times the part was built.
   buildCount(): number;
-  call(pmu: ProseMirrorUnified): unknown;
   // Makes the next build throw.
   failNextBuild(): void;
-  // Makes every build return a new value, so that rebuilding is observable.
+  // Calls the method and returns the instances it returned, unwrapping the
+  // array or object that some methods return a copy of.
+  instances(pmu: ProseMirrorUnified): Array<unknown>;
+  // Makes every build return new instances, so that rebuilding is observable.
   mockBuild(): void;
   name: string;
 }
+
+// Whether both calls returned the very same instances.
+const sameInstances = (
+  first: Array<unknown>,
+  second: Array<unknown>,
+): boolean =>
+  first.length === second.length &&
+  first.every((instance, i) => instance === second[i]);
 
 const failure = (): never => {
   throw new Error("Failed");
@@ -47,10 +57,10 @@ const failure = (): never => {
 const editorParts: Array<EditorPart> = [
   {
     buildCount: () => vi.mocked(buildExtensionPlugins).mock.calls.length,
-    call: (pmu) => pmu.extensionPlugins(),
     failNextBuild: (): void => {
       vi.mocked(buildExtensionPlugins).mockImplementationOnce(failure);
     },
+    instances: (pmu) => pmu.extensionPlugins(),
     mockBuild: (): void => {
       vi.mocked(buildExtensionPlugins).mockImplementation(() => [
         new Plugin({}),
@@ -60,10 +70,10 @@ const editorParts: Array<EditorPart> = [
   },
   {
     buildCount: () => vi.mocked(buildInputRulesPlugin).mock.calls.length,
-    call: (pmu) => pmu.inputRulesPlugin(),
     failNextBuild: (): void => {
       vi.mocked(buildInputRulesPlugin).mockImplementationOnce(failure);
     },
+    instances: (pmu) => [pmu.inputRulesPlugin()],
     mockBuild: (): void => {
       vi.mocked(buildInputRulesPlugin).mockImplementation(() => new Plugin({}));
     },
@@ -71,10 +81,10 @@ const editorParts: Array<EditorPart> = [
   },
   {
     buildCount: () => vi.mocked(buildKeymapPlugin).mock.calls.length,
-    call: (pmu) => pmu.keymapPlugin(),
     failNextBuild: (): void => {
       vi.mocked(buildKeymapPlugin).mockImplementationOnce(failure);
     },
+    instances: (pmu) => [pmu.keymapPlugin()],
     mockBuild: (): void => {
       vi.mocked(buildKeymapPlugin).mockImplementation(() => new Plugin({}));
     },
@@ -82,10 +92,10 @@ const editorParts: Array<EditorPart> = [
   },
   {
     buildCount: () => vi.mocked(buildNodeViews).mock.calls.length,
-    call: (pmu) => pmu.nodeViews(),
     failNextBuild: (): void => {
       vi.mocked(buildNodeViews).mockImplementationOnce(failure);
     },
+    instances: (pmu) => Object.values(pmu.nodeViews()),
     mockBuild: (): void => {
       vi.mocked(buildNodeViews).mockImplementation(() => ({ node: vi.fn() }));
     },
@@ -93,10 +103,10 @@ const editorParts: Array<EditorPart> = [
   },
   {
     buildCount: () => vi.mocked(buildPastePlugin).mock.calls.length,
-    call: (pmu) => pmu.pastePlugin(),
     failNextBuild: (): void => {
       vi.mocked(buildPastePlugin).mockImplementationOnce(failure);
     },
+    instances: (pmu) => [pmu.pastePlugin()],
     mockBuild: (): void => {
       vi.mocked(buildPastePlugin).mockImplementation(() => new Plugin({}));
     },
@@ -199,33 +209,35 @@ test("ProseMirrorUnified returns all plugins", () => {
 
 test.each(editorParts)(
   "ProseMirrorUnified builds $name() once, on the first call",
-  ({ buildCount, call, mockBuild }) => {
+  ({ buildCount, instances, mockBuild }) => {
     mockBuild();
 
     const pmu = new ProseMirrorUnified();
 
     expect(buildCount()).toBe(0);
 
-    const result = call(pmu);
+    const first = instances(pmu);
 
-    expect(call(pmu)).toStrictEqual(result);
+    expect(first).not.toHaveLength(0);
+    expect(sameInstances(first, instances(pmu))).toBe(true);
     expect(buildCount()).toBe(1);
   },
 );
 
 test.each(editorParts)(
   "ProseMirrorUnified builds $name() again after the build throws",
-  ({ buildCount, call, failNextBuild, mockBuild }) => {
+  ({ buildCount, failNextBuild, instances, mockBuild }) => {
     mockBuild();
     failNextBuild();
 
     const pmu = new ProseMirrorUnified();
 
-    expect(() => call(pmu)).toThrow("Failed");
+    expect(() => instances(pmu)).toThrow("Failed");
 
-    const result = call(pmu);
+    const first = instances(pmu);
 
-    expect(call(pmu)).toStrictEqual(result);
+    expect(first).not.toHaveLength(0);
+    expect(sameInstances(first, instances(pmu))).toBe(true);
     expect(buildCount()).toBe(2);
   },
 );
