@@ -21,6 +21,7 @@ import { UnifiedBuilder } from "./UnifiedBuilder";
 import { UnistToProseMirrorConverter } from "./UnistToProseMirrorConverter";
 
 export class ProseMirrorUnified {
+  private baseKeymapPlugin: Plugin | undefined;
   private readonly builtSchema: Schema<string, string>;
   private readonly inputRulesBuilder: InputRulesBuilder;
   private readonly keymapBuilder: KeymapBuilder;
@@ -89,6 +90,8 @@ export class ProseMirrorUnified {
   }
 
   public plugins(): Array<Plugin> {
+    // Each plugin is built on first use and reused from then on, so that the
+    // extensions' hooks don't run for apps that only parse and serialize.
     // The base keymap comes last, since it handles keys such as Enter and
     // Backspace, which would otherwise never reach the other plugins. The
     // extensions' keymap goes before their plugins, as they bind keys there.
@@ -97,7 +100,7 @@ export class ProseMirrorUnified {
       this.keymapPlugin(),
       ...this.extensionPlugins(),
       this.pastePlugin(),
-      keymap(baseKeymap),
+      (this.baseKeymapPlugin ??= keymap(baseKeymap)),
     ];
   }
 

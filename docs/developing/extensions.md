@@ -33,7 +33,7 @@ Override this to declare other extensions that must be present for this one to w
 
 Override to add ProseMirror plugins to the editor, for anything input rules, keymaps and node views can't do, such as plugin state, decorations, `appendTransaction` or other editor props. Receives the built schema. Defaults to `[]`.
 
-The plugins are added by [`plugins()`](/guide/api#plugins-array-plugin) on `ProseMirrorUnified`, but apps can also assemble their plugins without them, so the editor should still work without an extension's plugins, if more plainly. The hook is called once, when `ProseMirrorUnified` is constructed, and an extension added several times, for example as a dependency of two other extensions, contributes its plugins once. That makes it safe to give a plugin a [`PluginKey`](https://prosemirror.net/docs/ref/#state.PluginKey), which `EditorState` only allows once; create the key outside the hook, so that other code can use it to read the plugin's state:
+The plugins are added by [`plugins()`](/guide/api#plugins-array-plugin) on `ProseMirrorUnified`, but apps can also assemble their plugins without them, so the editor should still work without an extension's plugins, if more plainly. The hook is called once, the first time the plugins are requested from `ProseMirrorUnified` — not when it is constructed, so apps that only parse and serialize never call it — and an extension added several times, for example as a dependency of two other extensions, contributes its plugins once. That makes it safe to give a plugin a [`PluginKey`](https://prosemirror.net/docs/ref/#state.PluginKey), which `EditorState` only allows once; create the key outside the hook, so that other code can use it to read the plugin's state:
 
 ```ts
 import { Plugin, PluginKey } from "prosemirror-state";
@@ -56,6 +56,8 @@ class WordCountExtension extends Extension {
   }
 }
 ```
+
+The returned plugins are shared by every editor built from the same `ProseMirrorUnified`. Keep anything that differs between editors in the plugin's [`state`](https://prosemirror.net/docs/ref/#state.PluginSpec.state) or [`view`](https://prosemirror.net/docs/ref/#state.PluginSpec.view), not in variables the hook captures, which every editor would share.
 
 Plugins run in the order given by [`extensionPlugins()`](/guide/api#extensionplugins-array-plugin). In [`plugins()`](/guide/api#plugins-array-plugin), they come after the input rules and the extensions' keyboard shortcuts, and before the paste plugin and the base keymap. So keys that an extension handles should usually go in `proseMirrorKeymap` instead of a plugin's `handleKeyDown`, where every extension's shortcuts would take them first. A plugin that handles pasting, through props such as `handlePaste` or `clipboardTextParser`, takes precedence over the paste plugin.
 
@@ -105,11 +107,11 @@ Called after the whole document has been translated from unist to ProseMirror. D
 
 ### `proseMirrorInputRules(proseMirrorSchema: Schema<string, string>): Array<InputRule>`
 
-Override to add input rules to the editor. Receives the built schema. Defaults to `[]`. See [`MarkInputRule`](#markinputrule) for mark-adding rules.
+Override to add input rules to the editor. Receives the built schema. Defaults to `[]`. Called once, the first time the input rules plugin is requested from `ProseMirrorUnified`. See [`MarkInputRule`](#markinputrule) for mark-adding rules.
 
 ### `proseMirrorKeymap(proseMirrorSchema: Schema<string, string>): Record<string, Command>`
 
-Override to add keyboard shortcuts, keyed by shortcut. Receives the built schema. Defaults to `{}`.
+Override to add keyboard shortcuts, keyed by shortcut. Receives the built schema. Defaults to `{}`. Called once, the first time the keymap plugin is requested from `ProseMirrorUnified`.
 
 ## `NodeExtension`
 

@@ -87,3 +87,26 @@ test("PluginsBuilder works without any plugins", () => {
 
   expect(builder.build()).toStrictEqual([]);
 });
+
+test("PluginsBuilder collects the plugins once, on the first call", () => {
+  const plugin = new Plugin({});
+  const extension = new OtherPluginExtension();
+  extension.proseMirrorPlugins.mockReturnValueOnce([plugin]);
+  const builder = new PluginsBuilder(new ExtensionManager([extension]), schema);
+
+  expect(extension.proseMirrorPlugins).not.toHaveBeenCalled();
+
+  const plugins = builder.build();
+  const pluginsAgain = builder.build();
+
+  expect(pluginsAgain).toStrictEqual([plugin]);
+  expect(pluginsAgain[0]).toBe(plugin);
+  expect(extension.proseMirrorPlugins).toHaveBeenCalledExactlyOnceWith(schema);
+
+  // A caller changing the returned array doesn't affect later calls.
+  expect(pluginsAgain).not.toBe(plugins);
+
+  plugins.pop();
+
+  expect(builder.build()).toStrictEqual([plugin]);
+});

@@ -101,3 +101,15 @@ test("KeymapBuilder leaves out the base keymap", () => {
   // Without the base keymap, nothing split the paragraph.
   expect(testEditor.doc.childCount).toBe(1);
 });
+
+test("KeymapBuilder builds the plugin once, on the first call", () => {
+  const extension = new FirstExtension();
+  const builder = new KeymapBuilder(new ExtensionManager([extension]), schema);
+
+  expect(extension.proseMirrorKeymap).not.toHaveBeenCalled();
+
+  const plugin = builder.build();
+
+  expect(builder.build()).toBe(plugin);
+  expect(extension.proseMirrorKeymap).toHaveBeenCalledExactlyOnceWith(schema);
+});

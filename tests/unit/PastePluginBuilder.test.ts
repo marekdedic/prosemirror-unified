@@ -206,3 +206,12 @@ test("Prefers the pasted marks over the marks at the cursor", () => {
 });
 
 /* eslint-enable */
+
+test("Builds the paste plugin once", () => {
+  const builder = new PastePluginBuilder(
+    {} as UnistToProseMirrorConverter,
+    vi.fn<(source: string) => UnistNode>(),
+  );
+
+  expect(builder.build()).toBe(builder.build());
+});

@@ -122,3 +122,20 @@ test("ProseMirrorUnified returns all plugins", () => {
   ]);
   expect(keymap).toHaveBeenCalledWith(baseKeymap);
 });
+
+test("ProseMirrorUnified builds the base keymap once, on the first call", () => {
+  const baseKeymapPlugin = new Plugin({});
+  vi.mocked(PluginsBuilder.prototype).build.mockReturnValue([]);
+  vi.mocked(keymap).mockReturnValue(baseKeymapPlugin);
+
+  const pmu = new ProseMirrorUnified();
+
+  expect(keymap).not.toHaveBeenCalled();
+
+  const plugins = pmu.plugins();
+  const pluginsAgain = pmu.plugins();
+
+  expect(pluginsAgain).not.toBe(plugins);
+  expect(pluginsAgain[pluginsAgain.length - 1]).toBe(baseKeymapPlugin);
+  expect(keymap).toHaveBeenCalledExactlyOnceWith(baseKeymap);
+});

@@ -4,7 +4,7 @@ import { baseKeymap } from "prosemirror-commands";
 import { keymap } from "prosemirror-keymap";
 import { type DOMOutputSpec, Schema } from "prosemirror-model";
 import { builders } from "prosemirror-test-builder";
-import { expect, test } from "vitest";
+import { expect, test, vi } from "vitest";
 import { type ProseMirrorEditor, renderProseMirror } from "vitest-prosemirror";
 
 import { ExtensionManager } from "../../src/ExtensionManager";
@@ -78,4 +78,20 @@ test("InputRulesBuilder only splits the block when Enter matches no rule", () =>
   const expectedDoc = doc(paragraph("Hello"), paragraph());
 
   expect(testEditor.doc).toEqualProseMirrorNode(expectedDoc);
+});
+
+test("InputRulesBuilder builds the plugin once, on the first call", () => {
+  const extension = new BoldInputRuleExtension();
+  const hook = vi.spyOn(extension, "proseMirrorInputRules");
+  const builder = new InputRulesBuilder(
+    new ExtensionManager([extension]),
+    schemaWithBold,
+  );
+
+  expect(hook).not.toHaveBeenCalled();
+
+  const plugin = builder.build();
+
+  expect(builder.build()).toBe(plugin);
+  expect(hook).toHaveBeenCalledExactlyOnceWith(schemaWithBold);
 });

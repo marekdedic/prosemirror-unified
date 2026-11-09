@@ -66,6 +66,10 @@ ProseMirror tries plugins in order, so this order decides who handles a key or a
 - The extensions' keyboard shortcuts come before their plugins, so a shortcut an extension binds isn't taken by another extension's plugin.
 - The extensions' plugins come before the paste plugin, so an extension plugin that handles pasting, through props such as [`handlePaste`](https://prosemirror.net/docs/ref/#view.EditorProps.handlePaste) or [`clipboardTextParser`](https://prosemirror.net/docs/ref/#view.EditorProps.clipboardTextParser), takes precedence over it.
 
+Every plugin is built the first time it is requested, and every call after that returns the same instance — from `plugins()` as well as from the individual methods below. ProseMirror keeps a plugin's state in each `EditorState`, so one instance can serve any number of editors, and these instances are shared by every editor built from the same `ProseMirrorUnified`. Keeping the same instances also matters for [`EditorState.reconfigure`](https://prosemirror.net/docs/ref/#state.EditorState.reconfigure), which only keeps a plugin's state when the plugin is the same instance: reconfiguring with the result of another `plugins()` call keeps, for example, the input rule that Backspace would undo. `plugins()` and `extensionPlugins()` return a new array on each call, so changing it doesn't affect later calls.
+
+Because they are built on first use, the extensions' input rules, keyboard shortcuts and plugins are only collected when a plugin method is first called. An app that only uses `parse` and `serialize`, for example on a server without a DOM, never runs those extension hooks, and an error thrown by one shows up on the first call of the corresponding method rather than in the constructor.
+
 If you need a different selection or order, for example to leave out the paste plugin, build the list yourself from the individual methods below. None of them includes the base keymap, so add it yourself, last, with `keymap(baseKeymap)` from [prosemirror-keymap](https://prosemirror.net/docs/ref/#keymap) and [prosemirror-commands](https://prosemirror.net/docs/ref/#commands). Without it, keys such as Enter and Backspace do nothing:
 
 ```ts
@@ -109,7 +113,7 @@ Use ProseMirror's [`transformPastedText`](https://prosemirror.net/docs/ref/#view
 
 ## `extensionPlugins(): Array<Plugin>`
 
-Returns the plugins contributed by the extensions through [`proseMirrorPlugins`](/developing/extensions#prosemirrorplugins-prosemirrorschema-schema-string-string-array-plugin): node extensions first, then mark extensions, then the others. Within each group, extensions are in the order they were added, with each extension's dependencies before it. A dependency from a different group follows its own group instead: a plain `Extension` that a node extension depends on comes after all node and mark extensions. An extension that is pulled in several times, for example as a dependency of two others, contributes its plugins once. Calling `extensionPlugins()` repeatedly returns the same plugin instances.
+Returns the plugins contributed by the extensions through [`proseMirrorPlugins`](/developing/extensions#prosemirrorplugins-prosemirrorschema-schema-string-string-array-plugin): node extensions first, then mark extensions, then the others. Within each group, extensions are in the order they were added, with each extension's dependencies before it. A dependency from a different group follows its own group instead: a plain `Extension` that a node extension depends on comes after all node and mark extensions. An extension that is pulled in several times, for example as a dependency of two others, contributes its plugins once. Calling `extensionPlugins()` repeatedly returns the same plugin instances, in a new array each time.
 
 ## `nodeViews(): Record<string, NodeViewConstructor>`
 

@@ -14,6 +14,7 @@ import type { UnistToProseMirrorConverter } from "./UnistToProseMirrorConverter"
 
 export class PastePluginBuilder {
   private readonly parseToUnist: (source: string) => UnistNode;
+  private plugin: Plugin | undefined;
   private readonly unistToProseMirrorConverter: UnistToProseMirrorConverter;
 
   public constructor(
@@ -61,8 +62,12 @@ export class PastePluginBuilder {
     return Fragment.from(nodes);
   }
 
+  /**
+   * Builds the plugin on the first call only, and returns the same instance
+   * from then on.
+   */
   public build(): Plugin {
-    return new Plugin({
+    this.plugin ??= new Plugin({
       props: {
         // Typed as always returning a Slice, but ProseMirror falls back to its
         // default plain text handling when the parser returns null.
@@ -72,6 +77,7 @@ export class PastePluginBuilder {
         >,
       },
     });
+    return this.plugin;
   }
 
   private parse(

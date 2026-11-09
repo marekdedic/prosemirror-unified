@@ -6,22 +6,37 @@ import { type InputRule, inputRules } from "prosemirror-inputrules";
 import type { ExtensionManager } from "./ExtensionManager";
 
 export class InputRulesBuilder {
-  private readonly rules: Array<InputRule>;
+  private readonly extensionManager: ExtensionManager;
+  private plugin: Plugin | undefined;
+  private readonly proseMirrorSchema: Schema<string, string>;
 
   public constructor(
     extensionManager: ExtensionManager,
     proseMirrorSchema: Schema<string, string>,
   ) {
-    this.rules = ([] as Array<InputRule>).concat.apply(
-      [],
-      extensionManager
-        .syntaxExtensions()
-        .map((extension) => extension.proseMirrorInputRules(proseMirrorSchema)),
-    );
+    this.extensionManager = extensionManager;
+    this.proseMirrorSchema = proseMirrorSchema;
   }
 
+  /**
+   * Builds the plugin on the first call only, and returns the same instance
+   * from then on.
+   */
   public build(): Plugin {
-    const inputRulesPlugin = inputRules({ rules: this.rules });
+    this.plugin ??= this.createPlugin();
+    return this.plugin;
+  }
+
+  private createPlugin(): Plugin {
+    const rules = ([] as Array<InputRule>).concat.apply(
+      [],
+      this.extensionManager
+        .syntaxExtensions()
+        .map((extension) =>
+          extension.proseMirrorInputRules(this.proseMirrorSchema),
+        ),
+    );
+    const inputRulesPlugin = inputRules({ rules });
     const originalHandleKeyDown =
       inputRulesPlugin.props.handleKeyDown?.bind(inputRulesPlugin);
     // eslint-disable-next-line @typescript-eslint/no-invalid-void-type -- Type from prosemirror-view
