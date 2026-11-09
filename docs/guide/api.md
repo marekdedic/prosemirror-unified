@@ -70,7 +70,7 @@ Every plugin is built the first time it is requested, and every call after that 
 
 Because they are built on first use, the extensions' input rules, keyboard shortcuts and plugins are only collected when a plugin method is first called, and the same goes for `nodeViews()`. An app that only uses `parse` and `serialize`, for example on a server without a DOM, never runs those extension hooks, and an error thrown by one shows up on the first call of the corresponding method rather than in the constructor. Nothing is kept from a call that throws, so the next call runs the hooks again.
 
-If you need a different selection or order, for example to leave out the paste plugin, build the list yourself from the individual methods below. None of them includes the base keymap, so add it yourself, last, with `keymap(baseKeymap)` from [prosemirror-keymap](https://prosemirror.net/docs/ref/#keymap) and [prosemirror-commands](https://prosemirror.net/docs/ref/#commands). Without it, keys such as Enter and Backspace do nothing:
+If you need a different selection or order, for example to leave out the paste plugin, build the list yourself from the individual methods below. Use them instead of `plugins()`, not alongside it: since they return the same instances, a plugin would be added twice, which `EditorState` rejects with a `RangeError`. None of them includes the base keymap, so add it yourself, last, with `keymap(baseKeymap)` from [prosemirror-keymap](https://prosemirror.net/docs/ref/#keymap) and [prosemirror-commands](https://prosemirror.net/docs/ref/#commands). Without it, keys such as Enter and Backspace do nothing:
 
 ```ts
 import { baseKeymap } from "prosemirror-commands";
