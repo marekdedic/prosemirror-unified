@@ -1,5 +1,6 @@
 import type { Node as UnistNode } from "unist";
 
+import { Schema } from "prosemirror-model";
 import { type Processor, unified } from "unified";
 import { expect, test } from "vitest";
 
@@ -25,4 +26,12 @@ test("Extension.unifiedInitializationHook has a default implementation", () => {
   >;
 
   expect(extension.unifiedInitializationHook(processor)).toBe(processor);
+});
+
+test("Extension.proseMirrorPlugins has a default implementation", () => {
+  class MockExtension extends Extension {}
+  const extension = new MockExtension();
+  const schema = new Schema<string, string>({ nodes: { doc: {}, text: {} } });
+
+  expect(extension.proseMirrorPlugins(schema)).toStrictEqual([]);
 });

@@ -4,6 +4,9 @@ import type { NodeViewConstructor } from "prosemirror-view";
 import type { Processor } from "unified";
 import type { Node as UnistNode } from "unist";
 
+import { baseKeymap } from "prosemirror-commands";
+import { keymap } from "prosemirror-keymap";
+
 import type { Extension } from "./Extension";
 
 import { ExtensionManager } from "./ExtensionManager";
@@ -11,6 +14,7 @@ import { InputRulesBuilder } from "./InputRulesBuilder";
 import { KeymapBuilder } from "./KeymapBuilder";
 import { NodeViewBuilder } from "./NodeViewBuilder";
 import { PastePluginBuilder } from "./PastePluginBuilder";
+import { PluginsBuilder } from "./PluginsBuilder";
 import { ProseMirrorToUnistConverter } from "./ProseMirrorToUnistConverter";
 import { SchemaBuilder } from "./SchemaBuilder";
 import { UnifiedBuilder } from "./UnifiedBuilder";
@@ -22,6 +26,7 @@ export class ProseMirrorUnified {
   private readonly keymapBuilder: KeymapBuilder;
   private readonly nodeViewBuilder: NodeViewBuilder;
   private readonly pastePluginBuilder: PastePluginBuilder;
+  private readonly pluginsBuilder: PluginsBuilder;
   private readonly proseMirrorToUnistConverter: ProseMirrorToUnistConverter;
   private readonly unified: Processor<
     UnistNode,
@@ -41,6 +46,10 @@ export class ProseMirrorUnified {
     );
     this.keymapBuilder = new KeymapBuilder(extensionManager, this.builtSchema);
     this.nodeViewBuilder = new NodeViewBuilder(extensionManager);
+    this.pluginsBuilder = new PluginsBuilder(
+      extensionManager,
+      this.builtSchema,
+    );
     this.unistToProseMirrorConverter = new UnistToProseMirrorConverter(
       extensionManager,
       this.builtSchema,
@@ -53,6 +62,10 @@ export class ProseMirrorUnified {
       this.unistToProseMirrorConverter,
       (source) => this.parseToUnist(source),
     );
+  }
+
+  public extensionPlugins(): Array<Plugin> {
+    return this.pluginsBuilder.build();
   }
 
   public inputRulesPlugin(): Plugin {
@@ -73,6 +86,19 @@ export class ProseMirrorUnified {
 
   public pastePlugin(): Plugin {
     return this.pastePluginBuilder.build();
+  }
+
+  public plugins(): Array<Plugin> {
+    // The base keymap comes last, since it handles keys such as Enter and
+    // Backspace, which would otherwise never reach the other plugins. The
+    // extensions' keymap goes before their plugins, as they bind keys there.
+    return [
+      this.inputRulesPlugin(),
+      this.keymapPlugin(),
+      ...this.extensionPlugins(),
+      this.pastePlugin(),
+      keymap(baseKeymap),
+    ];
   }
 
   public schema(): Schema<string, string> {
