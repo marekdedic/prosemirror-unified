@@ -13,7 +13,7 @@ This file provides guidance to coding agents when working with code in this repo
 
 This is a *framework* library: it has no knowledge of any concrete syntax. Everything concrete (markdown, HTML, …) lives in downstream packages such as prosemirror-remark, which supply `Extension` subclasses. `src/index.ts` is the entire public API surface.
 
-`ProseMirrorUnified` is a thin facade. Its constructor takes a flat list of extensions, wraps them in an `ExtensionManager`, then eagerly builds one collaborator per concern and stores the results:
+`ProseMirrorUnified` is a thin facade. Its constructor takes a flat list of extensions, wraps them in an `ExtensionManager`, then builds one collaborator per concern. The schema, the unified processor and the converters are built eagerly; the editor-side builders (input rules, keymap, plugins, paste, node views) only call the extensions' hooks on their first `build()` and return the cached result from then on - the same plugin instances, so `EditorState.reconfigure` keeps their state, and apps that only parse and serialize never run those hooks. A hook that throws leaves nothing cached, so the next call retries:
 
 - `ExtensionManager` — recursively expands `extension.dependencies()` and buckets extensions into node / mark / other maps keyed by `constructor.name`, which deduplicates repeated extensions. Consequently `syntaxExtensions()` returns nodes before marks, and that ordering is what conversion iterates over.
 - `SchemaBuilder` → the single `Schema` instance shared by everything (`schema()`), built from each extension's node/mark specs (`null` name or spec means the extension contributes nothing to the schema).
