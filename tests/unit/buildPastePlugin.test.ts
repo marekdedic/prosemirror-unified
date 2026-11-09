@@ -12,7 +12,7 @@ import { expect, type Mock, type Mocked, test, vi } from "vitest";
 
 import type { UnistToProseMirrorConverter } from "../../src/UnistToProseMirrorConverter";
 
-import { PastePluginBuilder } from "../../src/PastePluginBuilder";
+import { buildPastePlugin } from "../../src/buildPastePlugin";
 
 /* eslint-disable @typescript-eslint/no-empty-function, no-console -- Testing console output */
 
@@ -52,7 +52,7 @@ const setup = (
     }),
   } as unknown as Mocked<UnistToProseMirrorConverter>;
   const parseToUnist = vi.fn<(source: string) => UnistNode>(() => unistRoot);
-  const plugin = new PastePluginBuilder(converter, parseToUnist).build();
+  const plugin = buildPastePlugin(converter, parseToUnist);
   return { converter, parseToUnist, plugin };
 };
 
@@ -206,12 +206,3 @@ test("Prefers the pasted marks over the marks at the cursor", () => {
 });
 
 /* eslint-enable */
-
-test("Builds the paste plugin once", () => {
-  const builder = new PastePluginBuilder(
-    {} as UnistToProseMirrorConverter,
-    vi.fn<(source: string) => UnistNode>(),
-  );
-
-  expect(builder.build()).toBe(builder.build());
-});

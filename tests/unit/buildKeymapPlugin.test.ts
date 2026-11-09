@@ -4,8 +4,8 @@ import { type DOMOutputSpec, Schema } from "prosemirror-model";
 import { expect, test, vi } from "vitest";
 import { type ProseMirrorEditor, renderProseMirror } from "vitest-prosemirror";
 
+import { buildKeymapPlugin } from "../../src/buildKeymapPlugin";
 import { ExtensionManager } from "../../src/ExtensionManager";
-import { KeymapBuilder } from "../../src/KeymapBuilder";
 import { MockNodeExtension } from "../mocks/MockNodeExtension";
 
 const schema = new Schema<string, string>({
@@ -39,13 +39,13 @@ const pressKey = (
   const second = new SecondExtension();
   second.proseMirrorKeymap.mockReturnValue(keymaps[1]);
 
-  const builder = new KeymapBuilder(
+  const plugin = buildKeymapPlugin(
     new ExtensionManager([first, second]),
     schema,
   );
   const testEditor = renderProseMirror(
     schema.nodes["doc"].create(null, schema.nodes["paragraph"].create()),
-    { editorProps: { plugins: [builder.build()] } },
+    { editorProps: { plugins: [plugin] } },
   );
 
   testEditor.setSelection("end");
@@ -54,7 +54,7 @@ const pressKey = (
   return testEditor;
 };
 
-test("KeymapBuilder chains commands bound to the same key", () => {
+test("buildKeymapPlugin chains commands bound to the same key", () => {
   expect.assertions(2);
 
   const firstCommand = vi.fn<Command>(() => false);
@@ -66,7 +66,7 @@ test("KeymapBuilder chains commands bound to the same key", () => {
   expect(secondCommand).toHaveBeenCalledTimes(1);
 });
 
-test("KeymapBuilder stops chaining once a command succeeds", () => {
+test("buildKeymapPlugin stops chaining once a command succeeds", () => {
   expect.assertions(2);
 
   const firstCommand = vi.fn<Command>(() => true);
@@ -78,7 +78,7 @@ test("KeymapBuilder stops chaining once a command succeeds", () => {
   expect(secondCommand).not.toHaveBeenCalled();
 });
 
-test("KeymapBuilder keeps commands bound to different keys apart", () => {
+test("buildKeymapPlugin keeps commands bound to different keys apart", () => {
   expect.assertions(2);
 
   const firstCommand = vi.fn<Command>(() => true);
@@ -90,7 +90,7 @@ test("KeymapBuilder keeps commands bound to different keys apart", () => {
   expect(secondCommand).not.toHaveBeenCalled();
 });
 
-test("KeymapBuilder leaves out the base keymap", () => {
+test("buildKeymapPlugin leaves out the base keymap", () => {
   expect.assertions(2);
 
   const enterCommand = vi.fn<Command>(() => false);
@@ -100,28 +100,4 @@ test("KeymapBuilder leaves out the base keymap", () => {
   expect(enterCommand).toHaveBeenCalledTimes(1);
   // Without the base keymap, nothing split the paragraph.
   expect(testEditor.doc.childCount).toBe(1);
-});
-
-test("KeymapBuilder builds the plugin once, on the first call", () => {
-  const extension = new FirstExtension();
-  const builder = new KeymapBuilder(new ExtensionManager([extension]), schema);
-
-  expect(extension.proseMirrorKeymap).not.toHaveBeenCalled();
-
-  const plugin = builder.build();
-
-  expect(builder.build()).toBe(plugin);
-  expect(extension.proseMirrorKeymap).toHaveBeenCalledExactlyOnceWith(schema);
-});
-
-test("KeymapBuilder calls the hooks again after one throws", () => {
-  const extension = new FirstExtension();
-  extension.proseMirrorKeymap.mockImplementationOnce(() => {
-    throw new Error("Failed");
-  });
-  const builder = new KeymapBuilder(new ExtensionManager([extension]), schema);
-
-  expect(() => builder.build()).toThrow("Failed");
-  expect(builder.build()).toBe(builder.build());
-  expect(extension.proseMirrorKeymap).toHaveBeenCalledTimes(2);
 });

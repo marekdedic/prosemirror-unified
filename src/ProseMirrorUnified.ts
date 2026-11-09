@@ -9,25 +9,29 @@ import { keymap } from "prosemirror-keymap";
 
 import type { Extension } from "./Extension";
 
+import { buildExtensionPlugins } from "./buildExtensionPlugins";
+import { buildInputRulesPlugin } from "./buildInputRulesPlugin";
+import { buildKeymapPlugin } from "./buildKeymapPlugin";
+import { buildNodeViews } from "./buildNodeViews";
+import { buildPastePlugin } from "./buildPastePlugin";
+import { buildSchema } from "./buildSchema";
+import { buildUnified } from "./buildUnified";
 import { ExtensionManager } from "./ExtensionManager";
-import { InputRulesBuilder } from "./InputRulesBuilder";
-import { KeymapBuilder } from "./KeymapBuilder";
-import { NodeViewBuilder } from "./NodeViewBuilder";
-import { PastePluginBuilder } from "./PastePluginBuilder";
-import { PluginsBuilder } from "./PluginsBuilder";
 import { ProseMirrorToUnistConverter } from "./ProseMirrorToUnistConverter";
-import { SchemaBuilder } from "./SchemaBuilder";
-import { UnifiedBuilder } from "./UnifiedBuilder";
 import { UnistToProseMirrorConverter } from "./UnistToProseMirrorConverter";
 
 export class ProseMirrorUnified {
-  private baseKeymapPlugin: Plugin | undefined;
   private readonly builtSchema: Schema<string, string>;
-  private readonly inputRulesBuilder: InputRulesBuilder;
-  private readonly keymapBuilder: KeymapBuilder;
-  private readonly nodeViewBuilder: NodeViewBuilder;
-  private readonly pastePluginBuilder: PastePluginBuilder;
-  private readonly pluginsBuilder: PluginsBuilder;
+  // The editor-side parts are built on first use and kept from then on, so
+  // that the extensions' hooks for them don't run for apps that only parse
+  // and serialize, and so that every call returns the same instances.
+  private cachedBaseKeymapPlugin: Plugin | undefined;
+  private cachedExtensionPlugins: Array<Plugin> | undefined;
+  private cachedInputRulesPlugin: Plugin | undefined;
+  private cachedKeymapPlugin: Plugin | undefined;
+  private cachedNodeViews: Record<string, NodeViewConstructor> | undefined;
+  private cachedPastePlugin: Plugin | undefined;
+  private readonly extensionManager: ExtensionManager;
   private readonly proseMirrorToUnistConverter: ProseMirrorToUnistConverter;
   private readonly unified: Processor<
     UnistNode,
@@ -39,46 +43,47 @@ export class ProseMirrorUnified {
   private readonly unistToProseMirrorConverter: UnistToProseMirrorConverter;
 
   public constructor(extensions: Array<Extension> = []) {
-    const extensionManager = new ExtensionManager(extensions);
-    this.builtSchema = new SchemaBuilder(extensionManager).build();
-    this.inputRulesBuilder = new InputRulesBuilder(
-      extensionManager,
-      this.builtSchema,
-    );
-    this.keymapBuilder = new KeymapBuilder(extensionManager, this.builtSchema);
-    this.nodeViewBuilder = new NodeViewBuilder(extensionManager);
-    this.pluginsBuilder = new PluginsBuilder(
-      extensionManager,
-      this.builtSchema,
-    );
+    this.extensionManager = new ExtensionManager(extensions);
+    this.builtSchema = buildSchema(this.extensionManager);
     this.unistToProseMirrorConverter = new UnistToProseMirrorConverter(
-      extensionManager,
+      this.extensionManager,
       this.builtSchema,
     );
     this.proseMirrorToUnistConverter = new ProseMirrorToUnistConverter(
-      extensionManager,
+      this.extensionManager,
     );
-    this.unified = new UnifiedBuilder(extensionManager).build();
-    this.pastePluginBuilder = new PastePluginBuilder(
-      this.unistToProseMirrorConverter,
-      (source) => this.parseToUnist(source),
-    );
+    this.unified = buildUnified(this.extensionManager);
   }
 
   public extensionPlugins(): Array<Plugin> {
-    return this.pluginsBuilder.build();
+    this.cachedExtensionPlugins ??= buildExtensionPlugins(
+      this.extensionManager,
+      this.builtSchema,
+    );
+    // A copy, so that callers can't change the cached array.
+    return [...this.cachedExtensionPlugins];
   }
 
   public inputRulesPlugin(): Plugin {
-    return this.inputRulesBuilder.build();
+    this.cachedInputRulesPlugin ??= buildInputRulesPlugin(
+      this.extensionManager,
+      this.builtSchema,
+    );
+    return this.cachedInputRulesPlugin;
   }
 
   public keymapPlugin(): Plugin {
-    return this.keymapBuilder.build();
+    this.cachedKeymapPlugin ??= buildKeymapPlugin(
+      this.extensionManager,
+      this.builtSchema,
+    );
+    return this.cachedKeymapPlugin;
   }
 
   public nodeViews(): Record<string, NodeViewConstructor> {
-    return this.nodeViewBuilder.build();
+    this.cachedNodeViews ??= buildNodeViews(this.extensionManager);
+    // A copy, so that callers can't change the cached object.
+    return { ...this.cachedNodeViews };
   }
 
   public parse(source: string): ProseMirrorNode {
@@ -86,12 +91,15 @@ export class ProseMirrorUnified {
   }
 
   public pastePlugin(): Plugin {
-    return this.pastePluginBuilder.build();
+    this.cachedPastePlugin ??= buildPastePlugin(
+      this.unistToProseMirrorConverter,
+      (source) => this.parseToUnist(source),
+    );
+    return this.cachedPastePlugin;
   }
 
   public plugins(): Array<Plugin> {
-    // Each plugin is built on first use and reused from then on, so that the
-    // extensions' hooks don't run for apps that only parse and serialize.
+    this.cachedBaseKeymapPlugin ??= keymap(baseKeymap);
     // The base keymap comes last, since it handles keys such as Enter and
     // Backspace, which would otherwise never reach the other plugins. The
     // extensions' keymap goes before their plugins, as they bind keys there.
@@ -100,7 +108,7 @@ export class ProseMirrorUnified {
       this.keymapPlugin(),
       ...this.extensionPlugins(),
       this.pastePlugin(),
-      (this.baseKeymapPlugin ??= keymap(baseKeymap)),
+      this.cachedBaseKeymapPlugin,
     ];
   }
 

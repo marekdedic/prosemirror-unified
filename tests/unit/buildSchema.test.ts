@@ -9,14 +9,14 @@ import {
 } from "prosemirror-model";
 import { expect, test, vi } from "vitest";
 
+import { buildSchema } from "../../src/buildSchema";
 import { ExtensionManager } from "../../src/ExtensionManager";
-import { SchemaBuilder } from "../../src/SchemaBuilder";
 import { MockMarkExtension } from "../mocks/MockMarkExtension";
 import { MockNodeExtension } from "../mocks/MockNodeExtension";
 
 vi.mock("../../src/ExtensionManager");
 
-test("SchemaBuilder works with nodes", () => {
+test("buildSchema works with nodes", () => {
   const docExtension = vi.mocked(new MockNodeExtension());
   docExtension.proseMirrorNodeName.mockReturnValueOnce("doc");
   docExtension.proseMirrorNodeSpec.mockReturnValueOnce({});
@@ -28,8 +28,7 @@ test("SchemaBuilder works with nodes", () => {
   manager.markExtensions.mockReturnValueOnce([]);
   manager.nodeExtensions.mockReturnValueOnce([docExtension, textExtension]);
 
-  const builder = new SchemaBuilder(manager);
-  const schema = builder.build();
+  const schema = buildSchema(manager);
 
   expect(schema).toBeInstanceOf(Schema);
   expect(schema.nodes["doc"]).toBeInstanceOf(NodeType);
@@ -38,7 +37,7 @@ test("SchemaBuilder works with nodes", () => {
   expect(schema.spec.nodes.get("text")).toStrictEqual({});
 });
 
-test("SchemaBuilder works with marks", () => {
+test("buildSchema works with marks", () => {
   const docExtension = vi.mocked(new MockNodeExtension());
   docExtension.proseMirrorNodeName.mockReturnValueOnce("doc");
   docExtension.proseMirrorNodeSpec.mockReturnValueOnce({});
@@ -53,8 +52,7 @@ test("SchemaBuilder works with marks", () => {
   manager.markExtensions.mockReturnValueOnce([markExtension1]);
   manager.nodeExtensions.mockReturnValueOnce([docExtension, textExtension]);
 
-  const builder = new SchemaBuilder(manager);
-  const schema = builder.build();
+  const schema = buildSchema(manager);
 
   expect(schema).toBeInstanceOf(Schema);
   expect(schema.marks["MARK_1"]).toBeInstanceOf(MarkType);
@@ -65,7 +63,7 @@ test("SchemaBuilder works with marks", () => {
   expect(schema.spec.nodes.get("text")).toStrictEqual({});
 });
 
-test("SchemaBuilder works with complex specs", () => {
+test("buildSchema works with complex specs", () => {
   const docExtension = vi.mocked(new MockNodeExtension());
   docExtension.proseMirrorNodeName.mockReturnValueOnce("doc");
   const docSpec = {
@@ -106,8 +104,7 @@ test("SchemaBuilder works with complex specs", () => {
   manager.markExtensions.mockReturnValueOnce([markExtension1]);
   manager.nodeExtensions.mockReturnValueOnce([docExtension, textExtension]);
 
-  const builder = new SchemaBuilder(manager);
-  const schema = builder.build();
+  const schema = buildSchema(manager);
 
   expect(schema).toBeInstanceOf(Schema);
   expect(schema.marks["MARK_1"]).toBeInstanceOf(MarkType);
@@ -118,7 +115,7 @@ test("SchemaBuilder works with complex specs", () => {
   expect(schema.spec.nodes.get("text")).toStrictEqual({});
 });
 
-test("SchemaBuilder skips node extensions with no name or no spec", () => {
+test("buildSchema skips node extensions with no name or no spec", () => {
   expect.assertions(3);
 
   const docExtension = vi.mocked(new MockNodeExtension());
@@ -143,15 +140,14 @@ test("SchemaBuilder skips node extensions with no name or no spec", () => {
     speclessExtension,
   ]);
 
-  const builder = new SchemaBuilder(manager);
-  const schema = builder.build();
+  const schema = buildSchema(manager);
 
   expect(schema.spec.nodes.size).toBe(2);
   expect(schema.spec.nodes.get("doc")).toStrictEqual({});
   expect(schema.spec.nodes.get("text")).toStrictEqual({});
 });
 
-test("SchemaBuilder skips mark extensions with no name or no spec", () => {
+test("buildSchema skips mark extensions with no name or no spec", () => {
   expect.assertions(3);
 
   const docExtension = vi.mocked(new MockNodeExtension());
@@ -178,15 +174,14 @@ test("SchemaBuilder skips mark extensions with no name or no spec", () => {
   ]);
   manager.nodeExtensions.mockReturnValueOnce([docExtension, textExtension]);
 
-  const builder = new SchemaBuilder(manager);
-  const schema = builder.build();
+  const schema = buildSchema(manager);
 
   expect(schema.spec.marks.size).toBe(1);
   expect(schema.spec.marks.get("MARK_1")).toStrictEqual({});
   expect(schema.marks["MARK_1"]).toBeInstanceOf(MarkType);
 });
 
-test("SchemaBuilder throws on a duplicate node name", () => {
+test("buildSchema throws on a duplicate node name", () => {
   expect.assertions(1);
 
   class NodeExtension1<
@@ -207,12 +202,12 @@ test("SchemaBuilder throws on a duplicate node name", () => {
   manager.markExtensions.mockReturnValueOnce([]);
   manager.nodeExtensions.mockReturnValueOnce([extension1, extension2]);
 
-  expect(() => new SchemaBuilder(manager)).toThrow(
+  expect(() => buildSchema(manager)).toThrow(
     'Two extensions (NodeExtension1 and NodeExtension2) both provide the ProseMirror node "doc".',
   );
 });
 
-test("SchemaBuilder throws on a duplicate mark name", () => {
+test("buildSchema throws on a duplicate mark name", () => {
   expect.assertions(1);
 
   class MarkExtension1<
@@ -236,12 +231,12 @@ test("SchemaBuilder throws on a duplicate mark name", () => {
   manager.markExtensions.mockReturnValueOnce([extension1, extension2]);
   manager.nodeExtensions.mockReturnValueOnce([docExtension]);
 
-  expect(() => new SchemaBuilder(manager)).toThrow(
+  expect(() => buildSchema(manager)).toThrow(
     'Two extensions (MarkExtension1 and MarkExtension2) both provide the ProseMirror mark "MARK".',
   );
 });
 
-test("SchemaBuilder reports two different extensions sharing a name", () => {
+test("buildSchema reports two different extensions sharing a name", () => {
   expect.assertions(1);
 
   // Two distinct classes can share a name, in which case naming them twice
@@ -264,7 +259,7 @@ test("SchemaBuilder reports two different extensions sharing a name", () => {
   manager.markExtensions.mockReturnValueOnce([]);
   manager.nodeExtensions.mockReturnValueOnce([extension1, extension2]);
 
-  expect(() => new SchemaBuilder(manager)).toThrow(
+  expect(() => buildSchema(manager)).toThrow(
     'Two different extensions named "n" both provide the ProseMirror node "doc".',
   );
 });
