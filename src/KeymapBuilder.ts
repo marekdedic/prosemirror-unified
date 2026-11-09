@@ -1,7 +1,7 @@
 import type { Schema } from "prosemirror-model";
 import type { Command, Plugin } from "prosemirror-state";
 
-import { baseKeymap, chainCommands } from "prosemirror-commands";
+import { chainCommands } from "prosemirror-commands";
 import { keymap } from "prosemirror-keymap";
 
 import type { ExtensionManager } from "./ExtensionManager";
@@ -17,7 +17,6 @@ export class KeymapBuilder {
     for (const extension of extensionManager.syntaxExtensions()) {
       this.addKeymap(extension.proseMirrorKeymap(proseMirrorSchema));
     }
-    this.addKeymap(baseKeymap);
   }
 
   public build(): Plugin {

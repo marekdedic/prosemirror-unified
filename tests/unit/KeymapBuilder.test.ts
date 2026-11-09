@@ -90,7 +90,7 @@ test("KeymapBuilder keeps commands bound to different keys apart", () => {
   expect(secondCommand).not.toHaveBeenCalled();
 });
 
-test("KeymapBuilder falls back to the base keymap", () => {
+test("KeymapBuilder leaves out the base keymap", () => {
   expect.assertions(2);
 
   const enterCommand = vi.fn<Command>(() => false);
@@ -98,6 +98,6 @@ test("KeymapBuilder falls back to the base keymap", () => {
   const testEditor = pressKey([{ Enter: enterCommand }, {}], "{Enter}");
 
   expect(enterCommand).toHaveBeenCalledTimes(1);
-  // The base keymap binding for Enter split the paragraph in two.
-  expect(testEditor.doc.childCount).toBe(2);
+  // Without the base keymap, nothing split the paragraph.
+  expect(testEditor.doc.childCount).toBe(1);
 });

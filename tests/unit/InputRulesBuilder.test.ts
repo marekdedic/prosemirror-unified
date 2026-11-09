@@ -1,5 +1,7 @@
 import type { InputRule } from "prosemirror-inputrules";
 
+import { baseKeymap } from "prosemirror-commands";
+import { keymap } from "prosemirror-keymap";
 import { type DOMOutputSpec, Schema } from "prosemirror-model";
 import { builders } from "prosemirror-test-builder";
 import { expect, test } from "vitest";
@@ -7,7 +9,6 @@ import { type ProseMirrorEditor, renderProseMirror } from "vitest-prosemirror";
 
 import { ExtensionManager } from "../../src/ExtensionManager";
 import { InputRulesBuilder } from "../../src/InputRulesBuilder";
-import { KeymapBuilder } from "../../src/KeymapBuilder";
 import { MarkInputRule } from "../../src/MarkInputRule";
 import { MockNodeExtension } from "../mocks/MockNodeExtension";
 
@@ -43,11 +44,11 @@ const testerWithBoldRule = (): ProseMirrorEditor => {
 
   return renderProseMirror(doc(paragraph()), {
     editorProps: {
-      // Keymap plugin comes second so that the input rules get the Enter
-      // key first, just like in ProseMirrorUnified.
+      // The base keymap comes after the input rules so that they get the
+      // Enter key first, just like in ProseMirrorUnified.
       plugins: [
         new InputRulesBuilder(manager, schemaWithBold).build(),
-        new KeymapBuilder(manager, schemaWithBold).build(),
+        keymap(baseKeymap),
       ],
     },
   });

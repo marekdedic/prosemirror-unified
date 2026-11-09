@@ -36,13 +36,61 @@ The inverse of `parse`: serialises a ProseMirror node and all its children back 
 
 Returns the ProseMirror schema to use for the editor. It is built to support every node and mark contributed by the extensions you passed in.
 
+## `plugins(): Array<Plugin>`
+
+Returns every ProseMirror plugin the adapter provides, in this order:
+
+1. `inputRulesPlugin()`
+2. `keymapPlugin()`
+3. `extensionPlugins()`
+4. `pastePlugin()`
+5. the [base keymap](https://prosemirror.net/docs/ref/#commands.baseKeymap) from prosemirror-commands, which binds keys such as Enter, Backspace and Mod-a
+
+This is the recommended way to set up the editor: pass the result to `EditorState.create`, and plugins added by new extensions or new versions are picked up without changing the setup. Your own plugins can go before or after them, but a keymap of your own has to go before them, as explained below:
+
+```ts
+EditorState.create({
+  doc: pmu.parse(source),
+  plugins: [
+    keymap({ "Mod-z": undo, "Mod-y": redo }),
+    ...pmu.plugins(),
+    history(),
+  ],
+  schema: pmu.schema(),
+});
+```
+
+ProseMirror tries plugins in order, so this order decides who handles a key or a paste:
+
+- The base keymap comes last because it handles keys such as Enter and Backspace, which would then never reach the plugins after it. A keymap of your own should therefore go before `pmu.plugins()`, or it won't get those keys. There, it takes precedence over everything the adapter provides, including the extensions' shortcuts and input rules that trigger on Enter. If it should only handle what those leave, build the list yourself as shown below and put your keymap before the base keymap.
+- The extensions' keyboard shortcuts come before their plugins, so a shortcut an extension binds isn't taken by another extension's plugin.
+- The extensions' plugins come before the paste plugin, so an extension plugin that handles pasting, through props such as [`handlePaste`](https://prosemirror.net/docs/ref/#view.EditorProps.handlePaste) or [`clipboardTextParser`](https://prosemirror.net/docs/ref/#view.EditorProps.clipboardTextParser), takes precedence over it.
+
+If you need a different selection or order, for example to leave out the paste plugin, build the list yourself from the individual methods below. None of them includes the base keymap, so add it yourself, last, with `keymap(baseKeymap)` from [prosemirror-keymap](https://prosemirror.net/docs/ref/#keymap) and [prosemirror-commands](https://prosemirror.net/docs/ref/#commands). Without it, keys such as Enter and Backspace do nothing:
+
+```ts
+import { baseKeymap } from "prosemirror-commands";
+import { keymap } from "prosemirror-keymap";
+
+EditorState.create({
+  doc: pmu.parse(source),
+  plugins: [
+    pmu.inputRulesPlugin(),
+    pmu.keymapPlugin(),
+    ...pmu.extensionPlugins(),
+    keymap(baseKeymap),
+  ],
+  schema: pmu.schema(),
+});
+```
+
 ## `inputRulesPlugin(): Plugin`
 
 Returns a ProseMirror plugin containing every extension's input rules. Input rules govern how ProseMirror replaces what a user types with structured content — for markdown, typing `**text**` becomes bold text. This lets users type markdown while still getting a real ProseMirror document.
 
 ## `keymapPlugin(): Plugin`
 
-Returns a ProseMirror plugin containing every extension's keyboard shortcuts — for example Ctrl-b for bold — layered on top of the prosemirror-commands base keymap.
+Returns a ProseMirror plugin containing every extension's keyboard shortcuts — for example Ctrl-b for bold. When several extensions bind the same key, their commands are tried in extension order until one handles it. The prosemirror-commands base keymap isn't included: `plugins()` adds it, and if you don't use `plugins()`, add it yourself after this plugin.
 
 ## `pastePlugin(): Plugin`
 
@@ -58,6 +106,10 @@ Some cases are left to ProseMirror's default behaviour, which inserts the text a
 Unlike with `parse`, content that no extension can convert isn't dropped: its source text is kept as plain text instead. This needs the parser to record the position of each node in the source; content without a position is dropped with a warning, the same as with `parse`. If the text can't be kept faithfully, because it spans multiple lines, or can't be placed where the content was, because the content isn't inline (e.g. a whole unsupported block), the whole pasted text is inserted as it is.
 
 Use ProseMirror's [`transformPastedText`](https://prosemirror.net/docs/ref/#view.EditorProps.transformPastedText) prop if you need to adjust the text before it is parsed.
+
+## `extensionPlugins(): Array<Plugin>`
+
+Returns the plugins contributed by the extensions through [`proseMirrorPlugins`](/developing/extensions#prosemirrorplugins-prosemirrorschema-schema-string-string-array-plugin): node extensions first, then mark extensions, then the others. Within each group, extensions are in the order they were added, with each extension's dependencies before it. A dependency from a different group follows its own group instead: a plain `Extension` that a node extension depends on comes after all node and mark extensions. An extension that is pulled in several times, for example as a dependency of two others, contributes its plugins once. Calling `extensionPlugins()` repeatedly returns the same plugin instances.
 
 ## `nodeViews(): Record<string, NodeViewConstructor>`
 

@@ -13,7 +13,7 @@ The signatures below are written in TypeScript and refer to a handful of types b
 | `Schema`, `Mark`, `MarkType`, `Attrs`, `NodeSpec`, `MarkSpec` | [prosemirror-model](https://prosemirror.net/docs/ref/#model). `Schema` is parameterised as `Schema<string, string>` (its node and mark names).                              |
 | `NodeViewConstructor`                                         | [prosemirror-view](https://prosemirror.net/docs/ref/#view.NodeViewConstructor).                                                                                             |
 | `InputRule`                                                   | [prosemirror-inputrules](https://prosemirror.net/docs/ref/#inputrules.InputRule).                                                                                           |
-| `Command`                                                     | [prosemirror-state](https://prosemirror.net/docs/ref/#state.Command).                                                                                                       |
+| `Command`, `Plugin`                                           | [prosemirror-state](https://prosemirror.net/docs/ref/#state).                                                                                                               |
 | `Processor`                                                   | [unified](https://github.com/unifiedjs/unified#processor).                                                                                                                  |
 
 Two more names are generic parameters of the extension classes rather than imported types — they stand for whatever types your own extension works with, and are only relevant when using TypeScript. Both `SyntaxExtension` subclasses share them:
@@ -28,6 +28,36 @@ The root class for all prosemirror-unified extensions. By itself it does little;
 ### `dependencies(): Array<Extension>`
 
 Override this to declare other extensions that must be present for this one to work. For example, a list extension can declare a list-item extension as a dependency, and the `MarkdownExtension` from prosemirror-remark uses this to pull in all the individual markdown extensions. Defaults to `[]`.
+
+### `proseMirrorPlugins(proseMirrorSchema: Schema<string, string>): Array<Plugin>`
+
+Override to add ProseMirror plugins to the editor, for anything input rules, keymaps and node views can't do, such as plugin state, decorations, `appendTransaction` or other editor props. Receives the built schema. Defaults to `[]`.
+
+The plugins are added by [`plugins()`](/guide/api#plugins-array-plugin) on `ProseMirrorUnified`, but apps can also assemble their plugins without them, so the editor should still work without an extension's plugins, if more plainly. The hook is called once, when `ProseMirrorUnified` is constructed, and an extension added several times, for example as a dependency of two other extensions, contributes its plugins once. That makes it safe to give a plugin a [`PluginKey`](https://prosemirror.net/docs/ref/#state.PluginKey), which `EditorState` only allows once; create the key outside the hook, so that other code can use it to read the plugin's state:
+
+```ts
+import { Plugin, PluginKey } from "prosemirror-state";
+import { Extension } from "prosemirror-unified";
+
+export const wordCountKey = new PluginKey<number>("wordCount");
+
+class WordCountExtension extends Extension {
+  public proseMirrorPlugins(): Array<Plugin> {
+    return [
+      new Plugin<number>({
+        key: wordCountKey,
+        state: {
+          init: (_, state): number => countWords(state.doc),
+          apply: (tr, count): number =>
+            tr.docChanged ? countWords(tr.doc) : count,
+        },
+      }),
+    ];
+  }
+}
+```
+
+Plugins run in the order given by [`extensionPlugins()`](/guide/api#extensionplugins-array-plugin). In [`plugins()`](/guide/api#plugins-array-plugin), they come after the input rules and the extensions' keyboard shortcuts, and before the paste plugin and the base keymap. So keys that an extension handles should usually go in `proseMirrorKeymap` instead of a plugin's `handleKeyDown`, where every extension's shortcuts would take them first. A plugin that handles pasting, through props such as `handlePaste` or `clipboardTextParser`, takes precedence over the paste plugin.
 
 ### `unifiedInitializationHook(processor: Processor<UnistNode, UnistNode, UnistNode, UnistNode, string>): Processor<UnistNode, UnistNode, UnistNode, UnistNode, string>`
 

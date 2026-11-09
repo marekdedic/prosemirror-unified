@@ -33,7 +33,7 @@ const view = new EditorView(
     state: EditorState.create({
       // Set the initial content of the editor from sourceMarkdown
       doc: pmu.parse(sourceMarkdown),
-      plugins: [pmu.inputRulesPlugin(), pmu.keymapPlugin()],
+      plugins: pmu.plugins(),
       schema: pmu.schema(),
     }),
     // Add interactive elements (task lists etc.)
