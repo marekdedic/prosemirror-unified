@@ -135,7 +135,7 @@ Checks whether the extension can translate a given ProseMirror node. By default 
 
 ### `proseMirrorNodeView(): NodeViewConstructor | null`
 
-Returns a node-view constructor for this extension's node, or `null`. Node views provide richer, often interactive elements such as clickable task lists. Defaults to `null`.
+Returns a node-view constructor for this extension's node, or `null`. Node views provide richer, often interactive elements such as clickable task lists. Defaults to `null`. Called once, the first time the node views are requested from `ProseMirrorUnified`, or again on the next request if that throws.
 
 ## `MarkExtension`
 

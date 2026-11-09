@@ -1,3 +1,5 @@
+import type { NodeViewConstructor } from "prosemirror-view";
+
 import { type InputRule, undoInputRule } from "prosemirror-inputrules";
 import { type Command, Plugin, PluginKey } from "prosemirror-state";
 import { builders } from "prosemirror-test-builder";
@@ -19,6 +21,10 @@ class BrowserOnlyExtension extends ParagraphExtension {
   }
 
   public override proseMirrorKeymap(): Record<string, Command> {
+    throw new Error("No DOM");
+  }
+
+  public override proseMirrorNodeView(): NodeViewConstructor {
     throw new Error("No DOM");
   }
 
@@ -208,7 +214,7 @@ test("Reconfiguring with new plugins keeps the input rule undoable", () => {
   );
 });
 
-test("Plugin hooks only run once a plugin is requested", () => {
+test("Editor hooks only run once a plugin or node views are requested", () => {
   const unistTree: UnistRoot = {
     children: [
       { children: [{ type: "text", value: "Hello" }], type: "paragraph" },
@@ -227,4 +233,5 @@ test("Plugin hooks only run once a plugin is requested", () => {
   expect(pmu.parse("Hello")).toEqualProseMirrorNode(doc(paragraph("Hello")));
   expect(pmu.serialize(doc(paragraph("Hello")))).toBe("Hello");
   expect(() => pmu.plugins()).toThrow("No DOM");
+  expect(() => pmu.nodeViews()).toThrow("No DOM");
 });

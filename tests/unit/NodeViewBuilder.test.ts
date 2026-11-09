@@ -49,3 +49,18 @@ test("NodeViewBuilder collects the node views of the extensions", () => {
 
   expect(nodeViews).toStrictEqual({ node1: node1NodeView, text: textNodeView });
 });
+
+test("NodeViewBuilder collects the node views once, on the first call", () => {
+  const extension = vi.mocked(new Node1Extension());
+  extension.proseMirrorNodeName.mockReturnValue("node1");
+  extension.proseMirrorNodeView.mockReturnValue(null);
+
+  const builder = new NodeViewBuilder(new ExtensionManager([extension]));
+
+  expect(extension.proseMirrorNodeView).not.toHaveBeenCalled();
+
+  const nodeViews = builder.build();
+
+  expect(builder.build()).toBe(nodeViews);
+  expect(extension.proseMirrorNodeView).toHaveBeenCalledExactlyOnceWith();
+});
