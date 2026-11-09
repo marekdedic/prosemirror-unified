@@ -117,4 +117,4 @@ Returns the plugins contributed by the extensions through [`proseMirrorPlugins`]
 
 ## `nodeViews(): Record<string, NodeViewConstructor>`
 
-Returns the node views registered by all the extensions, keyed by node name. Node views back richer, often interactive elements in the editor, such as clickable task lists. Pass the result to your `EditorView`. The node views are collected the first time `nodeViews()` is called, and every call returns the same object.
+Returns the node views registered by all the extensions, keyed by node name. Node views back richer, often interactive elements in the editor, such as clickable task lists. Pass the result to your `EditorView`. The node views are collected the first time `nodeViews()` is called. Every call returns the same node views, in a new object each time, so changing it doesn't affect later calls.

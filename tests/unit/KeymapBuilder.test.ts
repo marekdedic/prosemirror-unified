@@ -113,3 +113,15 @@ test("KeymapBuilder builds the plugin once, on the first call", () => {
   expect(builder.build()).toBe(plugin);
   expect(extension.proseMirrorKeymap).toHaveBeenCalledExactlyOnceWith(schema);
 });
+
+test("KeymapBuilder calls the hooks again after one throws", () => {
+  const extension = new FirstExtension();
+  extension.proseMirrorKeymap.mockImplementationOnce(() => {
+    throw new Error("Failed");
+  });
+  const builder = new KeymapBuilder(new ExtensionManager([extension]), schema);
+
+  expect(() => builder.build()).toThrow("Failed");
+  expect(builder.build()).toBe(builder.build());
+  expect(extension.proseMirrorKeymap).toHaveBeenCalledTimes(2);
+});

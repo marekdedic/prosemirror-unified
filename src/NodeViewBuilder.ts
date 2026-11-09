@@ -12,11 +12,12 @@ export class NodeViewBuilder {
 
   /**
    * Calls the extensions' hooks on the first call only, and returns the same
-   * node views from then on.
+   * node views from then on. Each call returns a new object, so that callers
+   * can't change the stored one.
    */
   public build(): Record<string, NodeViewConstructor> {
     this.nodeViews ??= this.collectNodeViews();
-    return this.nodeViews;
+    return { ...this.nodeViews };
   }
 
   private collectNodeViews(): Record<string, NodeViewConstructor> {

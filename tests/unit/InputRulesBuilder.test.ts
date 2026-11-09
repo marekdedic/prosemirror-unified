@@ -95,3 +95,19 @@ test("InputRulesBuilder builds the plugin once, on the first call", () => {
   expect(builder.build()).toBe(plugin);
   expect(hook).toHaveBeenCalledExactlyOnceWith(schemaWithBold);
 });
+
+test("InputRulesBuilder calls the hooks again after one throws", () => {
+  const extension = new BoldInputRuleExtension();
+  const hook = vi.spyOn(extension, "proseMirrorInputRules");
+  hook.mockImplementationOnce(() => {
+    throw new Error("Failed");
+  });
+  const builder = new InputRulesBuilder(
+    new ExtensionManager([extension]),
+    schemaWithBold,
+  );
+
+  expect(() => builder.build()).toThrow("Failed");
+  expect(builder.build()).toBe(builder.build());
+  expect(hook).toHaveBeenCalledTimes(2);
+});

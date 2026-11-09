@@ -107,11 +107,11 @@ Called after the whole document has been translated from unist to ProseMirror. D
 
 ### `proseMirrorInputRules(proseMirrorSchema: Schema<string, string>): Array<InputRule>`
 
-Override to add input rules to the editor. Receives the built schema. Defaults to `[]`. Called once, the first time the input rules plugin is requested from `ProseMirrorUnified`, or again on the next request if that throws. See [`MarkInputRule`](#markinputrule) for mark-adding rules.
+Override to add input rules to the editor. Receives the built schema. Defaults to `[]`. Called once, the first time the input rules plugin is requested from `ProseMirrorUnified`. If it or another extension's hook of the same kind throws, it is called again on the next request. See [`MarkInputRule`](#markinputrule) for mark-adding rules.
 
 ### `proseMirrorKeymap(proseMirrorSchema: Schema<string, string>): Record<string, Command>`
 
-Override to add keyboard shortcuts, keyed by shortcut. Receives the built schema. Defaults to `{}`. Called once, the first time the keymap plugin is requested from `ProseMirrorUnified`, or again on the next request if that throws.
+Override to add keyboard shortcuts, keyed by shortcut. Receives the built schema. Defaults to `{}`. Called once, the first time the keymap plugin is requested from `ProseMirrorUnified`. If it or another extension's hook of the same kind throws, it is called again on the next request.
 
 ## `NodeExtension`
 
@@ -135,7 +135,7 @@ Checks whether the extension can translate a given ProseMirror node. By default 
 
 ### `proseMirrorNodeView(): NodeViewConstructor | null`
 
-Returns a node-view constructor for this extension's node, or `null`. Node views provide richer, often interactive elements such as clickable task lists. Defaults to `null`. Called once, the first time the node views are requested from `ProseMirrorUnified`, or again on the next request if that throws.
+Returns a node-view constructor for this extension's node, or `null`. Node views provide richer, often interactive elements such as clickable task lists. Defaults to `null`. Called once, the first time the node views are requested from `ProseMirrorUnified`. If it or another extension's hook of the same kind throws, it is called again on the next request.
 
 ## `MarkExtension`
 

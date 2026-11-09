@@ -60,7 +60,33 @@ test("NodeViewBuilder collects the node views once, on the first call", () => {
   expect(extension.proseMirrorNodeView).not.toHaveBeenCalled();
 
   const nodeViews = builder.build();
+  const nodeViewsAgain = builder.build();
 
-  expect(builder.build()).toBe(nodeViews);
+  expect(nodeViewsAgain).toStrictEqual(nodeViews);
   expect(extension.proseMirrorNodeView).toHaveBeenCalledExactlyOnceWith();
+
+  // A caller changing the returned object doesn't affect later calls.
+  expect(nodeViewsAgain).not.toBe(nodeViews);
+
+  nodeViews["node2"] = (): NodeView => ({
+    dom: document.createElement("div"),
+  });
+
+  expect(builder.build()).toStrictEqual({});
+});
+
+test("NodeViewBuilder calls the hooks again after one throws", () => {
+  const extension = vi.mocked(new Node1Extension());
+  extension.proseMirrorNodeName.mockReturnValue("node1");
+  extension.proseMirrorNodeView
+    .mockImplementationOnce(() => {
+      throw new Error("Failed");
+    })
+    .mockReturnValueOnce(null);
+
+  const builder = new NodeViewBuilder(new ExtensionManager([extension]));
+
+  expect(() => builder.build()).toThrow("Failed");
+  expect(builder.build()).toStrictEqual({});
+  expect(extension.proseMirrorNodeView).toHaveBeenCalledTimes(2);
 });

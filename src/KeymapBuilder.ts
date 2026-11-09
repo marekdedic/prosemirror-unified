@@ -19,22 +19,6 @@ export class KeymapBuilder {
     this.proseMirrorSchema = proseMirrorSchema;
   }
 
-  private static addKeymap(
-    commandsByKey: Map<string, Array<Command>>,
-    map: Record<string, Command>,
-  ): void {
-    for (const key in map) {
-      if (!Object.prototype.hasOwnProperty.call(map, key)) {
-        continue;
-      }
-      if (!commandsByKey.get(key)) {
-        commandsByKey.set(key, []);
-      }
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- Set above.
-      commandsByKey.get(key)!.push(map[key]);
-    }
-  }
-
   /**
    * Builds the plugin on the first call only, and returns the same instance
    * from then on.
@@ -47,10 +31,12 @@ export class KeymapBuilder {
   private createPlugin(): Plugin {
     const commandsByKey = new Map<string, Array<Command>>();
     for (const extension of this.extensionManager.syntaxExtensions()) {
-      KeymapBuilder.addKeymap(
-        commandsByKey,
-        extension.proseMirrorKeymap(this.proseMirrorSchema),
-      );
+      const map = extension.proseMirrorKeymap(this.proseMirrorSchema);
+      for (const key in map) {
+        if (Object.prototype.hasOwnProperty.call(map, key)) {
+          commandsByKey.set(key, [...(commandsByKey.get(key) ?? []), map[key]]);
+        }
+      }
     }
     const chainedKeymap: Record<string, Command> = {};
     commandsByKey.forEach((commands, key) => {
