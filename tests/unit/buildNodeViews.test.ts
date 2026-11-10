@@ -3,8 +3,8 @@ import type { Node as UnistNode } from "unist";
 
 import { expect, test, vi } from "vitest";
 
+import { buildNodeViews } from "../../src/buildNodeViews";
 import { ExtensionManager } from "../../src/ExtensionManager";
-import { NodeViewBuilder } from "../../src/NodeViewBuilder";
 import { MockNodeExtension } from "../mocks/MockNodeExtension";
 
 class DocExtension<
@@ -19,7 +19,7 @@ class TextExtension<
   HandledUnistNode extends UnistNode,
 > extends MockNodeExtension<HandledUnistNode> {}
 
-test("NodeViewBuilder collects the node views of the extensions", () => {
+test("buildNodeViews collects the node views of the extensions", () => {
   const textNodeView = (): NodeView => ({
     dom: document.createElement("span"),
   });
@@ -44,8 +44,7 @@ test("NodeViewBuilder collects the node views of the extensions", () => {
     node1Extension,
   ]);
 
-  const builder = new NodeViewBuilder(manager);
-  const nodeViews = builder.build();
+  const nodeViews = buildNodeViews(manager);
 
   expect(nodeViews).toStrictEqual({ node1: node1NodeView, text: textNodeView });
 });

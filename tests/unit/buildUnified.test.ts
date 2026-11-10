@@ -3,9 +3,9 @@ import type { Node as UnistNode } from "unist";
 
 import { expect, test, vi } from "vitest";
 
+import { buildUnified } from "../../src/buildUnified";
 import { Extension } from "../../src/Extension";
 import { ExtensionManager } from "../../src/ExtensionManager";
-import { UnifiedBuilder } from "../../src/UnifiedBuilder";
 
 vi.mock("../../src/Extension");
 vi.mock("../../src/ExtensionManager");
@@ -18,7 +18,7 @@ type UnifiedProcessor = Processor<
   string
 >;
 
-test("UnifiedBuilder chains the extension hooks", () => {
+test("buildUnified chains the extension hooks", () => {
   class Extension1 extends Extension {}
   class Extension2 extends Extension {}
 
@@ -34,8 +34,7 @@ test("UnifiedBuilder chains the extension hooks", () => {
   const manager = vi.mocked(new ExtensionManager([]));
   manager.extensions.mockReturnValueOnce([extension1, extension2]);
 
-  const builder = new UnifiedBuilder(manager);
-  const processor = builder.build();
+  const processor = buildUnified(manager);
 
   // The first hook receives a real unified processor.
   expect(extension1.unifiedInitializationHook).toHaveBeenCalledTimes(1);

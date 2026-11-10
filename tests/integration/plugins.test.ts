@@ -1,3 +1,6 @@
+import type { NodeViewConstructor } from "prosemirror-view";
+
+import { type InputRule, undoInputRule } from "prosemirror-inputrules";
 import { type Command, Plugin, PluginKey } from "prosemirror-state";
 import { builders } from "prosemirror-test-builder";
 import { expect, test } from "vitest";
@@ -5,10 +8,30 @@ import { renderProseMirror } from "vitest-prosemirror";
 
 import { Extension } from "../../src/Extension";
 import { ProseMirrorUnified } from "../../src/ProseMirrorUnified";
+import { BoldExtension } from "./BoldExtension";
 import { ParagraphExtension } from "./ParagraphExtension";
 import { ParserProviderExtension } from "./ParserProviderExtension";
 import { RootExtension, type UnistRoot } from "./RootExtension";
 import { TextExtension } from "./TextExtension";
+
+// Stands in for an extension whose hooks need a browser, as if run without one.
+class BrowserOnlyExtension extends ParagraphExtension {
+  public override proseMirrorInputRules(): Array<InputRule> {
+    throw new Error("No DOM");
+  }
+
+  public override proseMirrorKeymap(): Record<string, Command> {
+    throw new Error("No DOM");
+  }
+
+  public override proseMirrorNodeView(): NodeViewConstructor {
+    throw new Error("No DOM");
+  }
+
+  public override proseMirrorPlugins(): Array<Plugin> {
+    throw new Error("No DOM");
+  }
+}
 
 const changeCountKey = new PluginKey<number>("changeCount");
 
@@ -154,4 +177,61 @@ test("All plugins include the paste plugin", () => {
 
   expect(testEditor.doc).toEqualProseMirrorNode(doc(paragraph("Hello World")));
   expect(parserProvider.parsed).toStrictEqual(["World"]);
+});
+
+test("Reconfiguring with new plugins keeps the input rule undoable", () => {
+  const pmu = new ProseMirrorUnified([
+    new ParserProviderExtension(emptyTree, ""),
+    new RootExtension(),
+    new TextExtension(),
+    new ParagraphExtension(),
+    new BoldExtension(),
+  ]);
+  const { bold, doc, paragraph } = builders(pmu.schema());
+
+  const testEditor = renderProseMirror(doc(paragraph()), {
+    editorProps: { plugins: pmu.plugins() },
+  });
+  testEditor.setSelection("end");
+  testEditor.type("<b>Hello</b>!");
+
+  expect(testEditor.doc).toEqualProseMirrorNode(
+    doc(paragraph(bold("Hello"), "!")),
+  );
+
+  // The input rules plugin keeps the rule that was just applied in its state,
+  // which reconfigure only keeps if the plugin is the same instance.
+  const reconfigured = testEditor.state.reconfigure({ plugins: pmu.plugins() });
+  let undone = reconfigured;
+  const handled = undoInputRule(reconfigured, (tr) => {
+    undone = reconfigured.apply(tr);
+  });
+
+  expect(handled).toBe(true);
+  // Not a plain string, as the builders would read "<b>" as a position tag.
+  expect(undone.doc).toEqualProseMirrorNode(
+    doc(paragraph(pmu.schema().text("<b>Hello</b>!"))),
+  );
+});
+
+test("Editor hooks only run once a plugin or node views are requested", () => {
+  const unistTree: UnistRoot = {
+    children: [
+      { children: [{ type: "text", value: "Hello" }], type: "paragraph" },
+    ],
+    type: "root",
+  };
+  const pmu = new ProseMirrorUnified([
+    new ParserProviderExtension(unistTree, "Hello"),
+    new RootExtension(),
+    new TextExtension(),
+    new BrowserOnlyExtension(),
+  ]);
+  const { doc, paragraph } = builders(pmu.schema());
+
+  // Parsing and serializing work without the hooks, which would throw.
+  expect(pmu.parse("Hello")).toEqualProseMirrorNode(doc(paragraph("Hello")));
+  expect(pmu.serialize(doc(paragraph("Hello")))).toBe("Hello");
+  expect(() => pmu.plugins()).toThrow("No DOM");
+  expect(() => pmu.nodeViews()).toThrow("No DOM");
 });
