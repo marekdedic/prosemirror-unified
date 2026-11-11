@@ -21,6 +21,10 @@ Two more names are generic parameters of the extension classes rather than impor
 - **`HandledUnistNode extends UnistNode`** — the unist node type your extension handles.
 - **`UnistToProseMirrorContext extends Record<string, unknown>`** — the type of the global translation context your extension expects. Defaults to `Record<string, unknown>`.
 
+## When the editor hooks are called
+
+The hooks that contribute to the editor — `proseMirrorPlugins`, `proseMirrorInputRules`, `proseMirrorKeymap` and `proseMirrorNodeView` — are called once, the first time the corresponding part is requested from `ProseMirrorUnified`, not when it is constructed. Apps that only parse and serialize never call them. If one of them throws, every hook of that kind is called again on the next request.
+
 ## `Extension`
 
 The root class for all prosemirror-unified extensions. By itself it does little; you normally extend `NodeExtension` or `MarkExtension` instead.
@@ -33,7 +37,7 @@ Override this to declare other extensions that must be present for this one to w
 
 Override to add ProseMirror plugins to the editor, for anything input rules, keymaps and node views can't do, such as plugin state, decorations, `appendTransaction` or other editor props. Receives the built schema. Defaults to `[]`.
 
-The plugins are added by [`plugins()`](/guide/api#plugins-array-plugin) on `ProseMirrorUnified`, but apps can also assemble their plugins without them, so the editor should still work without an extension's plugins, if more plainly. The hook is called the first time the plugins are requested from `ProseMirrorUnified`, not when it is constructed, so apps that only parse and serialize never call it. It is called once, unless it or another extension's `proseMirrorPlugins` throws, in which case it is called again on the next request. An extension added several times, for example as a dependency of two other extensions, contributes its plugins once. That makes it safe to give a plugin a [`PluginKey`](https://prosemirror.net/docs/ref/#state.PluginKey), which `EditorState` only allows once; create the key outside the hook, so that other code can use it to read the plugin's state:
+Apps can assemble their plugins without the extensions' ones, so the editor should still work without them, if more plainly. An extension added several times, for example as a dependency of two other extensions, contributes its plugins once. That makes it safe to give a plugin a [`PluginKey`](https://prosemirror.net/docs/ref/#state.PluginKey), which `EditorState` only allows once; create the key outside the hook, so that other code can use it to read the plugin's state:
 
 ```ts
 import { Plugin, PluginKey } from "prosemirror-state";
@@ -59,7 +63,7 @@ class WordCountExtension extends Extension {
 
 The returned plugins are shared by every editor built from the same `ProseMirrorUnified`. Keep anything that differs between editors in the plugin's [`state`](https://prosemirror.net/docs/ref/#state.PluginSpec.state) or [`view`](https://prosemirror.net/docs/ref/#state.PluginSpec.view), not in variables the hook captures, which every editor would share.
 
-Plugins run in the order given by [`extensionPlugins()`](/guide/api#extensionplugins-array-plugin). In [`plugins()`](/guide/api#plugins-array-plugin), they come after the input rules and the extensions' keyboard shortcuts, and before the paste plugin and the base keymap. So keys that an extension handles should usually go in `proseMirrorKeymap` instead of a plugin's `handleKeyDown`, where every extension's shortcuts would take them first. A plugin that handles pasting, through props such as `handlePaste` or `clipboardTextParser`, takes precedence over the paste plugin.
+The plugins of node extensions come first, then those of mark extensions, then the others. Within each group, extensions are in the order they were added, with each extension's dependencies before it; a dependency from a different group follows its own group instead. In [`plugins()`](/guide/api#plugins-array-plugin), they come after the input rules and the extensions' keyboard shortcuts, and before the paste plugin and the base keymap. So keys that an extension handles should usually go in `proseMirrorKeymap` instead of a plugin's `handleKeyDown`, where every extension's shortcuts would take them first. A plugin that handles pasting, through props such as `handlePaste` or `clipboardTextParser`, takes precedence over the paste plugin.
 
 ### `unifiedInitializationHook(processor: Processor<UnistNode, UnistNode, UnistNode, UnistNode, string>): Processor<UnistNode, UnistNode, UnistNode, UnistNode, string>`
 
@@ -107,13 +111,13 @@ Called after the whole document has been translated from unist to ProseMirror. D
 
 ### `proseMirrorInputRules(proseMirrorSchema: Schema<string, string>): Array<InputRule>`
 
-Override to add input rules to the editor. Receives the built schema. Defaults to `[]`. Called once, the first time the input rules plugin is requested from `ProseMirrorUnified`. If it or another extension's hook of the same kind throws, it is called again on the next request. See [`MarkInputRule`](#markinputrule) for mark-adding rules and [`EnterInputRule`](#enterinputrule) for rules that replace what Enter does.
+Override to add input rules to the editor. Receives the built schema. Defaults to `[]`. See [`MarkInputRule`](#markinputrule) for mark-adding rules and [`EnterInputRule`](#enterinputrule) for rules that replace what Enter does.
 
-The rules also run when Enter is pressed without a modifier key (Shift-Enter, Mod-Enter and the like don't trigger them) and the selection is within a single textblock (not, e.g., with a block node or the whole document selected, or across several paragraphs): they are matched as if a line ending (`"\n"`) had been typed, so a rule ending in e.g. `\s$` or `[\s\S]$` applies on Enter too. After a rule applies, Enter goes on to the keymaps, which split the block or do whatever else Enter is bound to — unless the rule is an `EnterInputRule`. To keep a rule from applying on Enter, don't let its last character match `\n`. As the line ending isn't in the document, it isn't inserted as text: when a rule applied on Enter inserts a `"\n"` right before where the cursor was, for example a string handler with a capture group, which keeps the rest of the match after the group, that `"\n"` is removed again. This also applies to a line ending the rule replaces and writes back, as it can't be told apart from one the rule inserted. A line ending already in the document stays otherwise, as does one inserted by an `EnterInputRule` or an inline leaf node such as a hard break. Usually, the keymaps' change after such a rule leaves nothing for [`undoInputRule`](https://prosemirror.net/docs/ref/#inputrules.undoInputRule) to undo. When nothing else handles Enter, `undoInputRule` can undo the rule, and doesn't insert the line ending as text.
+The rules also run when Enter is pressed without a modifier key and the selection is within a single textblock: they are matched as if a line ending (`"\n"`) had been typed, so a rule ending in e.g. `\s$` applies on Enter too. To keep a rule from applying on Enter, don't let its last character match `\n`. After a rule applies, Enter goes on to the keymaps, which split the block or do whatever else Enter is bound to — unless the rule is an `EnterInputRule`. As the line ending isn't in the document, it isn't inserted as text: a `"\n"` that the rule inserts right before the cursor, for example through a string handler with a capture group, is removed again.
 
 ### `proseMirrorKeymap(proseMirrorSchema: Schema<string, string>): Record<string, Command>`
 
-Override to add keyboard shortcuts, keyed by shortcut. Receives the built schema. Defaults to `{}`. Called once, the first time the keymap plugin is requested from `ProseMirrorUnified`. If it or another extension's hook of the same kind throws, it is called again on the next request.
+Override to add keyboard shortcuts, keyed by shortcut. Receives the built schema. Defaults to `{}`.
 
 ## `NodeExtension`
 
@@ -137,7 +141,7 @@ Checks whether the extension can translate a given ProseMirror node. By default 
 
 ### `proseMirrorNodeView(): NodeViewConstructor | null`
 
-Returns a node-view constructor for this extension's node, or `null`. Node views provide richer, often interactive elements such as clickable task lists. Defaults to `null`. Called once, the first time the node views are requested from `ProseMirrorUnified`. If it or another extension's hook of the same kind throws, it is called again on the next request.
+Returns a node-view constructor for this extension's node, or `null`. Node views provide richer, often interactive elements such as clickable task lists. Defaults to `null`.
 
 ## `MarkExtension`
 
@@ -183,7 +187,7 @@ new MarkInputRule(
 );
 ```
 
-In the text the rule is matched against, every inline leaf node, such as a hard break, is replaced by the character U+FFFC (see below). The lookbehind accepts U+FFFC too, so that the rule also applies right after a leaf node.
+The lookbehind accepts U+FFFC too, which stands in for inline leaf nodes (see below), so that the rule also applies right after a leaf node.
 
 The `opening`, `closing` and `trailing` groups may be empty (the rule never applies to empty `content`), but optionality must be expressed inside a group — `(?<trailing>.?)`, not `(?<trailing>.)?`. If `closing` and `trailing` can both be empty, though, the rule applies as soon as any `content` is typed, so a matcher should not leave both of them empty. An optional `trailing` group lets the rule also fire when nothing follows the closing delimiter — the rule then triggers as soon as the delimiter is typed:
 
@@ -194,14 +198,7 @@ new MarkInputRule(
 );
 ```
 
-A rule that never has trailing text can use an empty group:
-
-```ts
-new MarkInputRule(
-  /(?<opening><b>)(?<content>.*)(?<closing><\/b>)(?<trailing>)$/u,
-  schema.marks["bold"],
-);
-```
+A rule that never has trailing text can use an empty group, `(?<trailing>)`.
 
 Requiring trailing text is what lets a matcher with a variable-length delimiter resolve that delimiter unambiguously, so making `trailing` optional is only appropriate for marks with a fixed delimiter. Groups nested inside the four named ones are ignored and may be used freely.
 
@@ -237,7 +234,7 @@ new EnterInputRule(/^```(?<lang>\w*)\n$/u, (state, match, start, end) => {
 });
 ````
 
-When the rule is undoable, [`undoInputRule`](https://prosemirror.net/docs/ref/#inputrules.undoInputRule) right after it reverts the rule's change without inserting a line ending. The matched text comes back as it was before Enter was pressed, but text that was selected when Enter was pressed stays deleted, as it would be by Enter.
+When the rule is undoable, [`undoInputRule`](https://prosemirror.net/docs/ref/#inputrules.undoInputRule) right after it reverts the rule's change without inserting a line ending.
 
 ## `createProseMirrorNode(nodeName: string | null, schema: Schema<string, string>, children: Array<ProseMirrorNode>, attrs: Attrs = {})`
 

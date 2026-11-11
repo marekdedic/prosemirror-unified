@@ -83,13 +83,11 @@ flowchart TB
   ctx -. "final context" .-> hook
 ```
 
-The context is a single object shared across every extension for the whole document, so an extension can stash information while translating one node and use it while translating another. The post-translation hook then runs once, after the entire tree is built, giving extensions a chance to act on the fully-populated context.
-
 ## Translating from ProseMirror to unist
 
 Serializing is the mirror image. prosemirror-unified traverses the ProseMirror tree from the leaves up, and for each node finds the one `NodeExtension` that can translate it (again, at most one should match). Children are translated first.
 
-Marks are handled afterwards. ProseMirror marks are flat, while unist has no marks and nests nodes instead, so prosemirror-unified rebuilds the nesting when it translates a node's children. Each mark is matched to a `MarkExtension`, whose `processConvertedUnistNodes` wraps the already-translated unist nodes. Neighbouring nodes that share an equal mark are wrapped together, so a mark spanning several ProseMirror nodes becomes a single unist node. Where marks overlap, the mark covering the most neighbouring nodes goes outermost; on a tie, the mark that comes first in the schema does. Marks whose `MarkExtension` declares a leaf unist node (`unistNodeIsLeaf`) are the exception: they always wrap a single node and go innermost.
+Marks are handled afterwards. ProseMirror marks are flat, while unist has no marks and nests nodes instead, so prosemirror-unified rebuilds the nesting when it translates a node's children. Each mark is matched to a `MarkExtension`, whose `processConvertedUnistNodes` wraps the already-translated unist nodes. Neighbouring nodes that share an equal mark are wrapped together, so a mark spanning several ProseMirror nodes becomes a single unist node. How overlapping marks are nested is described under [`processConvertedUnistNodes`](/developing/extensions#abstract-processconvertedunistnodes-convertednodes-array-unistnode-originalmark-mark-unistnode).
 
 ### Example
 
