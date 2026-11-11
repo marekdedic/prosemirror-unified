@@ -11,6 +11,8 @@ import {
   type Transaction,
 } from "prosemirror-state";
 
+import { isCodeMark } from "./isCodeMark";
+
 // The object replacement character (U+FFFC), which prosemirror-inputrules puts in place of every inline leaf node
 const LEAF_NODE_PLACEHOLDER = String.fromCodePoint(0xfffc);
 
@@ -25,6 +27,7 @@ export interface MarkInputRuleOptions {
   inCode?: "only" | boolean;
   /**
    * Passed through to `InputRule`: whether the rule applies inside marks marked as code.
+   * Regardless of this option, the rule never removes a delimiter that is in a code mark or would be typed with one.
    */
   inCodeMark?: boolean;
   /**
@@ -129,6 +132,25 @@ export class MarkInputRule extends InputRule {
     return inlineNodes.every((node) => mark.isInSet(mark.addToSet(node.marks)));
   }
 
+  /**
+   * Whether any of the inline nodes between `from` and `to` has a mark whose spec sets `code: true`, such as inline code.
+   */
+  private static rangeHasCodeMark(
+    doc: ProseMirrorNode,
+    from: number,
+    to: number,
+  ): boolean {
+    let found = false;
+    if (from < to) {
+      doc.nodesBetween(from, to, (node) => {
+        if (!found) {
+          found = node.isInline && node.marks.some(isCodeMark);
+        }
+      });
+    }
+    return found;
+  }
+
   private markHandler(
     state: EditorState,
     match: RegExpMatchArray,
@@ -170,10 +192,21 @@ export class MarkInputRule extends InputRule {
       return null;
     }
 
+    // A delimiter in code (e.g. inline code) is literal text, not a delimiter, whether it is in the document or would be typed with the marks the user is typing with. The content may contain code.
+    const typingMarks = state.storedMarks ?? state.doc.resolve(end).marks();
+    const delimiterTyped =
+      openingTo < start + opening.length ||
+      closingTo < contentTo + closing.length;
+    if (
+      MarkInputRule.rangeHasCodeMark(state.doc, start, openingTo) ||
+      MarkInputRule.rangeHasCodeMark(state.doc, contentTo, closingTo) ||
+      (delimiterTyped && typingMarks.some(isCodeMark))
+    ) {
+      return null;
+    }
+
     // The marks the user is typing with, without the new one
-    const marksAfter = this.mark.type.removeFromSet(
-      state.storedMarks ?? state.doc.resolve(end).marks(),
-    );
+    const marksAfter = this.mark.type.removeFromSet(typingMarks);
     const { mark } = this;
     const typedContentMarks = mark.addToSet(marksAfter);
 

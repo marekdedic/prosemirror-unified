@@ -533,4 +533,55 @@ test("Serializing a mark spanning several nodes around a leaf mark", () => {
   expect(console.warn).not.toHaveBeenCalled();
 });
 
+test("Adding a mark with an input rule around code", () => {
+  const pmu = new ProseMirrorUnified([
+    new BoldExtension(),
+    new CodeExtension(),
+    new RootExtension(),
+    new TextExtension(),
+    new ParagraphExtension(),
+  ]);
+
+  const schema = pmu.schema();
+  const { bold, code, doc, paragraph } = builders(schema);
+
+  const testEditor = renderProseMirror(
+    // The test builder would read "<b>" as a position tag
+    doc(paragraph(schema.text("<b>"), code("x"), "</b>")),
+    { editorProps: { plugins: [pmu.inputRulesPlugin()] } },
+  );
+  testEditor.setSelection("end");
+  testEditor.type(" ");
+
+  expect(testEditor.doc).toEqualProseMirrorNode(
+    doc(paragraph(bold(code("x")), " ")),
+  );
+});
+
+test("Not adding a mark with an input rule when a delimiter is in code", () => {
+  const pmu = new ProseMirrorUnified([
+    new BoldExtension(),
+    new CodeExtension(),
+    new RootExtension(),
+    new TextExtension(),
+    new ParagraphExtension(),
+  ]);
+
+  const schema = pmu.schema();
+  const { doc, paragraph } = builders(schema);
+  // The test builder would read "<b>" as a position tag
+  const codeMark = schema.marks["code"].create();
+
+  const testEditor = renderProseMirror(
+    doc(paragraph(schema.text("x<b>y", [codeMark]), " z</b>")),
+    { editorProps: { plugins: [pmu.inputRulesPlugin()] } },
+  );
+  testEditor.setSelection("end");
+  testEditor.type(" ");
+
+  expect(testEditor.doc).toEqualProseMirrorNode(
+    doc(paragraph(schema.text("x<b>y", [codeMark]), " z</b> ")),
+  );
+});
+
 /* eslint-enable */

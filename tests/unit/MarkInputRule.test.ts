@@ -358,9 +358,10 @@ describe("MarkInputRule works", () => {
     to: number,
     text: string,
     ruleSchema: Schema<"doc" | "paragraph", "bold"> = schema,
+    rule: MarkInputRule = new MarkInputRule(boldMatcher, ruleSchema.marks.bold),
   ): { dispatch: Mock; handled: boolean } => {
     const plugin = inputRules({
-      rules: [new MarkInputRule(boldMatcher, ruleSchema.marks.bold)],
+      rules: [rule],
     });
     const state = EditorState.create({
       doc: ruleSchema.nodes.doc.create(
@@ -622,7 +623,11 @@ describe("MarkInputRule works", () => {
   });
 
   test("passes the input rule options through", () => {
-    const content = [schema.text("<b>bold</b>", [schema.marks.code.create()])];
+    const content = [
+      schema.text("<b>"),
+      schema.text("bold", [schema.marks.code.create()]),
+      schema.text("</b>"),
+    ];
 
     expect(
       typeText(schema, boldMatcher, " ", {
@@ -634,6 +639,123 @@ describe("MarkInputRule works", () => {
       typeText(schema, boldMatcher, " ", { initialContent: content }).doc
         .textContent,
     ).toBe("bold ");
+  });
+
+  const asteriskMatcher =
+    /(?<opening>\*)(?<content>[^*]+)(?<closing>\*)(?<trailing>.)$/u;
+
+  test("does not apply when the opening delimiter is in code", () => {
+    const code = schema.marks.code.create();
+    const testEditor = typeText(schema, asteriskMatcher, " ", {
+      initialContent: [schema.text("x*y", [code]), schema.text(" z*")],
+    });
+
+    expect(testEditor.doc.textContent).toBe("x*y z* ");
+    expect(testEditor.doc.nodeAt(1)?.marks).toStrictEqual([code]);
+    expect(testEditor.doc.nodeAt(3)?.marks).toStrictEqual([code]);
+    expect(testEditor.doc.nodeAt(5)?.marks).toHaveLength(0);
+  });
+
+  test("does not apply when the closing delimiter is in code", () => {
+    const code = schema.marks.code.create();
+    const testEditor = typeText(schema, asteriskMatcher, " ", {
+      initialContent: [schema.text("*a "), schema.text("b*", [code])],
+    });
+
+    expect(testEditor.doc.textContent).toBe("*a b* ");
+    expect(testEditor.doc.nodeAt(2)?.marks).toHaveLength(0);
+    expect(testEditor.doc.nodeAt(5)?.marks).toStrictEqual([code]);
+  });
+
+  test("does not apply when the whole match is in code", () => {
+    const code = schema.marks.code.create();
+    const testEditor = typeText(schema, asteriskMatcher, " ", {
+      initialContent: [schema.text("x*a*", [code])],
+    });
+
+    expect(testEditor.doc.textContent).toBe("x*a* ");
+    expect(testEditor.doc.nodeAt(1)?.marks).toStrictEqual([code]);
+  });
+
+  test("does not apply when a typed delimiter would be in code", () => {
+    const { dispatch, handled } = runTextInput(
+      [schema.text("x", [schema.marks.code.create()])],
+      2,
+      2,
+      "<b>bold</b> ",
+    );
+
+    expect(handled).toBe(false);
+    expect(dispatch).not.toHaveBeenCalled();
+  });
+
+  test("does not apply when only the typed closing delimiter would be in code", () => {
+    // The opening delimiter is in the document without code, the content has the code mark the closing delimiter would be typed with
+    const { dispatch, handled } = runTextInput(
+      [schema.text("*"), schema.text("a", [schema.marks.code.create()])],
+      3,
+      3,
+      "* ",
+      schema,
+      new MarkInputRule(asteriskMatcher, schema.marks.bold),
+    );
+
+    expect(handled).toBe(false);
+    expect(dispatch).not.toHaveBeenCalled();
+  });
+
+  test("does not apply a code mark when a typed delimiter would be in code", () => {
+    const { dispatch, handled } = runTextInput(
+      [schema.text("x", [schema.marks.code.create()])],
+      2,
+      2,
+      "`a` ",
+      schema,
+      new MarkInputRule(
+        /(?<opening>`)(?<content>[^`]+)(?<closing>`)(?<trailing>.)$/u,
+        schema.marks.code,
+      ),
+    );
+
+    expect(handled).toBe(false);
+    expect(dispatch).not.toHaveBeenCalled();
+  });
+
+  test("applies around code", () => {
+    const code = schema.marks.code.create();
+    const testEditor = typeText(schema, boldMatcher, " ", {
+      initialContent: [
+        schema.text("<b>"),
+        schema.text("x", [code]),
+        schema.text("</b>"),
+      ],
+    });
+
+    expect(testEditor.doc.textContent).toBe("x ");
+    expect(
+      testEditor.doc.nodeAt(1)?.marks.map((mark) => mark.type.name),
+    ).toStrictEqual(["bold", "code"]);
+    expect(testEditor.doc.nodeAt(2)?.marks).toHaveLength(0);
+  });
+
+  test("applies to content containing code", () => {
+    const code = schema.marks.code.create();
+    const testEditor = typeText(schema, asteriskMatcher, " ", {
+      initialContent: [
+        schema.text("*a "),
+        schema.text("b", [code]),
+        schema.text(" c*"),
+      ],
+    });
+
+    expect(testEditor.doc.textContent).toBe("a b c ");
+    expect(
+      testEditor.doc.nodeAt(1)?.marks.map((mark) => mark.type.name),
+    ).toStrictEqual(["bold"]);
+    expect(
+      testEditor.doc.nodeAt(3)?.marks.map((mark) => mark.type.name),
+    ).toStrictEqual(["bold", "code"]);
+    expect(testEditor.doc.nodeAt(6)?.marks).toHaveLength(0);
   });
 
   test("can be undone", () => {

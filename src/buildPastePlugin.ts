@@ -12,6 +12,8 @@ import { Plugin } from "prosemirror-state";
 
 import type { UnistToProseMirrorConverter } from "./UnistToProseMirrorConverter";
 
+import { isCodeMark } from "./isCodeMark";
+
 export function buildPastePlugin(
   unistToProseMirrorConverter: UnistToProseMirrorConverter,
   parseToUnist: (source: string) => UnistNode,
@@ -83,7 +85,7 @@ function parse(
   // where the text is literal too. A single line is inserted directly, so
   // that the marks are kept even if they can't be parsed from the DOM, as
   // ProseMirror's own plain text paste would need.
-  const codeMark = marks.find((mark) => mark.type.spec.code === true);
+  const codeMark = marks.find(isCodeMark);
   if (codeMark !== undefined) {
     return source === "" || source.includes("\n")
       ? null
