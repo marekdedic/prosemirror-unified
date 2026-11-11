@@ -155,7 +155,7 @@ Returns the ProseMirror mark type this extension handles, or `null` if it produc
 
 Returns the ProseMirror mark spec, or `null` if the extension produces no mark.
 
-For a mark whose content is literal source text, such as inline code, set `code: true` in the spec. The paste plugin then inserts text pasted into the mark as it is instead of parsing it, and `MarkInputRule`s with `inCodeMark: false` don't apply in it.
+For a mark whose content is literal source text, such as inline code, set `code: true` in the spec. The paste plugin then inserts text pasted into the mark as it is instead of parsing it, and a `MarkInputRule` doesn't remove delimiters that are in it.
 
 ### `abstract processConvertedUnistNodes(convertedNodes: Array<UnistNode>, originalMark: Mark): UnistNode`
 
@@ -208,10 +208,12 @@ ProseMirror matches input rules against the text before the cursor with every in
 
 The rule also doesn't apply when the mark can't be added to all of the content, e.g. because part of it has a mark that excludes this one.
 
+Nor does it apply when `opening` or `closing` is in text with a code mark (a mark whose spec sets `code: true`, such as inline code), or would be typed with one, because a delimiter in code is literal text. Code in `content` is fine, so for example a bold rule still applies around inline code, unless the code mark excludes bold (see above).
+
 `options` takes:
 
 - **`allowLeafNodes`** — see above. Defaults to `false`.
-- **`inCode`**, **`inCodeMark`**, **`undoable`** — passed through to ProseMirror's [`InputRule`](https://prosemirror.net/docs/ref/#inputrules.InputRule.constructor). For example, a rule for inline code can set `inCodeMark: false` so it doesn't fire inside text that already has the code mark.
+- **`inCode`**, **`inCodeMark`**, **`undoable`** — passed through to ProseMirror's [`InputRule`](https://prosemirror.net/docs/ref/#inputrules.InputRule.constructor). `inCodeMark: false` makes the rule skip any match that contains code at all, including code in `content`, and skip it whenever the cursor is in a code mark.
 
 ## `EnterInputRule`
 
