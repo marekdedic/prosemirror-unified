@@ -8,20 +8,52 @@ import type { ExtensionManager } from "./ExtensionManager";
 
 import { isEnterInputRule } from "./EnterInputRule";
 
+// Deletes a line ending that `tr` inserted right before `to`, where the
+// cursor was. A string handler with a capture group inserts the rest of the
+// match after the group, which on Enter is the line ending. That isn't in the
+// document, and Enter itself goes on to end the line.
+const deleteInsertedLineEnding = (tr: Transaction, to: number): void => {
+  const end = tr.mapping.map(to);
+  // Only text, not an inline leaf node such as a hard break, whose leaf text
+  // may be a line ending too
+  const textBefore = tr.doc.resolve(end).nodeBefore;
+  if (
+    textBefore?.isText === true &&
+    textBefore.text?.endsWith("\n") === true &&
+    // Inserted by `tr` rather than already in the document, e.g. in a code block
+    tr.mapping.invert().mapResult(end - 1, 1).deletedAfter
+  ) {
+    // Every step clears the stored marks, so keep those the handler set
+    const { storedMarks } = tr;
+    tr.delete(end - 1, end);
+    if (storedMarks !== null) {
+      tr.setStoredMarks(storedMarks);
+    }
+  }
+};
+
 // Runs the rules of `rulesPlugin`, which isn't in the editor state, as if the
 // user typed a line ending. The undo record of a rule that applies goes to
 // `statePlugin`, the plugin in the editor state, without the line ending as
 // text: it was never inserted, so undoing the rule mustn't insert it either.
+// With `keepLineEnding` false, a line ending the rule inserts as text right
+// before the cursor is deleted again.
 const runRulesOnEnter = (
   rulesPlugin: Plugin,
   statePlugin: Plugin,
   view: EditorView,
+  keepLineEnding: boolean,
 ): boolean => {
   const { from, to } = view.state.selection;
   // The view as is, except for where the undo record goes
   const rulesView = Object.create(view, {
     dispatch: {
       value: (tr: Transaction): void => {
+        if (!keepLineEnding) {
+          // Before dispatching, and on the same transaction as the undo
+          // record, so that undoInputRule reverts the deletion too
+          deleteInsertedLineEnding(tr, to);
+        }
         const undoable: unknown = tr.getMeta(rulesPlugin);
         if (typeof undoable === "object" && undoable !== null) {
           tr.setMeta(statePlugin, { ...undoable, text: "" });
@@ -88,12 +120,15 @@ export function buildInputRulesPlugin(
     ) {
       if (
         enterRulesPlugin !== null &&
-        runRulesOnEnter(enterRulesPlugin, inputRulesPlugin, view)
+        // An EnterInputRule's handler is always a function, and as Enter
+        // isn't handled any further, a line ending it inserts is meant to
+        // stay
+        runRulesOnEnter(enterRulesPlugin, inputRulesPlugin, view, true)
       ) {
         return true;
       }
       if (otherRulesPlugin !== null) {
-        runRulesOnEnter(otherRulesPlugin, inputRulesPlugin, view);
+        runRulesOnEnter(otherRulesPlugin, inputRulesPlugin, view, false);
       }
     }
     return originalHandleKeyDown?.(view, event);
