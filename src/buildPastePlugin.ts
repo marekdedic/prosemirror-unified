@@ -79,6 +79,20 @@ function parse(
   }
   // Like ProseMirror's own plain text paste, normalise line breaks.
   const source = text.replace(/\r\n?/gu, "\n").replace(/\n$/u, "");
+  // ProseMirror itself skips the parser in code nodes, but not in code marks,
+  // where the text is literal too. A single line is inserted directly, so
+  // that the marks are kept even if they can't be parsed from the DOM, as
+  // ProseMirror's own plain text paste would need.
+  const codeMark = marks.find((mark) => mark.type.spec.code === true);
+  if (codeMark !== undefined) {
+    return source === "" || source.includes("\n")
+      ? null
+      : new Slice(
+          Fragment.from(codeMark.type.schema.text(source, marks)),
+          0,
+          0,
+        );
+  }
   // Whitespace parses to an empty document, which would paste nothing.
   if (source.trim() === "") {
     return null;

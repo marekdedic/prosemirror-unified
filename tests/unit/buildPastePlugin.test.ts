@@ -19,7 +19,7 @@ import { buildPastePlugin } from "../../src/buildPastePlugin";
 const schema = new Schema({
   marks: {
     bold: {},
-    code: { excludes: "_" },
+    code: { code: true, excludes: "_" },
     italic: {},
     link: { attrs: { href: {} } },
   },
@@ -128,6 +128,64 @@ test("Leaves pasted text that fails to convert to ProseMirror", () => {
   const { plugin } = setup(null);
 
   expect(paste(plugin, "SOURCE INPUT", emptyDoc.resolve(1))).toBeNull();
+});
+
+test("Inserts a line pasted into a code mark as it is", () => {
+  const bold = schema.marks.bold.create();
+  const code = schema.marks.code.create();
+  const editorDoc = schema.nodes.doc.create({}, [
+    schema.nodes.paragraph.create({}, [
+      schema.text("Hello", [code]),
+      schema.text("World", [bold]),
+    ]),
+  ]);
+  const pastedDoc = schema.nodes.doc.create({}, [
+    schema.nodes.paragraph.create({}, [schema.text("PARSED")]),
+  ]);
+  const { parseToUnist, plugin } = setup(pastedDoc);
+
+  const slice = paste(plugin, "**SOURCE** INPUT\r\n", editorDoc.resolve(3));
+
+  expect(
+    slice?.content.eq(
+      schema.nodes.paragraph.create({}, [
+        schema.text("**SOURCE** INPUT", [code]),
+      ]).content,
+    ),
+  ).toBe(true);
+  expect(slice?.openStart).toBe(0);
+  expect(slice?.openEnd).toBe(0);
+  expect(
+    paste(plugin, " ", editorDoc.resolve(3))?.content.eq(
+      schema.nodes.paragraph.create({}, [schema.text(" ", [code])]).content,
+    ),
+  ).toBe(true);
+  expect(parseToUnist).not.toHaveBeenCalled();
+
+  expect(
+    paste(plugin, "SOURCE INPUT", editorDoc.resolve(9))?.content.eq(
+      schema.nodes.doc.create({}, [
+        schema.nodes.paragraph.create({}, [schema.text("PARSED", [bold])]),
+      ]).content,
+    ),
+  ).toBe(true);
+  expect(parseToUnist).toHaveBeenCalledWith("SOURCE INPUT");
+});
+
+test("Leaves lines pasted into a code mark to ProseMirror", () => {
+  expect.assertions(4);
+
+  const code = schema.marks.code.create();
+  const editorDoc = schema.nodes.doc.create({}, [
+    schema.nodes.paragraph.create({}, [schema.text("Hello", [code])]),
+  ]);
+  const { parseToUnist, plugin } = setup();
+
+  for (const text of ["", "\n", "A\nB"]) {
+    expect(paste(plugin, text, editorDoc.resolve(3))).toBeNull();
+  }
+
+  expect(parseToUnist).not.toHaveBeenCalled();
 });
 
 test("Reports errors thrown while parsing pasted text", () => {
