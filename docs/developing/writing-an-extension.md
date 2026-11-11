@@ -232,7 +232,7 @@ export class MiniSyntaxExtension extends Extension {
 }
 ```
 
-`dependencies()` is expanded recursively and deduplicated, so a consumer only writes `new ProseMirrorUnified([new MiniSyntaxExtension()])` and gets the whole set — wired up exactly as in [Getting started](/guide/getting-started).
+`dependencies()` is expanded recursively and deduplicated, so a consumer only writes `new ProseMirrorUnified([new MiniSyntaxExtension()])` and gets the whole set — wired up exactly as in [Getting started](/guide/getting-started). If an extension in the set takes constructor options, consumers pass a configured instance alongside the set, and it replaces the set's own instance.
 
 ## Next steps
 

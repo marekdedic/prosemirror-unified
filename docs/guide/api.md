@@ -22,6 +22,17 @@ Creates the adapter from a list of extensions. The list is flat — extensions p
 const pmu = new ProseMirrorUnified([new MarkdownExtension()]);
 ```
 
+Each extension class is used once. When several instances of a class are present, which happens when extensions share a dependency, the one you pass directly wins over those pulled in through [`dependencies()`](/developing/extensions#dependencies-array-extension), whatever their order. That is how you configure an extension that a bundle contains, for example one that takes constructor options:
+
+```ts
+const pmu = new ProseMirrorUnified([
+  new MarkdownExtension(),
+  new SomeExtension(options),
+]);
+```
+
+Your instance, together with its own dependencies, takes the position the bundle gives that extension, so passing it changes nothing about the order of the schema, such as which node is the default block. Only an extension that nothing depends on keeps its position in your list. If you pass the same class more than once, the last instance is used and a warning is logged. Unless something depends on it, it takes the position of the first one. Between instances that are only pulled in as dependencies, the last one added is used.
+
 Every ProseMirror node and mark in the schema must be provided by **exactly one** extension. If two extensions return the same name from `proseMirrorNodeName()` or `proseMirrorMarkName()`, there would be no way to tell which spec to use, so the constructor throws.
 
 ## `parse(source: string): ProseMirrorNode`

@@ -1,6 +1,6 @@
 import type { Node as UnistNode } from "unist";
 
-import { expect, test, vi } from "vitest";
+import { describe, expect, test, vi } from "vitest";
 
 import { Extension } from "../../src/Extension";
 import { ExtensionManager } from "../../src/ExtensionManager";
@@ -9,6 +9,8 @@ import { MockNodeExtension } from "../mocks/MockNodeExtension";
 
 vi.mock("../../src/Extension");
 vi.mock("../../src/SyntaxExtension");
+
+/* eslint-disable @typescript-eslint/no-empty-function, no-console -- Testing console output */
 
 test("ExtensionManager manages mark extensions", () => {
   const markExtension = vi.mocked(new MockMarkExtension());
@@ -164,9 +166,53 @@ test("ExtensionManager deduplicates instances of the same extension", () => {
   extension1.dependencies.mockReturnValueOnce([]);
   const extension2 = vi.mocked(new MockExtension());
   extension2.dependencies.mockReturnValueOnce([]);
+  vi.spyOn(console, "warn").mockImplementation(() => {});
   const manager = new ExtensionManager([extension1, extension2]);
 
   expect(manager.extensions()).toStrictEqual([extension2]);
+  expect(console.warn).toHaveBeenCalledExactlyOnceWith(
+    "Extension MockExtension was passed more than once, using the last instance.",
+  );
+  expect(extension1.dependencies).not.toHaveBeenCalled();
+  expect(extension2.dependencies).toHaveBeenCalledExactlyOnceWith();
+});
+
+test("ExtensionManager doesn't warn about the same instance passed twice", () => {
+  class MockExtension extends Extension {}
+  const extension = vi.mocked(new MockExtension());
+  extension.dependencies.mockReturnValueOnce([]);
+  vi.spyOn(console, "warn").mockImplementation(() => {});
+  const manager = new ExtensionManager([extension, extension]);
+
+  expect(manager.extensions()).toStrictEqual([extension]);
+  expect(console.warn).not.toHaveBeenCalled();
+  expect(extension.dependencies).toHaveBeenCalledExactlyOnceWith();
+});
+
+test("ExtensionManager doesn't warn about dependencies of the same class", () => {
+  class SharedExtension extends Extension {}
+  class DependerExtension1 extends Extension {}
+  class DependerExtension2 extends Extension {}
+  const sharedExtension1 = vi.mocked(new SharedExtension());
+  sharedExtension1.dependencies.mockReturnValueOnce([]);
+  const sharedExtension2 = vi.mocked(new SharedExtension());
+  sharedExtension2.dependencies.mockReturnValueOnce([]);
+  const dependerExtension1 = vi.mocked(new DependerExtension1());
+  dependerExtension1.dependencies.mockReturnValueOnce([sharedExtension1]);
+  const dependerExtension2 = vi.mocked(new DependerExtension2());
+  dependerExtension2.dependencies.mockReturnValueOnce([sharedExtension2]);
+  vi.spyOn(console, "warn").mockImplementation(() => {});
+  const manager = new ExtensionManager([
+    dependerExtension1,
+    dependerExtension2,
+  ]);
+
+  expect(manager.extensions()).toStrictEqual([
+    sharedExtension2,
+    dependerExtension1,
+    dependerExtension2,
+  ]);
+  expect(console.warn).not.toHaveBeenCalled();
 });
 
 test("ExtensionManager manages extensions with dependencies", () => {
@@ -328,3 +374,274 @@ test("ExtensionManager deduplicates a shared transitive dependency", () => {
     topExtension,
   ]);
 });
+
+describe("ExtensionManager prefers directly passed extensions over dependencies", () => {
+  class FirstExtension<
+    HandledUnistNode extends UnistNode,
+  > extends MockNodeExtension<HandledUnistNode> {}
+  class ConfiguredExtension<
+    HandledUnistNode extends UnistNode,
+  > extends MockNodeExtension<HandledUnistNode> {}
+  class LastExtension<
+    HandledUnistNode extends UnistNode,
+  > extends MockNodeExtension<HandledUnistNode> {}
+  class LeafExtension<
+    HandledUnistNode extends UnistNode,
+  > extends MockNodeExtension<HandledUnistNode> {}
+  class BundleExtension extends Extension {}
+
+  const setUp = (): {
+    bundleExtension: BundleExtension;
+    configuredExtension: ConfiguredExtension<UnistNode>;
+    dependencyExtension: ConfiguredExtension<UnistNode>;
+    firstExtension: FirstExtension<UnistNode>;
+    lastExtension: LastExtension<UnistNode>;
+    leafExtension: LeafExtension<UnistNode>;
+  } => {
+    const firstExtension = vi.mocked(new FirstExtension());
+    firstExtension.dependencies.mockReturnValueOnce([]);
+    const dependencyExtension = vi.mocked(new ConfiguredExtension());
+    dependencyExtension.dependencies.mockReturnValueOnce([]);
+    const lastExtension = vi.mocked(new LastExtension());
+    lastExtension.dependencies.mockReturnValueOnce([]);
+    const bundleExtension = vi.mocked(new BundleExtension());
+    bundleExtension.dependencies.mockReturnValueOnce([
+      firstExtension,
+      dependencyExtension,
+      lastExtension,
+    ]);
+    const leafExtension = vi.mocked(new LeafExtension());
+    leafExtension.dependencies.mockReturnValueOnce([]);
+    const configuredExtension = vi.mocked(new ConfiguredExtension());
+    configuredExtension.dependencies.mockReturnValueOnce([leafExtension]);
+    return {
+      bundleExtension,
+      configuredExtension,
+      dependencyExtension,
+      firstExtension,
+      lastExtension,
+      leafExtension,
+    };
+  };
+
+  test("when passed after the extension depending on it", () => {
+    const {
+      bundleExtension,
+      configuredExtension,
+      dependencyExtension,
+      firstExtension,
+      lastExtension,
+      leafExtension,
+    } = setUp();
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    const manager = new ExtensionManager([
+      bundleExtension,
+      configuredExtension,
+    ]);
+
+    expect(manager.extensions()).toStrictEqual([
+      firstExtension,
+      leafExtension,
+      configuredExtension,
+      lastExtension,
+      bundleExtension,
+    ]);
+    expect(dependencyExtension.dependencies).not.toHaveBeenCalled();
+    expect(console.warn).not.toHaveBeenCalled();
+  });
+
+  test("when passed before the extension depending on it", () => {
+    const {
+      bundleExtension,
+      configuredExtension,
+      dependencyExtension,
+      firstExtension,
+      lastExtension,
+      leafExtension,
+    } = setUp();
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    const manager = new ExtensionManager([
+      configuredExtension,
+      bundleExtension,
+    ]);
+
+    // The configured extension takes the dependency's position.
+    expect(manager.extensions()).toStrictEqual([
+      firstExtension,
+      leafExtension,
+      configuredExtension,
+      lastExtension,
+      bundleExtension,
+    ]);
+    expect(configuredExtension.dependencies).toHaveBeenCalledExactlyOnceWith();
+    expect(dependencyExtension.dependencies).not.toHaveBeenCalled();
+    expect(console.warn).not.toHaveBeenCalled();
+  });
+});
+
+test("ExtensionManager prefers directly passed extensions over transitive dependencies", () => {
+  class LeafExtension<
+    HandledUnistNode extends UnistNode,
+  > extends MockNodeExtension<HandledUnistNode> {}
+  class MiddleExtension<
+    HandledUnistNode extends UnistNode,
+  > extends MockNodeExtension<HandledUnistNode> {}
+  class TopExtension extends Extension {}
+
+  const dependencyLeafExtension = vi.mocked(new LeafExtension());
+  dependencyLeafExtension.dependencies.mockReturnValueOnce([]);
+  const middleExtension = vi.mocked(new MiddleExtension());
+  middleExtension.dependencies.mockReturnValueOnce([dependencyLeafExtension]);
+  const topExtension = vi.mocked(new TopExtension());
+  topExtension.dependencies.mockReturnValueOnce([middleExtension]);
+  const leafExtension = vi.mocked(new LeafExtension());
+  leafExtension.dependencies.mockReturnValueOnce([]);
+
+  vi.spyOn(console, "warn").mockImplementation(() => {});
+  const manager = new ExtensionManager([leafExtension, topExtension]);
+
+  expect(manager.extensions()).toStrictEqual([
+    leafExtension,
+    middleExtension,
+    topExtension,
+  ]);
+  expect(dependencyLeafExtension.dependencies).not.toHaveBeenCalled();
+  expect(console.warn).not.toHaveBeenCalled();
+});
+
+test("ExtensionManager adds a directly passed extension at its first dependency position", () => {
+  class FirstExtension<
+    HandledUnistNode extends UnistNode,
+  > extends MockNodeExtension<HandledUnistNode> {}
+  class LeafExtension<
+    HandledUnistNode extends UnistNode,
+  > extends MockNodeExtension<HandledUnistNode> {}
+  class ConfiguredExtension<
+    HandledUnistNode extends UnistNode,
+  > extends MockNodeExtension<HandledUnistNode> {}
+  class DependerExtension1 extends Extension {}
+  class DependerExtension2 extends Extension {}
+
+  const leafExtension = vi.mocked(new LeafExtension());
+  leafExtension.dependencies.mockReturnValueOnce([]);
+  const configuredExtension = vi.mocked(new ConfiguredExtension());
+  configuredExtension.dependencies.mockReturnValueOnce([leafExtension]);
+  const firstExtension = vi.mocked(new FirstExtension());
+  firstExtension.dependencies.mockReturnValueOnce([]);
+  const dependencyExtension1 = vi.mocked(new ConfiguredExtension());
+  const dependencyExtension2 = vi.mocked(new ConfiguredExtension());
+  const dependerExtension1 = vi.mocked(new DependerExtension1());
+  dependerExtension1.dependencies.mockReturnValueOnce([
+    firstExtension,
+    dependencyExtension1,
+  ]);
+  const dependerExtension2 = vi.mocked(new DependerExtension2());
+  dependerExtension2.dependencies.mockReturnValueOnce([dependencyExtension2]);
+
+  const manager = new ExtensionManager([
+    configuredExtension,
+    dependerExtension1,
+    dependerExtension2,
+  ]);
+
+  // The configured extension's own dependencies move with it.
+  expect(manager.nodeExtensions()).toStrictEqual([
+    firstExtension,
+    leafExtension,
+    configuredExtension,
+  ]);
+  expect(manager.extensions()).toStrictEqual([
+    firstExtension,
+    leafExtension,
+    configuredExtension,
+    dependerExtension1,
+    dependerExtension2,
+  ]);
+  expect(dependencyExtension1.dependencies).not.toHaveBeenCalled();
+  expect(dependencyExtension2.dependencies).not.toHaveBeenCalled();
+});
+
+test("ExtensionManager keeps the position of a directly passed extension nothing depends on", () => {
+  class NodeExtension1<
+    HandledUnistNode extends UnistNode,
+  > extends MockNodeExtension<HandledUnistNode> {}
+  class NodeExtension2<
+    HandledUnistNode extends UnistNode,
+  > extends MockNodeExtension<HandledUnistNode> {}
+  class BundleExtension extends Extension {}
+
+  const nodeExtension2 = vi.mocked(new NodeExtension2());
+  nodeExtension2.dependencies.mockReturnValueOnce([]);
+  const bundleExtension = vi.mocked(new BundleExtension());
+  bundleExtension.dependencies.mockReturnValueOnce([nodeExtension2]);
+  const nodeExtension1 = vi.mocked(new NodeExtension1());
+  nodeExtension1.dependencies.mockReturnValueOnce([]);
+
+  const manager = new ExtensionManager([nodeExtension1, bundleExtension]);
+
+  expect(manager.nodeExtensions()).toStrictEqual([
+    nodeExtension1,
+    nodeExtension2,
+  ]);
+});
+
+test("ExtensionManager uses the last of several directly passed instances in place of a dependency", () => {
+  class ConfiguredExtension<
+    HandledUnistNode extends UnistNode,
+  > extends MockNodeExtension<HandledUnistNode> {}
+  class FirstExtension<
+    HandledUnistNode extends UnistNode,
+  > extends MockNodeExtension<HandledUnistNode> {}
+  class BundleExtension extends Extension {}
+
+  const firstExtension = vi.mocked(new FirstExtension());
+  firstExtension.dependencies.mockReturnValueOnce([]);
+  const dependencyExtension = vi.mocked(new ConfiguredExtension());
+  const bundleExtension = vi.mocked(new BundleExtension());
+  bundleExtension.dependencies.mockReturnValueOnce([
+    firstExtension,
+    dependencyExtension,
+  ]);
+  const configuredExtension1 = vi.mocked(new ConfiguredExtension());
+  const configuredExtension2 = vi.mocked(new ConfiguredExtension());
+  configuredExtension2.dependencies.mockReturnValueOnce([]);
+  vi.spyOn(console, "warn").mockImplementation(() => {});
+
+  const manager = new ExtensionManager([
+    configuredExtension1,
+    bundleExtension,
+    configuredExtension2,
+  ]);
+
+  expect(manager.extensions()).toStrictEqual([
+    firstExtension,
+    configuredExtension2,
+    bundleExtension,
+  ]);
+  expect(console.warn).toHaveBeenCalledExactlyOnceWith(
+    "Extension ConfiguredExtension was passed more than once, using the last instance.",
+  );
+  expect(configuredExtension1.dependencies).not.toHaveBeenCalled();
+});
+
+test("ExtensionManager adds a directly passed extension only reachable through a dependency cycle", () => {
+  class CycleExtension1<
+    HandledUnistNode extends UnistNode,
+  > extends MockNodeExtension<HandledUnistNode> {}
+  class CycleExtension2<
+    HandledUnistNode extends UnistNode,
+  > extends MockNodeExtension<HandledUnistNode> {}
+
+  const extension = vi.mocked(new CycleExtension1());
+  const dependencyExtension = vi.mocked(new CycleExtension2());
+  extension.dependencies.mockReturnValueOnce([dependencyExtension]);
+  dependencyExtension.dependencies.mockReturnValueOnce([
+    vi.mocked(new CycleExtension1()),
+  ]);
+
+  const manager = new ExtensionManager([extension]);
+
+  expect(manager.extensions()).toStrictEqual([dependencyExtension, extension]);
+});
+
+/* eslint-enable */

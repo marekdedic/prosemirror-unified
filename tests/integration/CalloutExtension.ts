@@ -28,7 +28,16 @@ export const calloutNodeView: NodeViewConstructor = () => {
   return { dom };
 };
 
+// The node view can be configured, to test overriding a configured instance of
+// an extension that another extension depends on.
 export class CalloutExtension extends NodeExtension<UnistCallout> {
+  private readonly nodeView: NodeViewConstructor;
+
+  public constructor(nodeView: NodeViewConstructor = calloutNodeView) {
+    super();
+    this.nodeView = nodeView;
+  }
+
   public override proseMirrorNodeName(): string {
     return "callout";
   }
@@ -42,7 +51,7 @@ export class CalloutExtension extends NodeExtension<UnistCallout> {
   }
 
   public override proseMirrorNodeView(): NodeViewConstructor {
-    return calloutNodeView;
+    return this.nodeView;
   }
 
   public override unistNodeName(): "callout" {

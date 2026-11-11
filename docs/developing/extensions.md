@@ -29,6 +29,8 @@ The root class for all prosemirror-unified extensions. By itself it does little;
 
 Override this to declare other extensions that must be present for this one to work. For example, a list extension can declare a list-item extension as a dependency, and the `MarkdownExtension` from prosemirror-remark uses this to pull in all the individual markdown extensions. Defaults to `[]`.
 
+Dependencies are expanded recursively and each class is used once, so declaring a dependency doesn't guarantee that your instance is the one used. An instance of the same class that the user passes directly to `ProseMirrorUnified` replaces yours and takes its position. This lets users configure an extension inside a bundle without leaving out the bundle: if one of your extensions takes constructor options, users pass a configured instance next to the bundle. See the [`ProseMirrorUnified` constructor](/guide/api#constructor-extensions-array-extension).
+
 ### `proseMirrorPlugins(proseMirrorSchema: Schema<string, string>): Array<Plugin>`
 
 Override to add ProseMirror plugins to the editor, for anything input rules, keymaps and node views can't do, such as plugin state, decorations, `appendTransaction` or other editor props. Receives the built schema. Defaults to `[]`.
