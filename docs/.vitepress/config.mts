@@ -34,6 +34,10 @@ export default defineConfig({
         text: "Guide",
       },
       {
+        items: [{ link: "/migration/to-1.0", text: "Migration to 1.0" }],
+        text: "Migration",
+      },
+      {
         items: [
           { link: "/developing/overview", text: "Overview" },
           {
