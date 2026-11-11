@@ -8,8 +8,6 @@ prosemirror-unified is a **framework**. On its own it supports no concrete synta
 
 For the common case — editing **markdown** — that package is [**prosemirror-remark**](https://github.com/marekdedic/prosemirror-remark). It bundles all the markdown extensions and pulls prosemirror-unified in as a dependency. You install prosemirror-remark and drive it through prosemirror-unified's adapter, which [Getting started](/guide/getting-started) walks through end to end.
 
-That adapter is the whole surface most users ever touch, so this Guide is short — read on to [Getting started](/guide/getting-started) and you'll have a working editor.
-
 ::: tip Building a new syntax?
 If there's no extension package for the syntax you want, you can write your own. That's a different job with its own docs — see [Developing extensions](/developing/overview).
 :::

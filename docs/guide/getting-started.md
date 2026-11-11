@@ -63,7 +63,7 @@ const view = new EditorView(
 - **`parse(source)`** turns a source string (markdown, here) into a ProseMirror document — useful for setting the editor's initial contents.
 - **`serialize(doc)`** does the inverse, turning the editor's document back into a source string — useful for saving.
 - **`schema()`** returns a ProseMirror schema supporting all the extensions you passed in.
-- **`plugins()`** returns all the ProseMirror plugins: every extension's input rules (e.g. typing `**text**` to get bold), keyboard shortcuts (e.g. Ctrl-b) and own plugins, and a plugin that parses pasted plain text the same way as `parse()`, instead of inserting it as it is. Each of these is also available on its own, if you need to pick or order them yourself; use them instead of `plugins()`, not alongside it.
+- **`plugins()`** returns all the ProseMirror plugins: every extension's input rules (e.g. typing `**text**` to get bold), keyboard shortcuts (e.g. Ctrl-b) and own plugins, and a plugin that parses pasted plain text the same way as `parse()`, instead of inserting it as it is.
 - **`nodeViews()`** returns the node views registered by your extensions, for interactive elements such as task lists.
 
 That is the whole surface most users need. The [API reference](/guide/api) documents each of these with its full signature and behaviour; for anything markdown-specific, see the [prosemirror-remark documentation](https://github.com/marekdedic/prosemirror-remark).

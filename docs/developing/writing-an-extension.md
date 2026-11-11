@@ -129,7 +129,7 @@ export class RootExtension extends NodeExtension<UnistRoot> {
 
 ## A mark: bold
 
-Bold is a `MarkExtension`: in ProseMirror it is a mark on a text node, while in unist it is a `bold` node wrapping a text node (see [unist and ProseMirror](/developing/overview#unist-and-prosemirror)). That asymmetry shapes its two translation methods:
+Bold is a `MarkExtension`: in ProseMirror it is a mark on a text node, while in unist it is a `bold` node wrapping a text node (markdown calls it `strong`; see [unist and ProseMirror](/developing/overview#unist-and-prosemirror)). That asymmetry shapes its two translation methods:
 
 ```ts
 import type { InputRule } from "prosemirror-inputrules";

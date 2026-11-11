@@ -60,17 +60,11 @@ EditorState.create({
 });
 ```
 
-ProseMirror tries plugins in order, so this order decides who handles a key or a paste:
+The base keymap comes last because it handles keys such as Enter and Backspace, which would then never reach the plugins after it. A keymap of your own should therefore go before `pmu.plugins()`, where it takes precedence over everything the adapter provides, including the extensions' shortcuts and input rules that trigger on Enter. If it should only handle what those leave, build the list yourself as shown below and put your keymap before the base keymap.
 
-- The base keymap comes last because it handles keys such as Enter and Backspace, which would then never reach the plugins after it. A keymap of your own should therefore go before `pmu.plugins()`, or it won't get those keys. There, it takes precedence over everything the adapter provides, including the extensions' shortcuts and input rules that trigger on Enter. If it should only handle what those leave, build the list yourself as shown below and put your keymap before the base keymap.
-- The extensions' keyboard shortcuts come before their plugins, so a shortcut an extension binds isn't taken by another extension's plugin.
-- The extensions' plugins come before the paste plugin, so an extension plugin that handles pasting, through props such as [`handlePaste`](https://prosemirror.net/docs/ref/#view.EditorProps.handlePaste) or [`clipboardTextParser`](https://prosemirror.net/docs/ref/#view.EditorProps.clipboardTextParser), takes precedence over it.
+Every call returns the same plugin instances, shared by every editor built from the same `ProseMirrorUnified`, so reconfiguring a state with [`EditorState.reconfigure`](https://prosemirror.net/docs/ref/#state.EditorState.reconfigure) and another `plugins()` call keeps the plugins' state.
 
-Each plugin is built the first time it is requested, from `plugins()` or from the individual methods below, and every later call returns the same instance. These instances are shared by every editor built from the same `ProseMirrorUnified`. Reconfiguring a state with [`EditorState.reconfigure`](https://prosemirror.net/docs/ref/#state.EditorState.reconfigure) and the result of another `plugins()` call keeps the plugins' state. `plugins()` and `extensionPlugins()` return a new array on each call, so changing it doesn't affect later calls.
-
-The extensions' input rules, keyboard shortcuts, plugins and node views are collected the first time the corresponding method is called, not in the constructor. An app that only uses `parse` and `serialize` never runs those extension hooks. An error thrown by one of them is thrown from that first call, and nothing is kept for that method, so its next call runs those hooks again. Parts that `plugins()` built before the one that threw stay built.
-
-If you need a different selection or order, for example to leave out the paste plugin, build the list yourself from the individual methods below. Use them instead of `plugins()`, not alongside it: since they return the same instances, a plugin would be added twice, which `EditorState` rejects with a `RangeError`. None of them includes the base keymap, so add it yourself, last, with `keymap(baseKeymap)` from [prosemirror-keymap](https://prosemirror.net/docs/ref/#keymap) and [prosemirror-commands](https://prosemirror.net/docs/ref/#commands). Without it, keys such as Enter and Backspace do nothing:
+If you need a different selection or order, for example to leave out the paste plugin, build the list yourself from the individual methods below. Use them instead of `plugins()`, not alongside it: since they return the same instances, a plugin would be added twice, which `EditorState` rejects with a `RangeError`. None of them includes the base keymap, so add it yourself, last — without it, keys such as Enter and Backspace do nothing:
 
 ```ts
 import { baseKeymap } from "prosemirror-commands";
@@ -100,23 +94,23 @@ Returns a ProseMirror plugin containing every extension's keyboard shortcuts —
 
 ## `pastePlugin(): Plugin`
 
-Returns a ProseMirror plugin that parses pasted text the same way as `parse`, instead of inserting it as it is. It only applies when the clipboard holds nothing but plain text; otherwise, ProseMirror handles the paste as usual. The same applies to plain text dropped into the editor by drag and drop. A single trailing line break is dropped, and pasted content is merged into the surrounding content where possible — a single pasted line becomes part of the current paragraph rather than a new one. As with ProseMirror's default plain text paste, the pasted content keeps the marks at the cursor, such as bold, wherever they are allowed and don't conflict with the pasted content's own marks.
+Returns a ProseMirror plugin that parses pasted plain text the same way as `parse`, instead of inserting it as it is. The same applies to plain text dropped into the editor. Pasted content is merged into the surrounding content where possible — a single pasted line becomes part of the current paragraph — and keeps the marks at the cursor, such as bold.
 
 Some cases are left to ProseMirror's default behaviour, which inserts the text as it is with one paragraph per line:
 
 - Pasting as plain text (Ctrl-Shift-V), which gives users a way to paste source syntax literally. There is no equivalent for drag and drop.
 - Pasting into a code block.
 - Pasting only whitespace.
-- Pasting text that cannot be parsed into a document, including the case described below.
+- Pasting text that cannot be parsed into a document.
 
-Unlike with `parse`, content that no extension can convert isn't dropped: its source text is kept as plain text instead. This needs the parser to record the position of each node in the source; content without a position is dropped with a warning, the same as with `parse`. If the text can't be kept faithfully, because it spans multiple lines, or can't be placed where the content was, because the content isn't inline (e.g. a whole unsupported block), the whole pasted text is inserted as it is.
+Unlike with `parse`, inline content that no extension can convert isn't dropped: its source text is kept as plain text instead. If that isn't possible, for example for a whole unsupported block, the pasted text is inserted as it is.
 
 Use ProseMirror's [`transformPastedText`](https://prosemirror.net/docs/ref/#view.EditorProps.transformPastedText) prop if you need to adjust the text before it is parsed.
 
 ## `extensionPlugins(): Array<Plugin>`
 
-Returns the plugins contributed by the extensions through [`proseMirrorPlugins`](/developing/extensions#prosemirrorplugins-prosemirrorschema-schema-string-string-array-plugin): node extensions first, then mark extensions, then the others. Within each group, extensions are in the order they were added, with each extension's dependencies before it. A dependency from a different group follows its own group instead: a plain `Extension` that a node extension depends on comes after all node and mark extensions. An extension that is pulled in several times, for example as a dependency of two others, contributes its plugins once. Calling `extensionPlugins()` repeatedly returns the same plugin instances, in a new array each time.
+Returns the plugins contributed by the extensions through [`proseMirrorPlugins`](/developing/extensions#prosemirrorplugins-prosemirrorschema-schema-string-string-array-plugin), in the order described there.
 
 ## `nodeViews(): Record<string, NodeViewConstructor>`
 
-Returns the node views registered by all the extensions, keyed by node name. Node views back richer, often interactive elements in the editor, such as clickable task lists. Pass the result to your `EditorView`. The node views are collected the first time `nodeViews()` is called. Every call returns the same node views, in a new object each time, so changing it doesn't affect later calls.
+Returns the node views registered by all the extensions, keyed by node name. Node views back richer, often interactive elements in the editor, such as clickable task lists. Pass the result to your `EditorView`.
