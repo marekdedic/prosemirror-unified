@@ -276,9 +276,12 @@ test("buildInputRulesPlugin applies an EnterInputRule in a single transaction", 
   expect(transactionCountKey.getState(testEditor.state)).toBe(countBefore + 1);
 });
 
+// Without the base keymap, nothing handles Enter after the rules, which
+// would otherwise discard their undo record and the stored marks.
 const testerWithRules = (
   rules: Array<InputRule>,
   document = doc(paragraph("Hello!!")),
+  { withBaseKeymap = true } = {},
 ): ProseMirrorEditor => {
   const extension = new (class extends MockNodeExtension<{ type: "x" }> {
     public override proseMirrorInputRules(): Array<InputRule> {
@@ -292,7 +295,7 @@ const testerWithRules = (
           new ExtensionManager([extension]),
           schemaWithBold,
         ),
-        keymap(baseKeymap),
+        ...(withBaseKeymap ? [keymap(baseKeymap)] : []),
       ],
     },
   });
@@ -401,5 +404,155 @@ test("buildInputRulesPlugin doesn't apply input rules on Enter across textblocks
   expect(otherHandler).not.toHaveBeenCalled();
   expect(testEditor.doc).toEqualProseMirrorNode(
     doc(paragraph("Hello!!"), paragraph("rld")),
+  );
+});
+
+test("buildInputRulesPlugin doesn't insert the line ending when a string handler with a capture group applies on Enter", () => {
+  const testEditor = testerWithRules(
+    [new InputRule(/(\(c\))\s$/u, "©")],
+    doc(paragraph()),
+  );
+  testEditor.type("a (c)");
+  testEditor.type("{Enter}");
+
+  expect(testEditor.doc).toEqualProseMirrorNode(
+    doc(paragraph("a ©"), paragraph()),
+  );
+});
+
+test("buildInputRulesPlugin still inserts the typed character after a string handler's capture group", () => {
+  const testEditor = testerWithRules(
+    [new InputRule(/(\(c\))\s$/u, "©")],
+    doc(paragraph()),
+  );
+  testEditor.type("a (c) ");
+
+  expect(testEditor.doc).toEqualProseMirrorNode(doc(paragraph("a © ")));
+});
+
+test("buildInputRulesPlugin undoes a string handler applied on Enter without inserting a line ending", () => {
+  const testEditor = testerWithRules(
+    [new InputRule(/(\(c\))\s$/u, "©")],
+    doc(paragraph()),
+    { withBaseKeymap: false },
+  );
+  testEditor.type("a (c)");
+  testEditor.type("{Enter}");
+
+  expect(testEditor.doc).toEqualProseMirrorNode(doc(paragraph("a ©")));
+  expect(testEditor.command(undoInputRule)).toBe(true);
+  expect(testEditor.doc).toEqualProseMirrorNode(doc(paragraph("a (c)")));
+});
+
+test("buildInputRulesPlugin keeps a line ending already in the document before the cursor on Enter", () => {
+  const testEditor = testerWithRules(
+    [
+      new InputRule(/\n\n$/u, (state, _, start, end) =>
+        state.tr.addMark(start, end, schemaWithBold.marks["bold"].create()),
+      ),
+    ],
+    doc(paragraph("a\n")),
+  );
+  testEditor.type("{Enter}");
+
+  expect(testEditor.doc).toEqualProseMirrorNode(
+    doc(paragraph("a", bold("\n")), paragraph()),
+  );
+});
+
+test("buildInputRulesPlugin keeps a line ending already in the document before the cursor when a rule applied on Enter replaces text before it", () => {
+  const testEditor = testerWithRules(
+    [
+      // Replaces only the "b", the line ending after it stays where it is
+      new InputRule(/b\n\n$/u, (state, _, start) =>
+        state.tr.insertText("BB", start, start + 1),
+      ),
+    ],
+    doc(paragraph("ab\n")),
+    { withBaseKeymap: false },
+  );
+  testEditor.type("{Enter}");
+
+  expect(testEditor.doc).toEqualProseMirrorNode(doc(paragraph("aBB\n")));
+});
+
+test("buildInputRulesPlugin keeps a line ending inserted by an EnterInputRule", () => {
+  const testEditor = testerWithRules([
+    new EnterInputRule(/!!\n$/u, (state, _, start, end) =>
+      state.tr.insertText("!\n", start, end),
+    ),
+  ]);
+  testEditor.type("{Enter}");
+
+  expect(testEditor.doc).toEqualProseMirrorNode(doc(paragraph("Hello!\n")));
+});
+
+test("buildInputRulesPlugin keeps the stored marks a rule applied on Enter sets", () => {
+  const boldMark = schemaWithBold.marks["bold"].create();
+  const testEditor = testerWithRules(
+    [
+      new InputRule(/!!\n$/u, (state, _, start, end) =>
+        state.tr.insertText("‼\n", start, end).setStoredMarks([boldMark]),
+      ),
+    ],
+    doc(paragraph("Hello!!")),
+    { withBaseKeymap: false },
+  );
+  testEditor.type("{Enter}");
+
+  expect(testEditor.doc).toEqualProseMirrorNode(doc(paragraph("Hello‼")));
+  expect(testEditor.state.storedMarks).toStrictEqual([boldMark]);
+});
+
+test("buildInputRulesPlugin keeps an inline leaf node whose leaf text is a line ending, inserted by a rule applied on Enter", () => {
+  const schemaWithHardBreak = new Schema<string, string>({
+    nodes: {
+      doc: { content: "paragraph+" },
+      hardBreak: {
+        group: "inline",
+        inline: true,
+        leafText: (): string => "\n",
+        toDOM: (): DOMOutputSpec => ["br"],
+      },
+      paragraph: {
+        content: "inline*",
+        toDOM: (): DOMOutputSpec => ["p", 0],
+      },
+      text: { group: "inline" },
+    },
+  });
+  const {
+    doc: hbDoc,
+    hardBreak,
+    paragraph: hbParagraph,
+  } = builders(schemaWithHardBreak);
+  const extension = new (class extends MockNodeExtension<{ type: "x" }> {
+    public override proseMirrorInputRules(): Array<InputRule> {
+      return [
+        new InputRule(/ {2}\n$/u, (state, _, start, end) =>
+          state.tr.replaceWith(
+            start,
+            end,
+            schemaWithHardBreak.nodes["hardBreak"].create(),
+          ),
+        ),
+      ];
+    }
+  })();
+  const testEditor = renderProseMirror(hbDoc(hbParagraph("a  ")), {
+    editorProps: {
+      plugins: [
+        buildInputRulesPlugin(
+          new ExtensionManager([extension]),
+          schemaWithHardBreak,
+        ),
+      ],
+    },
+  });
+  testEditor.setSelection("end");
+  testEditor.type("{Enter}");
+
+  expect(testEditor.doc).toEqualProseMirrorNode(
+    hbDoc(hbParagraph("a", hardBreak())),
   );
 });
