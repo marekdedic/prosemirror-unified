@@ -6,6 +6,7 @@ import { builders } from "prosemirror-test-builder";
 import { expect, test } from "vitest";
 import { renderProseMirror } from "vitest-prosemirror";
 
+import { EnterInputRule } from "../../src/EnterInputRule";
 import { Extension } from "../../src/Extension";
 import { ProseMirrorUnified } from "../../src/ProseMirrorUnified";
 import { BoldExtension } from "./BoldExtension";
@@ -70,6 +71,17 @@ class ExclaimingParagraphExtension extends ParagraphExtension {
         return true;
       },
     };
+  }
+}
+
+// Its keymap and the base keymap would both handle Enter after the rule
+class ExclaimingParagraphWithEnterRuleExtension extends ExclaimingParagraphExtension {
+  public override proseMirrorInputRules(): Array<InputRule> {
+    return [
+      new EnterInputRule(/!!\n$/u, (state, _, start, end) =>
+        state.tr.insertText("‼", start, end),
+      ),
+    ];
   }
 }
 
@@ -149,6 +161,29 @@ test("Extension keymaps handle keys before extension plugins", () => {
   testEditor.type("{Enter}");
 
   expect(testEditor.doc).toEqualProseMirrorNode(doc(paragraph("Hello!")));
+});
+
+test("An EnterInputRule replaces Enter before the keymaps", () => {
+  const pmu = new ProseMirrorUnified([
+    new ParserProviderExtension(emptyTree, ""),
+    new RootExtension(),
+    new TextExtension(),
+    new ExclaimingParagraphWithEnterRuleExtension(),
+  ]);
+  const { doc, paragraph } = builders(pmu.schema());
+
+  const testEditor = renderProseMirror(doc(paragraph("Hello!!")), {
+    editorProps: { plugins: pmu.plugins() },
+  });
+  testEditor.setSelection("end");
+  testEditor.type("{Enter}");
+
+  expect(testEditor.doc).toEqualProseMirrorNode(doc(paragraph("Hello‼")));
+
+  // Where the rule doesn't apply, Enter goes on to the extension's keymap.
+  testEditor.type("{Enter}");
+
+  expect(testEditor.doc).toEqualProseMirrorNode(doc(paragraph("Hello‼!")));
 });
 
 test("All plugins include the paste plugin", () => {

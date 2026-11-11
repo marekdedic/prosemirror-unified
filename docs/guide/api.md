@@ -92,6 +92,8 @@ EditorState.create({
 
 Returns a ProseMirror plugin containing every extension's input rules. Input rules govern how ProseMirror replaces what a user types with structured content — for markdown, typing `**text**` becomes bold text. This lets users type markdown while still getting a real ProseMirror document.
 
+The rules also run when Enter is pressed without a modifier key, as if a line ending had been typed. Enter then goes on to the keymaps as usual, unless the rule that applied is an [`EnterInputRule`](/developing/extensions#enterinputrule), which replaces what Enter does.
+
 ## `keymapPlugin(): Plugin`
 
 Returns a ProseMirror plugin containing every extension's keyboard shortcuts — for example Ctrl-b for bold. When several extensions bind the same key, their commands are tried in extension order until one handles it. The prosemirror-commands base keymap isn't included: `plugins()` adds it, and if you don't use `plugins()`, add it yourself after this plugin.

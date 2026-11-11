@@ -13,7 +13,7 @@ The signatures below are written in TypeScript and refer to a handful of types b
 | `Schema`, `Mark`, `MarkType`, `Attrs`, `NodeSpec`, `MarkSpec` | [prosemirror-model](https://prosemirror.net/docs/ref/#model). `Schema` is parameterised as `Schema<string, string>` (its node and mark names).                              |
 | `NodeViewConstructor`                                         | [prosemirror-view](https://prosemirror.net/docs/ref/#view.NodeViewConstructor).                                                                                             |
 | `InputRule`                                                   | [prosemirror-inputrules](https://prosemirror.net/docs/ref/#inputrules.InputRule).                                                                                           |
-| `Command`, `Plugin`                                           | [prosemirror-state](https://prosemirror.net/docs/ref/#state).                                                                                                               |
+| `Command`, `Plugin`, `EditorState`, `Transaction`             | [prosemirror-state](https://prosemirror.net/docs/ref/#state).                                                                                                               |
 | `Processor`                                                   | [unified](https://github.com/unifiedjs/unified#processor).                                                                                                                  |
 
 Two more names are generic parameters of the extension classes rather than imported types — they stand for whatever types your own extension works with, and are only relevant when using TypeScript. Both `SyntaxExtension` subclasses share them:
@@ -107,7 +107,9 @@ Called after the whole document has been translated from unist to ProseMirror. D
 
 ### `proseMirrorInputRules(proseMirrorSchema: Schema<string, string>): Array<InputRule>`
 
-Override to add input rules to the editor. Receives the built schema. Defaults to `[]`. Called once, the first time the input rules plugin is requested from `ProseMirrorUnified`. If it or another extension's hook of the same kind throws, it is called again on the next request. See [`MarkInputRule`](#markinputrule) for mark-adding rules.
+Override to add input rules to the editor. Receives the built schema. Defaults to `[]`. Called once, the first time the input rules plugin is requested from `ProseMirrorUnified`. If it or another extension's hook of the same kind throws, it is called again on the next request. See [`MarkInputRule`](#markinputrule) for mark-adding rules and [`EnterInputRule`](#enterinputrule) for rules that replace what Enter does.
+
+The rules also run when Enter is pressed without a modifier key (Shift-Enter, Mod-Enter and the like don't trigger them) and the selection is within a single textblock (not, e.g., with a block node or the whole document selected, or across several paragraphs): they are matched as if a line ending (`"\n"`) had been typed, so a rule ending in e.g. `\s$` or `[\s\S]$` applies on Enter too. After a rule applies, Enter goes on to the keymaps, which split the block or do whatever else Enter is bound to — unless the rule is an `EnterInputRule`. To keep a rule from applying on Enter, don't let its last character match `\n`. Usually, the keymaps' change after such a rule leaves nothing for [`undoInputRule`](https://prosemirror.net/docs/ref/#inputrules.undoInputRule) to undo. When nothing else handles Enter, `undoInputRule` can undo the rule, and doesn't insert the line ending as text.
 
 ### `proseMirrorKeymap(proseMirrorSchema: Schema<string, string>): Record<string, Command>`
 
@@ -211,6 +213,31 @@ The rule also doesn't apply when the mark can't be added to all of the content, 
 
 - **`allowLeafNodes`** — see above. Defaults to `false`.
 - **`inCode`**, **`inCodeMark`**, **`undoable`** — passed through to ProseMirror's [`InputRule`](https://prosemirror.net/docs/ref/#inputrules.InputRule.constructor). For example, a rule for inline code can set `inCodeMark: false` so it doesn't fire inside text that already has the code mark.
+
+## `EnterInputRule`
+
+Extends ProseMirror's `InputRule`, for input rules that replace what Enter does — for example turning a code fence line into a code block, or `[ ]` at the start of a list item into a checkbox. A plain input rule that applies on Enter is followed by the usual Enter handling, so the block would be split after the rule's change. When an `EnterInputRule` applies on Enter, the key isn't handled any further.
+
+### `constructor(matcher: RegExp, handler: EnterInputRuleHandler, options?: EnterInputRuleOptions)`
+
+Takes the same arguments as ProseMirror's [`InputRule`](https://prosemirror.net/docs/ref/#inputrules.InputRule.constructor), except that `handler` must be a function — `(state: EditorState, match: RegExpMatchArray, start: number, end: number) => Transaction | null` — not a string (a string throws a `TypeError`). `options` (`inCode`, `inCodeMark`, `undoable`) is passed through to `InputRule`.
+
+On Enter, the text the matcher sees ends with `"\n"`, which isn't in the document, so `end` is the cursor position, or the end of the selection if there is one. The rule only replaces Enter when the handler returns a transaction; when it returns `null`, Enter is handled as usual. On Enter, `EnterInputRule`s are tried before all other input rules, regardless of the order of the extensions, so a rule that replaces Enter wins over one that only reacts to it. Text input other than Enter is handled exactly as by a plain `InputRule`, without any effect on later key presses:
+
+````ts
+new EnterInputRule(/^```(?<lang>\w*)\n$/u, (state, match, start, end) => {
+  const codeBlock = state.schema.nodes["code_block"];
+  if (codeBlock === undefined) {
+    // Enter is handled as usual
+    return null;
+  }
+  return state.tr
+    .delete(start, end)
+    .setBlockType(start, start, codeBlock, { lang: match.groups?.["lang"] });
+});
+````
+
+When the rule is undoable, [`undoInputRule`](https://prosemirror.net/docs/ref/#inputrules.undoInputRule) right after it reverts the rule's change without inserting a line ending. The matched text comes back as it was before Enter was pressed, but text that was selected when Enter was pressed stays deleted, as it would be by Enter.
 
 ## `createProseMirrorNode(nodeName: string | null, schema: Schema<string, string>, children: Array<ProseMirrorNode>, attrs: Attrs = {})`
 
