@@ -100,6 +100,7 @@ Some cases are left to ProseMirror's default behaviour, which inserts the text a
 
 - Pasting as plain text (Ctrl-Shift-V), which gives users a way to paste source syntax literally. There is no equivalent for drag and drop.
 - Pasting into a code block.
+- Pasting several lines into a mark whose spec sets `code: true`, such as inline code. A single line pasted into such a mark isn't parsed either, but inserted as it is, keeping the marks at the cursor.
 - Pasting only whitespace.
 - Pasting text that cannot be parsed into a document.
 

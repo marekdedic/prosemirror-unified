@@ -4,6 +4,7 @@ import { renderProseMirror } from "vitest-prosemirror";
 
 import { ProseMirrorUnified } from "../../src/ProseMirrorUnified";
 import { BoldExtension } from "./BoldExtension";
+import { CodeExtension } from "./CodeExtension";
 import { ParagraphExtension } from "./ParagraphExtension";
 import { ParserProviderExtension } from "./ParserProviderExtension";
 import { RootExtension, type UnistRoot } from "./RootExtension";
@@ -81,6 +82,32 @@ test("Pasting text keeps the marks at the cursor", () => {
   expect(testEditor.doc).toEqualProseMirrorNode(
     doc(paragraph(bold("Hello World !"))),
   );
+  expect(console.warn).not.toHaveBeenCalled();
+});
+
+test("Pasting into a code mark keeps the text literal", () => {
+  const parserProvider = new ParserProviderExtension(pastedTree, "");
+  const pmu = new ProseMirrorUnified([
+    parserProvider,
+    new BoldExtension(),
+    new CodeExtension(),
+    new RootExtension(),
+    new TextExtension(),
+    new ParagraphExtension(),
+  ]);
+  const { code, doc, paragraph } = builders(pmu.schema());
+
+  vi.spyOn(console, "warn").mockImplementation(() => {});
+  const testEditor = renderProseMirror(doc(paragraph("Hello ", code("xy"))), {
+    editorProps: { plugins: [pmu.pastePlugin()] },
+  });
+  testEditor.setSelection(8);
+  testEditor.paste("**World**!");
+
+  expect(testEditor.doc).toEqualProseMirrorNode(
+    doc(paragraph("Hello ", code("x**World**!y"))),
+  );
+  expect(parserProvider.parsed).toStrictEqual([]);
   expect(console.warn).not.toHaveBeenCalled();
 });
 

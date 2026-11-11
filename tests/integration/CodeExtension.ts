@@ -16,6 +16,7 @@ export interface UnistCode extends UnistNode {
 }
 
 export const codeSpec: MarkSpec = {
+  code: true,
   toDOM: (): DOMOutputSpec => ["code"],
 };
 

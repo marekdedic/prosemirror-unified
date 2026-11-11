@@ -155,6 +155,8 @@ Returns the ProseMirror mark type this extension handles, or `null` if it produc
 
 Returns the ProseMirror mark spec, or `null` if the extension produces no mark.
 
+For a mark whose content is literal source text, such as inline code, set `code: true` in the spec. The paste plugin then inserts text pasted into the mark as it is instead of parsing it, and `MarkInputRule`s with `inCodeMark: false` don't apply in it.
+
 ### `abstract processConvertedUnistNodes(convertedNodes: Array<UnistNode>, originalMark: Mark): UnistNode`
 
 Called when serializing from ProseMirror to unist. Receives the unist nodes carrying the mark together with the mark itself, and returns a single unist node wrapping them. Neighbouring ProseMirror nodes sharing an equal mark are passed together in one call, so a mark spanning several ProseMirror nodes produces a single unist node. The nodes passed in may already be wrapped by other marks: where marks overlap, the mark covering the most neighbouring nodes goes outermost, and on a tie, the mark that comes first in the schema does.
