@@ -112,6 +112,25 @@ export class MarkInputRule extends InputRule {
   }
 
   /**
+   * Where the range the typed text replaces starts. It ends at `end`, but the handler isn't told where it starts.
+   * A selection ending at `end` that the typed text can have replaced is taken to be that range, which holds whenever the input replaces the selection.
+   * But when the document holds the matched text up to `end`, the typed text may as well have been inserted there, and taking it to replace the selection would then delete and retype the selected content, losing its inline nodes and marks.
+   * Otherwise, the typed text is taken to be inserted at `end`.
+   */
+  private static inputFrom(
+    state: EditorState,
+    start: number,
+    end: number,
+    holdsMatchToEnd: boolean,
+  ): number {
+    const { empty, from, to } = state.selection;
+    if (!empty && from >= start && to === end && !holdsMatchToEnd) {
+      return from;
+    }
+    return end;
+  }
+
+  /**
    * Whether the mark can be added to the inline nodes between `from` and `to` - the textblock must allow it (which also covers text typed there) and none of their marks may exclude it.
    */
   private static markApplies(
@@ -174,26 +193,47 @@ export class MarkInputRule extends InputRule {
       return null;
     }
 
-    // The document holds the match up to `end`. The rest of it is the typed text, which isn't in the document yet - multi-character input (e.g. from autocorrect) may reach into the content or further.
+    // The document holds the match up to `from`. The rest of it is the typed text, which replaces the range from `from` to `end` - multi-character input (e.g. from autocorrect) may reach into the content or further.
     // The parts of the groups in the document are deleted, marked or kept in place, and the typed parts of the content and the trailing text are inserted.
-    const openingTo = Math.min(start + opening.length, end);
-    const contentTo = Math.min(openingTo + content.length, end);
-    const closingTo = Math.min(contentTo + closing.length, end);
+    // Whether the document holds the match up to `end`, as it does when the typed text is inserted there
+    const holdsMatchToEnd =
+      state.doc.textBetween(start, end, undefined, LEAF_NODE_PLACEHOLDER) ===
+      match[0].slice(0, end - start);
+    const from = MarkInputRule.inputFrom(state, start, end, holdsMatchToEnd);
+    const openingTo = Math.min(start + opening.length, from);
+    const contentTo = Math.min(openingTo + content.length, from);
+    const closingTo = Math.min(contentTo + closing.length, from);
     const typedContent = content.slice(contentTo - openingTo);
-    const trailingInDocument = end - closingTo;
+    const trailingInDocument = from - closingTo;
     const typedTrailing = trailing.slice(trailingInDocument);
 
-    // Everything from the opening delimiter up to `end` gets deleted, marked or kept, so the document must hold exactly the matched text there.
-    // It doesn't e.g. when the typed text replaces a selection or when the match contains an inline node with content.
+    // Typed text replacing a range across textblocks may replace whole nodes, which the range removed below wouldn't match
+    const $from = state.doc.resolve(from);
+    const $end = state.doc.resolve(end);
+    if (!$from.sameParent($end)) {
+      return null;
+    }
+
+    // Everything from the opening delimiter up to `from` gets deleted, marked or kept, so the document must hold exactly the matched text there.
+    // It doesn't e.g. when the match contains an inline node with content, or when the typed text replaces a range that doesn't start where it is taken to.
     if (
-      state.doc.textBetween(start, end, undefined, LEAF_NODE_PLACEHOLDER) !==
-      match[0].slice(0, end - start)
+      from === end
+        ? !holdsMatchToEnd
+        : state.doc.textBetween(
+            start,
+            from,
+            undefined,
+            LEAF_NODE_PLACEHOLDER,
+          ) !== match[0].slice(0, from - start)
     ) {
       return null;
     }
 
     // A delimiter in code (e.g. inline code) is literal text, not a delimiter, whether it is in the document or would be typed with the marks the user is typing with. The content may contain code.
-    const typingMarks = state.storedMarks ?? state.doc.resolve(end).marks();
+    // Typed text gets the marks `Transaction.insertText` gives it: the stored marks, or the marks at `end`, or across the range it replaces.
+    const typingMarks =
+      state.storedMarks ??
+      (from < end ? ($from.marksAcross($end) ?? []) : $end.marks());
     const delimiterTyped =
       openingTo < start + opening.length ||
       closingTo < contentTo + closing.length;
@@ -218,8 +258,11 @@ export class MarkInputRule extends InputRule {
       return null;
     }
 
-    // Remove the delimiters (e.g. the asterisks around italic). Deleting the closing delimiter first keeps the positions of the opening one valid.
-    const tr = state.tr.delete(contentTo, closingTo).delete(start, openingTo);
+    // Remove the replaced range, which the typed text takes the place of, and the delimiters (e.g. the asterisks around italic). Deleting from the end first keeps the positions before valid.
+    const tr = state.tr
+      .delete(from, end)
+      .delete(contentTo, closingTo)
+      .delete(start, openingTo);
 
     // Add the mark to the content in place, which keeps any leaf nodes and marks already in it, and insert the typed rest of the content with it
     const contentInDocumentTo = start + (contentTo - openingTo);
