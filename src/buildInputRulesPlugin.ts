@@ -7,6 +7,29 @@ import { type InputRule, inputRules } from "prosemirror-inputrules";
 import type { ExtensionManager } from "./ExtensionManager";
 
 import { isEnterInputRule } from "./EnterInputRule";
+import { withInputRange } from "./MarkInputRule";
+
+// Makes `plugin`, built by `inputRules()`, record the range typed text
+// replaces while its rules run, because
+// prosemirror-inputrules passes only its end to their handlers. MarkInputRule
+// needs its start.
+const recordInputRanges = (plugin: Plugin): Plugin => {
+  const originalHandleTextInput = plugin.props.handleTextInput;
+  if (originalHandleTextInput !== undefined) {
+    plugin.props.handleTextInput = (
+      view,
+      from,
+      to,
+      text,
+      deflt,
+      // eslint-disable-next-line @typescript-eslint/no-invalid-void-type -- Type from prosemirror-view
+    ): boolean | void =>
+      withInputRange({ from, state: view.state, to }, () =>
+        originalHandleTextInput.call(plugin, view, from, to, text, deflt),
+      );
+  }
+  return plugin;
+};
 
 // Deletes a line ending that `tr` inserted right before `to`, where the
 // cursor was. A string handler with a capture group inserts the rest of the
@@ -84,7 +107,7 @@ export function buildInputRulesPlugin(
       .syntaxExtensions()
       .map((extension) => extension.proseMirrorInputRules(proseMirrorSchema)),
   );
-  const inputRulesPlugin = inputRules({ rules });
+  const inputRulesPlugin = recordInputRanges(inputRules({ rules }));
   const enterRules: Array<InputRule> = [];
   const otherRules: Array<InputRule> = [];
   for (const rule of rules) {
@@ -98,9 +121,13 @@ export function buildInputRulesPlugin(
   // rules that replace Enter first, then the ones that only react to it.
   // Either is skipped when it would have no rules.
   const enterRulesPlugin =
-    enterRules.length > 0 ? inputRules({ rules: enterRules }) : null;
+    enterRules.length > 0
+      ? recordInputRanges(inputRules({ rules: enterRules }))
+      : null;
   const otherRulesPlugin =
-    otherRules.length > 0 ? inputRules({ rules: otherRules }) : null;
+    otherRules.length > 0
+      ? recordInputRanges(inputRules({ rules: otherRules }))
+      : null;
   const originalHandleKeyDown =
     inputRulesPlugin.props.handleKeyDown?.bind(inputRulesPlugin);
   // eslint-disable-next-line @typescript-eslint/no-invalid-void-type -- Type from prosemirror-view

@@ -6,13 +6,19 @@ import {
   type Node as ProseMirrorNode,
   Schema,
 } from "prosemirror-model";
-import { EditorState, type Transaction } from "prosemirror-state";
+import {
+  EditorState,
+  TextSelection,
+  type Transaction,
+} from "prosemirror-state";
 import { describe, expect, type Mock, test, vi } from "vitest";
 import { type ProseMirrorEditor, renderProseMirror } from "vitest-prosemirror";
 
 import {
+  currentInputRange,
   MarkInputRule,
   type MarkInputRuleOptions,
+  withInputRange,
 } from "../../src/MarkInputRule";
 
 describe("MarkInputRule works", () => {
@@ -359,16 +365,20 @@ describe("MarkInputRule works", () => {
     text: string,
     ruleSchema: Schema<"doc" | "paragraph", "bold"> = schema,
     rule: MarkInputRule = new MarkInputRule(boldMatcher, ruleSchema.marks.bold),
+    // The input replaces the selection unless given otherwise
+    selection: { from: number; to: number } = { from, to },
   ): { dispatch: Mock; handled: boolean } => {
     const plugin = inputRules({
       rules: [rule],
     });
+    const doc = ruleSchema.nodes.doc.create(
+      null,
+      ruleSchema.nodes.paragraph.create(null, content),
+    );
     const state = EditorState.create({
-      doc: ruleSchema.nodes.doc.create(
-        null,
-        ruleSchema.nodes.paragraph.create(null, content),
-      ),
+      doc,
       plugins: [plugin],
+      selection: TextSelection.create(doc, selection.from, selection.to),
     });
     const dispatch = vi.fn();
     const handled = plugin.props.handleTextInput?.call(
@@ -441,13 +451,33 @@ describe("MarkInputRule works", () => {
     expect(dispatch).not.toHaveBeenCalled();
   });
 
-  test("does not apply when the typed text replaces a selection", () => {
-    // "d</b> " replaces the selected "XYZ", so the document doesn't hold the content at the matched positions
+  test("applies when the typed text replaces a selection", () => {
+    // "d</b> " replaces the selected "XYZ"
     const { dispatch, handled } = runTextInput(
       [schema.text("<b>bolXYZ")],
       7,
       10,
       "d</b> ",
+    );
+    const tr = dispatch.mock.calls[0][0] as Transaction;
+
+    expect(handled).toBe(true);
+    expect(tr.doc.textContent).toBe("bold ");
+    expect(tr.doc.nodeAt(4)?.marks).toHaveLength(1);
+    expect(tr.doc.nodeAt(5)?.marks).toHaveLength(0);
+    expect(tr.selection.from).toBe(6);
+  });
+
+  test("does not apply when the typed text replaces a range other than the selection", () => {
+    // "d</b> " replaces "XYZ", but the cursor is after it, so the document doesn't hold the content at the positions the match is taken to be at
+    const { dispatch, handled } = runTextInput(
+      [schema.text("<b>bolXYZ")],
+      7,
+      10,
+      "d</b> ",
+      schema,
+      new MarkInputRule(boldMatcher, schema.marks.bold),
+      { from: 10, to: 10 },
     );
 
     expect(handled).toBe(false);
@@ -536,7 +566,7 @@ describe("MarkInputRule works", () => {
     expect(tr.selection.from).toBe(6);
   });
 
-  test("keeps the content when the typed text replaces a selection that overlaps it", () => {
+  test("applies when the typed text replaces a selection that overlaps the content", () => {
     // "d</b> " replaces the selected "d", which coincides with the last character of the content
     const { dispatch, handled } = runTextInput(
       [schema.text("<b>bold")],
@@ -704,6 +734,237 @@ describe("MarkInputRule works", () => {
     expect(dispatch).not.toHaveBeenCalled();
   });
 
+  test("does not apply when a typed delimiter would be in code across the replaced selection", () => {
+    // "bc* " replaces the selected "QR", whose start has the code mark, so ProseMirror would type it all as code, although the end of the selection has none
+    const { dispatch, handled } = runTextInput(
+      [
+        schema.text("x*a"),
+        schema.text("Q", [schema.marks.code.create()]),
+        schema.text("R"),
+      ],
+      4,
+      6,
+      "bc* ",
+      schema,
+      new MarkInputRule(asteriskMatcher, schema.marks.bold),
+    );
+
+    expect(handled).toBe(false);
+    expect(dispatch).not.toHaveBeenCalled();
+  });
+
+  test.each([
+    ["is empty", { from: 6, to: 6 }],
+    ["doesn't end where the input does", { from: 3, to: 5 }],
+    ["starts before the match", { from: 1, to: 6 }],
+  ])(
+    "takes the typing marks from the end of the input when the selection %s",
+    (_, selection) => {
+      // As above, but the input doesn't replace the selection, so the marks at its end are used
+      const { dispatch, handled } = runTextInput(
+        [
+          schema.text("x*a"),
+          schema.text("b", [schema.marks.code.create()]),
+          schema.text("c"),
+        ],
+        4,
+        6,
+        "bc* ",
+        schema,
+        new MarkInputRule(asteriskMatcher, schema.marks.bold),
+        selection,
+      );
+      const tr = dispatch.mock.calls[0][0] as Transaction;
+
+      expect(handled).toBe(true);
+      expect(tr.doc.textContent).toBe("xabc ");
+      expect(tr.storedMarks).toStrictEqual([]);
+    },
+  );
+
+  test("types the content and the trailing text with the marks across the replaced selection", () => {
+    // "ld</b> " replaces the selected "XY", whose start is italic, so ProseMirror would type it all as italic, although the end of the selection is plain
+    const italic = schema.marks.italic.create();
+    const { dispatch, handled } = runTextInput(
+      [schema.text("<b>bo"), schema.text("X", [italic]), schema.text("Y")],
+      6,
+      8,
+      "ld</b> ",
+    );
+    const tr = dispatch.mock.calls[0][0] as Transaction;
+    const marksAt = (pos: number): Array<string> =>
+      tr.doc.nodeAt(pos)?.marks.map((mark) => mark.type.name) ?? [];
+
+    expect(handled).toBe(true);
+    expect(tr.doc.textContent).toBe("bold ");
+    expect(marksAt(2)).toStrictEqual(["bold"]);
+    expect(marksAt(3)).toStrictEqual(["bold", "italic"]);
+    expect(marksAt(4)).toStrictEqual(["bold", "italic"]);
+    expect(marksAt(5)).toStrictEqual(["italic"]);
+    expect(tr.storedMarks).toStrictEqual([italic]);
+  });
+
+  test("keeps the selected content when the typed text can be inserted after it", () => {
+    // The input inserts "*" at the end of the selection. Taking it to replace the selection instead would retype the selected hard break and bold "b" as plain text.
+    const bold = schema.marks.bold.create();
+    const { dispatch, handled } = runTextInput(
+      [
+        schema.text("*a"),
+        schema.nodes.hardBreak.create(),
+        schema.text("b", [bold]),
+      ],
+      5,
+      5,
+      "*",
+      schema,
+      new MarkInputRule(
+        /(?<opening>\*)(?<content>[^*]+)(?<closing>\*)(?<trailing>)$/u,
+        schema.marks.italic,
+        { allowLeafNodes: true },
+      ),
+      { from: 3, to: 5 },
+    );
+    const tr = dispatch.mock.calls[0][0] as Transaction;
+
+    expect(handled).toBe(true);
+    expect(tr.doc.child(0).child(1).type.name).toBe("hardBreak");
+    expect(tr.doc.nodeAt(1)?.marks.map((mark) => mark.type.name)).toStrictEqual(
+      ["italic"],
+    );
+    expect(tr.doc.nodeAt(3)?.marks.map((mark) => mark.type.name)).toStrictEqual(
+      ["bold", "italic"],
+    );
+  });
+
+  test("does not apply when the typed text replaces a selection across textblocks", () => {
+    // "d</b> " replaces the selection from the end of "<b>bol" to the middle of the next paragraph, which ProseMirror may replace as whole nodes
+    const rule = new MarkInputRule(boldMatcher, schema.marks.bold);
+    const plugin = inputRules({ rules: [rule] });
+    const doc = schema.nodes.doc.create(null, [
+      schema.nodes.paragraph.create(null, schema.text("<b>bol")),
+      schema.nodes.paragraph.create(null, schema.text("XYZ")),
+    ]);
+    const state = EditorState.create({
+      doc,
+      plugins: [plugin],
+      selection: TextSelection.create(doc, 7, 10),
+    });
+    const dispatch = vi.fn();
+    const handled = plugin.props.handleTextInput?.call(
+      plugin,
+      { composing: false, dispatch, state } as unknown as EditorView,
+      7,
+      10,
+      "d</b> ",
+      () => state.tr,
+    );
+
+    expect(handled).toBe(false);
+    expect(dispatch).not.toHaveBeenCalled();
+  });
+
+  test("does not apply when a delimiter in the replaced selection would be typed in code", () => {
+    // "b* " replaces the selected "Q*". The "*" in the document is plain, but the typed one gets the code mark at the start of the selection.
+    const { dispatch, handled } = runTextInput(
+      [
+        schema.text("x*a"),
+        schema.text("Q", [schema.marks.code.create()]),
+        schema.text("*"),
+      ],
+      4,
+      6,
+      "b* ",
+      schema,
+      new MarkInputRule(asteriskMatcher, schema.marks.bold),
+    );
+
+    expect(handled).toBe(false);
+    expect(dispatch).not.toHaveBeenCalled();
+  });
+
+  // Types "bc* " over positions 4 to 6 of "x*a", code "b" and "c", with `recordedRange` recorded for the editor state, or for another state
+  const runRecordedTextInput = (
+    recordedRange: { from: number; to: number },
+    selection: { from: number; to: number },
+    recordOnOtherState = false,
+  ): { dispatch: Mock; handled: boolean } => {
+    const plugin = inputRules({
+      rules: [new MarkInputRule(asteriskMatcher, schema.marks.bold)],
+    });
+    const doc = schema.nodes.doc.create(
+      null,
+      schema.nodes.paragraph.create(null, [
+        schema.text("x*a"),
+        schema.text("b", [schema.marks.code.create()]),
+        schema.text("c"),
+      ]),
+    );
+    const state = EditorState.create({
+      doc,
+      plugins: [plugin],
+      selection: TextSelection.create(doc, selection.from, selection.to),
+    });
+    const dispatch = vi.fn();
+    const handled = withInputRange(
+      {
+        ...recordedRange,
+        state: recordOnOtherState ? EditorState.create({ doc }) : state,
+      },
+      () =>
+        plugin.props.handleTextInput?.call(
+          plugin,
+          { composing: false, dispatch, state } as unknown as EditorView,
+          4,
+          6,
+          "bc* ",
+          () => state.tr,
+        ),
+    );
+    return { dispatch, handled: handled === true };
+  };
+
+  test("takes the replaced range from the record over the selection", () => {
+    // Without the record, the typed text would be taken to be inserted at the cursor, after the plain "c"
+    const { dispatch, handled } = runRecordedTextInput(
+      { from: 4, to: 6 },
+      { from: 6, to: 6 },
+    );
+
+    expect(handled).toBe(false);
+    expect(dispatch).not.toHaveBeenCalled();
+  });
+
+  test("takes the typing marks from the end of a recorded range that replaces nothing", () => {
+    // Without the record, the typed text would be taken to replace the selection, which starts with code
+    const { dispatch, handled } = runRecordedTextInput(
+      { from: 6, to: 6 },
+      { from: 4, to: 6 },
+    );
+    const tr = dispatch.mock.calls[0][0] as Transaction;
+
+    expect(handled).toBe(true);
+    expect(tr.doc.textContent).toBe("xabc ");
+  });
+
+  test.each([
+    ["another state", { from: 4, to: 6 }, true],
+    ["another end", { from: 4, to: 5 }, false],
+  ])(
+    "ignores a range recorded for %s",
+    (_, recordedRange, recordOnOtherState) => {
+      // The cursor is after the plain "c", so the typed text is taken to be inserted there
+      const { dispatch, handled } = runRecordedTextInput(
+        recordedRange,
+        { from: 6, to: 6 },
+        recordOnOtherState,
+      );
+      const tr = dispatch.mock.calls[0][0] as Transaction;
+
+      expect(handled).toBe(true);
+      expect(tr.doc.textContent).toBe("xabc ");
+    },
+  );
+
   test("does not apply a code mark when a typed delimiter would be in code", () => {
     const { dispatch, handled } = runTextInput(
       [schema.text("x", [schema.marks.code.create()])],
@@ -796,5 +1057,40 @@ describe("MarkInputRule works", () => {
 
     expect(testEditor.doc.textContent).toBe("<b>bold</b>!");
     expect(testEditor.doc.nodeAt(1)?.marks).toHaveLength(0);
+  });
+});
+
+describe("withInputRange works", () => {
+  const state = EditorState.create({
+    schema: new Schema({ nodes: { doc: { content: "text*" }, text: {} } }),
+  });
+
+  test("records the range while running", () => {
+    const range = { from: 1, state, to: 2 };
+
+    const result = withInputRange(range, () => currentInputRange());
+
+    expect(result).toBe(range);
+    expect(currentInputRange()).toBeUndefined();
+  });
+
+  test("restores the range recorded before", () => {
+    const outer = { from: 1, state, to: 2 };
+
+    const result = withInputRange(outer, () => {
+      withInputRange({ from: 0, state, to: 2 }, () => undefined);
+      return currentInputRange();
+    });
+
+    expect(result).toBe(outer);
+  });
+
+  test("removes the range when running throws", () => {
+    expect(() =>
+      withInputRange({ from: 1, state, to: 2 }, () => {
+        throw new Error("failed");
+      }),
+    ).toThrow("failed");
+    expect(currentInputRange()).toBeUndefined();
   });
 });

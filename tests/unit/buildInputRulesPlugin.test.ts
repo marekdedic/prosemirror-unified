@@ -1,10 +1,22 @@
+import type { EditorView } from "prosemirror-view";
+
 import { baseKeymap } from "prosemirror-commands";
 import { InputRule, undoInputRule } from "prosemirror-inputrules";
 import { keymap } from "prosemirror-keymap";
-import { type DOMOutputSpec, Schema } from "prosemirror-model";
-import { Plugin, PluginKey } from "prosemirror-state";
+import {
+  type DOMOutputSpec,
+  type Node as ProseMirrorNode,
+  Schema,
+} from "prosemirror-model";
+import {
+  EditorState,
+  Plugin,
+  PluginKey,
+  TextSelection,
+  type Transaction,
+} from "prosemirror-state";
 import { builders } from "prosemirror-test-builder";
-import { expect, test, vi } from "vitest";
+import { expect, type Mock, test, vi } from "vitest";
 import { type ProseMirrorEditor, renderProseMirror } from "vitest-prosemirror";
 
 import { buildInputRulesPlugin } from "../../src/buildInputRulesPlugin";
@@ -62,6 +74,22 @@ test("buildInputRulesPlugin applies an input rule on Enter", () => {
   const testEditor = testerWithBoldRule();
   testEditor.setSelection("end");
   testEditor.type("Hello <b>World</b>");
+  testEditor.type("{Enter}");
+
+  const expectedDoc = doc(paragraph("Hello ", bold("World")), paragraph());
+
+  expect(testEditor.doc).toEqualProseMirrorNode(expectedDoc);
+});
+
+test("buildInputRulesPlugin applies an input rule on Enter over a selection", () => {
+  expect.assertions(1);
+
+  const testEditor = testerWithBoldRule();
+  testEditor.setSelection("end");
+  testEditor.type("Hello <b>World</b>XYZ");
+  // Select "XYZ", which Enter replaces
+  const end = testEditor.state.selection.from;
+  testEditor.setSelection({ anchor: end - 3, head: end });
   testEditor.type("{Enter}");
 
   const expectedDoc = doc(paragraph("Hello ", bold("World")), paragraph());
@@ -555,4 +583,63 @@ test("buildInputRulesPlugin keeps an inline leaf node whose leaf text is a line 
   expect(testEditor.doc).toEqualProseMirrorNode(
     hbDoc(hbParagraph("a", hardBreak())),
   );
+});
+
+// Runs the plugin's handleTextInput as typing `text` over `from` to `to` of a
+// paragraph with `content`, with the cursor at its end
+const runPluginTextInput = (
+  content: Array<ProseMirrorNode | string>,
+  from: number,
+  to: number,
+  text: string,
+): { dispatch: Mock; handled: boolean } => {
+  const manager = new ExtensionManager([new BoldInputRuleExtension()]);
+  const plugin = buildInputRulesPlugin(manager, schemaWithBold);
+  const initialDoc = doc(paragraph(...content));
+  const state = EditorState.create({
+    doc: initialDoc,
+    plugins: [plugin],
+    selection: TextSelection.atEnd(initialDoc),
+  });
+  const dispatch = vi.fn();
+  const handled = plugin.props.handleTextInput?.call(
+    plugin,
+    { composing: false, dispatch, state } as unknown as EditorView,
+    from,
+    to,
+    text,
+    () => state.tr,
+  );
+  return { dispatch, handled: handled === true };
+};
+
+test("buildInputRulesPlugin tells a MarkInputRule the range typed text replaces", () => {
+  // "d</b> " replaces "XYZ", although the cursor is after it. Without knowing
+  // the range, the rule would take the typed text to be inserted at the
+  // cursor, where the document doesn't hold the content.
+  const { dispatch, handled } = runPluginTextInput(
+    [schemaWithBold.text("<b>bolXYZ")],
+    7,
+    10,
+    "d</b> ",
+  );
+  const tr = dispatch.mock.calls[0][0] as Transaction;
+
+  expect(handled).toBe(true);
+  expect(tr.doc).toEqualProseMirrorNode(doc(paragraph(bold("bold"), " ")));
+});
+
+test("buildInputRulesPlugin tells a MarkInputRule the marks typed text replaces", () => {
+  // "bc</b> " replaces "bc", whose start has the code mark, so ProseMirror
+  // would type the closing delimiter in code. The cursor is after the plain
+  // "c", so without knowing the range, the rule would take the marks there.
+  const { dispatch, handled } = runPluginTextInput(
+    [schemaWithBold.text("x<b>a"), code("b"), "c"],
+    6,
+    8,
+    "bc</b> ",
+  );
+
+  expect(handled).toBe(false);
+  expect(dispatch).not.toHaveBeenCalled();
 });
