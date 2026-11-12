@@ -16,6 +16,18 @@ import { isCodeMark } from "./isCodeMark";
 // The object replacement character (U+FFFC), which prosemirror-inputrules puts in place of every inline leaf node
 const LEAF_NODE_PLACEHOLDER = String.fromCodePoint(0xfffc);
 
+/**
+ * The range typed text replaces in `state`. Internal, not part of the public API.
+ */
+export interface InputRange {
+  from: number;
+  state: EditorState;
+  to: number;
+}
+
+// The range recorded by withInputRange
+let recordedInputRange: InputRange | undefined = undefined;
+
 export interface MarkInputRuleOptions {
   /**
    * Whether the rule applies when the content contains an inline leaf node (an image, a hard break). Defaults to `false`.
@@ -34,6 +46,28 @@ export interface MarkInputRuleOptions {
    * Passed through to `InputRule`: whether `undoInputRule` can undo the rule.
    */
   undoable?: boolean;
+}
+
+/**
+ * The range recorded by `withInputRange` while it runs. Internal, not part of the public API.
+ */
+export function currentInputRange(): InputRange | undefined {
+  return recordedInputRange;
+}
+
+/**
+ * Calls `run` with `range` recorded, so that a `MarkInputRule` running on its state knows which range the typed text replaces.
+ * prosemirror-inputrules only passes the end of that range to a rule's handler. Internal, not part of the public API.
+ */
+export function withInputRange<T>(range: InputRange, run: () => T): T {
+  // Restored afterwards rather than cleared, in case `run` is called while a range is already recorded
+  const previous = recordedInputRange;
+  recordedInputRange = range;
+  try {
+    return run();
+  } finally {
+    recordedInputRange = previous;
+  }
 }
 
 /**
@@ -113,7 +147,8 @@ export class MarkInputRule extends InputRule {
 
   /**
    * Where the range the typed text replaces starts. It ends at `end`, but the handler isn't told where it starts.
-   * A selection ending at `end` that the typed text can have replaced is taken to be that range, which holds whenever the input replaces the selection.
+   * The input rules plugin from `ProseMirrorUnified` records it (see `withInputRange`), but not for a rule from another copy of this package.
+   * Without a record, a selection ending at `end` that the typed text can have replaced is taken to be that range, which holds whenever the input replaces the selection.
    * But when the document holds the matched text up to `end`, the typed text may as well have been inserted there, and taking it to replace the selection would then delete and retype the selected content, losing its inline nodes and marks.
    * Otherwise, the typed text is taken to be inserted at `end`.
    */
@@ -123,6 +158,10 @@ export class MarkInputRule extends InputRule {
     end: number,
     holdsMatchToEnd: boolean,
   ): number {
+    const range = currentInputRange();
+    if (range?.state === state && range.to === end) {
+      return range.from;
+    }
     const { empty, from, to } = state.selection;
     if (!empty && from >= start && to === end && !holdsMatchToEnd) {
       return from;

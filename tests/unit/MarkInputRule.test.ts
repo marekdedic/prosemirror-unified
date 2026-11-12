@@ -15,8 +15,10 @@ import { describe, expect, type Mock, test, vi } from "vitest";
 import { type ProseMirrorEditor, renderProseMirror } from "vitest-prosemirror";
 
 import {
+  currentInputRange,
   MarkInputRule,
   type MarkInputRuleOptions,
+  withInputRange,
 } from "../../src/MarkInputRule";
 
 describe("MarkInputRule works", () => {
@@ -880,6 +882,89 @@ describe("MarkInputRule works", () => {
     expect(dispatch).not.toHaveBeenCalled();
   });
 
+  // Types "bc* " over positions 4 to 6 of "x*a", code "b" and "c", with `recordedRange` recorded for the editor state, or for another state
+  const runRecordedTextInput = (
+    recordedRange: { from: number; to: number },
+    selection: { from: number; to: number },
+    recordOnOtherState = false,
+  ): { dispatch: Mock; handled: boolean } => {
+    const plugin = inputRules({
+      rules: [new MarkInputRule(asteriskMatcher, schema.marks.bold)],
+    });
+    const doc = schema.nodes.doc.create(
+      null,
+      schema.nodes.paragraph.create(null, [
+        schema.text("x*a"),
+        schema.text("b", [schema.marks.code.create()]),
+        schema.text("c"),
+      ]),
+    );
+    const state = EditorState.create({
+      doc,
+      plugins: [plugin],
+      selection: TextSelection.create(doc, selection.from, selection.to),
+    });
+    const dispatch = vi.fn();
+    const handled = withInputRange(
+      {
+        ...recordedRange,
+        state: recordOnOtherState ? EditorState.create({ doc }) : state,
+      },
+      () =>
+        plugin.props.handleTextInput?.call(
+          plugin,
+          { composing: false, dispatch, state } as unknown as EditorView,
+          4,
+          6,
+          "bc* ",
+          () => state.tr,
+        ),
+    );
+    return { dispatch, handled: handled === true };
+  };
+
+  test("takes the replaced range from the record over the selection", () => {
+    // Without the record, the typed text would be taken to be inserted at the cursor, after the plain "c"
+    const { dispatch, handled } = runRecordedTextInput(
+      { from: 4, to: 6 },
+      { from: 6, to: 6 },
+    );
+
+    expect(handled).toBe(false);
+    expect(dispatch).not.toHaveBeenCalled();
+  });
+
+  test("takes the typing marks from the end of a recorded range that replaces nothing", () => {
+    // Without the record, the typed text would be taken to replace the selection, which starts with code
+    const { dispatch, handled } = runRecordedTextInput(
+      { from: 6, to: 6 },
+      { from: 4, to: 6 },
+    );
+    const tr = dispatch.mock.calls[0][0] as Transaction;
+
+    expect(handled).toBe(true);
+    expect(tr.doc.textContent).toBe("xabc ");
+  });
+
+  test.each([
+    ["another state", { from: 4, to: 6 }, true],
+    ["another end", { from: 4, to: 5 }, false],
+  ])(
+    "ignores a range recorded for %s",
+    (_, recordedRange, recordOnOtherState) => {
+      // The cursor is after the plain "c", so the typed text is taken to be inserted there
+      const { dispatch, handled } = runRecordedTextInput(
+        recordedRange,
+        { from: 6, to: 6 },
+        recordOnOtherState,
+      );
+      const tr = dispatch.mock.calls[0][0] as Transaction;
+
+      expect(handled).toBe(true);
+      expect(tr.doc.textContent).toBe("xabc ");
+    },
+  );
+
   test("does not apply a code mark when a typed delimiter would be in code", () => {
     const { dispatch, handled } = runTextInput(
       [schema.text("x", [schema.marks.code.create()])],
@@ -972,5 +1057,40 @@ describe("MarkInputRule works", () => {
 
     expect(testEditor.doc.textContent).toBe("<b>bold</b>!");
     expect(testEditor.doc.nodeAt(1)?.marks).toHaveLength(0);
+  });
+});
+
+describe("withInputRange works", () => {
+  const state = EditorState.create({
+    schema: new Schema({ nodes: { doc: { content: "text*" }, text: {} } }),
+  });
+
+  test("records the range while running", () => {
+    const range = { from: 1, state, to: 2 };
+
+    const result = withInputRange(range, () => currentInputRange());
+
+    expect(result).toBe(range);
+    expect(currentInputRange()).toBeUndefined();
+  });
+
+  test("restores the range recorded before", () => {
+    const outer = { from: 1, state, to: 2 };
+
+    const result = withInputRange(outer, () => {
+      withInputRange({ from: 0, state, to: 2 }, () => undefined);
+      return currentInputRange();
+    });
+
+    expect(result).toBe(outer);
+  });
+
+  test("removes the range when running throws", () => {
+    expect(() =>
+      withInputRange({ from: 1, state, to: 2 }, () => {
+        throw new Error("failed");
+      }),
+    ).toThrow("failed");
+    expect(currentInputRange()).toBeUndefined();
   });
 });
