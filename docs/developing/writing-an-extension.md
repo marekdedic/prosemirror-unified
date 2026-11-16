@@ -205,7 +205,7 @@ export class BoldExtension extends MarkExtension<UnistBold> {
 }
 ```
 
-Both are also available on `NodeExtension`s — they live on the shared [`SyntaxExtension`](/developing/extensions#syntaxextension) base.
+Both are also available on `NodeExtension`s and on plain `Extension`s — they live on the [`Extension`](/developing/extensions#extension) base, so an extension without a syntax of its own can add input rules and shortcuts too.
 
 ## Bundling the extensions
 

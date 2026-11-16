@@ -5,6 +5,7 @@ import { expect, test, vi } from "vitest";
 import { type ProseMirrorEditor, renderProseMirror } from "vitest-prosemirror";
 
 import { buildKeymapPlugin } from "../../src/buildKeymapPlugin";
+import { Extension } from "../../src/Extension";
 import { ExtensionManager } from "../../src/ExtensionManager";
 import { MockNodeExtension } from "../mocks/MockNodeExtension";
 
@@ -100,4 +101,30 @@ test("buildKeymapPlugin leaves out the base keymap", () => {
   expect(enterCommand).toHaveBeenCalledTimes(1);
   // Without the base keymap, nothing split the paragraph.
   expect(testEditor.doc.childCount).toBe(1);
+});
+
+test("buildKeymapPlugin collects the keymaps of extensions that aren't syntax extensions, after those of syntax extensions", () => {
+  const plainCommand = vi.fn<Command>(() => true);
+  const syntaxCommand = vi.fn<Command>(() => false);
+
+  class PlainExtension extends Extension {
+    public override proseMirrorKeymap(): Record<string, Command> {
+      return { "Mod-b": plainCommand };
+    }
+  }
+  const syntax = new FirstExtension();
+  syntax.proseMirrorKeymap.mockReturnValue({ "Mod-b": syntaxCommand });
+
+  const plugin = buildKeymapPlugin(
+    new ExtensionManager([new PlainExtension(), syntax]),
+    schema,
+  );
+  const testEditor = renderProseMirror(
+    schema.nodes["doc"].create(null, schema.nodes["paragraph"].create()),
+    { editorProps: { plugins: [plugin] } },
+  );
+  testEditor.type("{Mod-b}");
+
+  expect(syntaxCommand).toHaveBeenCalledTimes(1);
+  expect(plainCommand).toHaveBeenCalledAfter(syntaxCommand);
 });

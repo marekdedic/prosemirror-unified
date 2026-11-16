@@ -104,7 +104,7 @@ export function buildInputRulesPlugin(
   const rules = ([] as Array<InputRule>).concat.apply(
     [],
     extensionManager
-      .syntaxExtensions()
+      .extensions()
       .map((extension) => extension.proseMirrorInputRules(proseMirrorSchema)),
   );
   const inputRulesPlugin = recordInputRanges(inputRules({ rules }));

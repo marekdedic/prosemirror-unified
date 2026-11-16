@@ -21,6 +21,7 @@ import { type ProseMirrorEditor, renderProseMirror } from "vitest-prosemirror";
 
 import { buildInputRulesPlugin } from "../../src/buildInputRulesPlugin";
 import { EnterInputRule } from "../../src/EnterInputRule";
+import { Extension } from "../../src/Extension";
 import { ExtensionManager } from "../../src/ExtensionManager";
 import { MarkInputRule } from "../../src/MarkInputRule";
 import { MockNodeExtension } from "../mocks/MockNodeExtension";
@@ -67,6 +68,59 @@ const testerWithBoldRule = (): ProseMirrorEditor => {
     },
   });
 };
+
+test("buildInputRulesPlugin collects the input rules of extensions that aren't syntax extensions", () => {
+  class PlainBoldExtension extends Extension {
+    public override proseMirrorInputRules(
+      proseMirrorSchema: Schema<string, string>,
+    ): Array<InputRule> {
+      return new BoldInputRuleExtension().proseMirrorInputRules(
+        proseMirrorSchema,
+      );
+    }
+  }
+  const manager = new ExtensionManager([new PlainBoldExtension()]);
+  const testEditor = renderProseMirror(doc(paragraph()), {
+    editorProps: {
+      plugins: [
+        buildInputRulesPlugin(manager, schemaWithBold),
+        keymap(baseKeymap),
+      ],
+    },
+  });
+  testEditor.setSelection("end");
+  testEditor.type("Hello <b>World</b>{Enter}");
+
+  expect(testEditor.doc).toEqualProseMirrorNode(
+    doc(paragraph("Hello ", bold("World")), paragraph()),
+  );
+});
+
+test("buildInputRulesPlugin tries the input rules of extensions that aren't syntax extensions after those of syntax extensions", () => {
+  class PlainExtension extends Extension {
+    public override proseMirrorInputRules(): Array<InputRule> {
+      return [new InputRule(/x$/u, "plain")];
+    }
+  }
+  class SyntaxRuleExtension extends MockNodeExtension<{ type: "syntax" }> {
+    public override proseMirrorInputRules(): Array<InputRule> {
+      return [new InputRule(/x$/u, "syntax")];
+    }
+  }
+  const manager = new ExtensionManager([
+    new PlainExtension(),
+    new SyntaxRuleExtension(),
+  ]);
+  const testEditor = renderProseMirror(doc(paragraph()), {
+    editorProps: {
+      plugins: [buildInputRulesPlugin(manager, schemaWithBold)],
+    },
+  });
+  testEditor.setSelection("end");
+  testEditor.type("x");
+
+  expect(testEditor.doc).toEqualProseMirrorNode(doc(paragraph("syntax")));
+});
 
 test("buildInputRulesPlugin applies an input rule on Enter", () => {
   expect.assertions(1);

@@ -1,6 +1,4 @@
-import type { InputRule } from "prosemirror-inputrules";
 import type { Node as ProseMirrorNode, Schema } from "prosemirror-model";
-import type { Command } from "prosemirror-state";
 import type { Node as UnistNode } from "unist";
 
 import { Extension } from "./Extension";
@@ -17,20 +15,6 @@ export abstract class SyntaxExtension<
     // @ts-expect-error: TS6133 causes an error because of an unused parameter - however, this method is meant to be overriden
     context: Partial<UnistToProseMirrorContext>,
   ): void {}
-
-  public proseMirrorInputRules(
-    // @ts-expect-error: TS6133 causes an error because of an unused parameter - however, this method is meant to be overriden
-    proseMirrorSchema: Schema<string, string>,
-  ): Array<InputRule> {
-    return [];
-  }
-
-  public proseMirrorKeymap(
-    // @ts-expect-error: TS6133 causes an error because of an unused parameter - however, this method is meant to be overriden
-    proseMirrorSchema: Schema<string, string>,
-  ): Record<string, Command> {
-    return {};
-  }
   /* eslint-enable */
 
   public abstract unistNodeName(): HandledUnistNode["type"];
