@@ -26,13 +26,14 @@ classDiagram
   class Extension {
     dependencies()
     unifiedInitializationHook()
+    proseMirrorInputRules()
+    proseMirrorKeymap()
+    proseMirrorPlugins()
   }
   class SyntaxExtension {
     <<abstract>>
     unistNodeName()
     unistNodeToProseMirrorNode()
-    proseMirrorInputRules()
-    proseMirrorKeymap()
   }
   class NodeExtension {
     <<abstract>>

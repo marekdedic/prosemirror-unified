@@ -11,7 +11,7 @@ export function buildKeymapPlugin(
   proseMirrorSchema: Schema<string, string>,
 ): Plugin {
   const commandsByKey = new Map<string, Array<Command>>();
-  for (const extension of extensionManager.syntaxExtensions()) {
+  for (const extension of extensionManager.extensions()) {
     const map = extension.proseMirrorKeymap(proseMirrorSchema);
     for (const key in map) {
       if (Object.prototype.hasOwnProperty.call(map, key)) {

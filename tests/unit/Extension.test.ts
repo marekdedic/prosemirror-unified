@@ -35,3 +35,19 @@ test("Extension.proseMirrorPlugins has a default implementation", () => {
 
   expect(extension.proseMirrorPlugins(schema)).toStrictEqual([]);
 });
+
+test("Extension.proseMirrorInputRules has a default implementation", () => {
+  class MockExtension extends Extension {}
+  const extension = new MockExtension();
+  const schema = new Schema<string, string>({ nodes: { doc: {}, text: {} } });
+
+  expect(extension.proseMirrorInputRules(schema)).toStrictEqual([]);
+});
+
+test("Extension.proseMirrorKeymap has a default implementation", () => {
+  class MockExtension extends Extension {}
+  const extension = new MockExtension();
+  const schema = new Schema<string, string>({ nodes: { doc: {}, text: {} } });
+
+  expect(extension.proseMirrorKeymap(schema)).toStrictEqual({});
+});

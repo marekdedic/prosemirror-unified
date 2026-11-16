@@ -27,11 +27,21 @@ The hooks that contribute to the editor — `proseMirrorPlugins`, `proseMirrorIn
 
 ## `Extension`
 
-The root class for all prosemirror-unified extensions. By itself it does little; you normally extend `NodeExtension` or `MarkExtension` instead.
+The root class for all prosemirror-unified extensions. To support a piece of syntax, extend `NodeExtension` or `MarkExtension` instead. Extending `Extension` directly is enough for an extension without a syntax of its own — one that bundles other extensions through `dependencies`, configures the unified processor, or only adds input rules, keyboard shortcuts or plugins to the editor.
 
 ### `dependencies(): Array<Extension>`
 
 Override this to declare other extensions that must be present for this one to work. For example, a list extension can declare a list-item extension as a dependency, and the `MarkdownExtension` from prosemirror-remark uses this to pull in all the individual markdown extensions. Defaults to `[]`.
+
+### `proseMirrorInputRules(proseMirrorSchema: Schema<string, string>): Array<InputRule>`
+
+Override to add input rules to the editor. Receives the built schema. Defaults to `[]`. The rules of all extensions are tried in the extension order described under `proseMirrorPlugins` below, and the first rule that applies wins — except on Enter, where [`EnterInputRule`](#enterinputrule)s are tried before all other rules. See [`MarkInputRule`](#markinputrule) for mark-adding rules and [`EnterInputRule`](#enterinputrule) for rules that replace what Enter does.
+
+The rules also run when Enter is pressed without a modifier key and the selection is within a single textblock: they are matched as if a line ending (`"\n"`) had been typed, so a rule ending in e.g. `\s$` applies on Enter too. To keep a rule from applying on Enter, don't let its last character match `\n`. After a rule applies, Enter goes on to the keymaps, which split the block or do whatever else Enter is bound to — unless the rule is an `EnterInputRule`. As the line ending isn't in the document, it isn't inserted as text: a `"\n"` that the rule inserts right before the cursor, for example through a string handler with a capture group, is removed again.
+
+### `proseMirrorKeymap(proseMirrorSchema: Schema<string, string>): Record<string, Command>`
+
+Override to add keyboard shortcuts, keyed by shortcut. Receives the built schema. Defaults to `{}`. When several extensions bind the same key, their commands are tried in the extension order described under `proseMirrorPlugins` below until one handles it.
 
 ### `proseMirrorPlugins(proseMirrorSchema: Schema<string, string>): Array<Plugin>`
 
@@ -108,16 +118,6 @@ Translates a unist node to ProseMirror. Receives the original unist node, the bu
 ### `postUnistToProseMirrorHook(context: Partial<UnistToProseMirrorContext>): void`
 
 Called after the whole document has been translated from unist to ProseMirror. Does nothing by default.
-
-### `proseMirrorInputRules(proseMirrorSchema: Schema<string, string>): Array<InputRule>`
-
-Override to add input rules to the editor. Receives the built schema. Defaults to `[]`. See [`MarkInputRule`](#markinputrule) for mark-adding rules and [`EnterInputRule`](#enterinputrule) for rules that replace what Enter does.
-
-The rules also run when Enter is pressed without a modifier key and the selection is within a single textblock: they are matched as if a line ending (`"\n"`) had been typed, so a rule ending in e.g. `\s$` applies on Enter too. To keep a rule from applying on Enter, don't let its last character match `\n`. After a rule applies, Enter goes on to the keymaps, which split the block or do whatever else Enter is bound to — unless the rule is an `EnterInputRule`. As the line ending isn't in the document, it isn't inserted as text: a `"\n"` that the rule inserts right before the cursor, for example through a string handler with a capture group, is removed again.
-
-### `proseMirrorKeymap(proseMirrorSchema: Schema<string, string>): Record<string, Command>`
-
-Override to add keyboard shortcuts, keyed by shortcut. Receives the built schema. Defaults to `{}`.
 
 ## `NodeExtension`
 
