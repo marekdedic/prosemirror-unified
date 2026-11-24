@@ -67,7 +67,7 @@ const paste = (
     text,
     $context,
     plain,
-    {} as EditorView,
+    {} as unknown as EditorView,
   );
 
 const emptyDoc = schema.nodes.doc.create({}, [schema.nodes.paragraph.create()]);
