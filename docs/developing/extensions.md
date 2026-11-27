@@ -210,6 +210,8 @@ The rule also doesn't apply when the mark can't be added to all of the content, 
 
 Nor does it apply when `opening` or `closing` is in text with a code mark (a mark whose spec sets `code: true`, such as inline code), or would be typed with one, because a delimiter in code is literal text. Code in `content` is fine, so for example a bold rule still applies around inline code, unless the code mark excludes bold (see above).
 
+The rule also applies when the typed text replaces a range, such as the selection, or contains part of the match, e.g. when autocorrect inserts several characters at once. In an `inputRules()` plugin from prosemirror-inputrules older than 1.7.0, it only applies to text typed without replacing anything.
+
 `options` takes:
 
 - **`allowLeafNodes`** — see above. Defaults to `false`.
