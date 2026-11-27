@@ -804,18 +804,19 @@ describe("MarkInputRule works", () => {
     expect(tr.storedMarks).toStrictEqual([]);
   });
 
-  test("does not apply when run without the typed text", () => {
-    // As by prosemirror-inputrules before 1.7.0, which doesn't pass it to the handler
+  // Runs a bold rule's handler for "<b>bold</b> " without the typed text, as prosemirror-inputrules before 1.7.0 does
+  const runWithoutTypedText = (
+    text: string,
+    start: number,
+    end: number,
+  ): Transaction | null => {
     const rule = new MarkInputRule(boldMatcher, schema.marks.bold);
     const doc = schema.nodes.doc.create(
       null,
-      schema.nodes.paragraph.create(null, schema.text("<b>bold</b>")),
+      schema.nodes.paragraph.create(null, schema.text(text)),
     );
     const state = EditorState.create({ doc });
-    const match = boldMatcher.exec("<b>bold</b> ");
-
-    expect(match).not.toBeNull();
-
+    const match = boldMatcher.exec("<b>bold</b> ") as RegExpMatchArray;
     // The handler isn't part of InputRule's public type
     const { handler } = rule as unknown as {
       handler(
@@ -825,8 +826,21 @@ describe("MarkInputRule works", () => {
         end: number,
       ): Transaction | null;
     };
+    return handler(state, match, start, end);
+  };
 
-    expect(handler(state, match as RegExpMatchArray, 1, 12)).toBeNull();
+  test("applies to text inserted at the end when run without the typed text", () => {
+    const tr = runWithoutTypedText("<b>bold</b>", 1, 12);
+
+    expect(tr?.doc.textContent).toBe("bold ");
+    expect(tr?.doc.nodeAt(1)?.marks).toHaveLength(1);
+    expect(tr?.doc.nodeAt(5)?.marks).toHaveLength(0);
+    expect(tr?.selection.from).toBe(6);
+  });
+
+  test("does not apply to text replacing a range when run without the typed text", () => {
+    // "d</b> " replaces "XYZ", which the rule can't tell without the typed text
+    expect(runWithoutTypedText("<b>bolXYZ", 1, 10)).toBeNull();
   });
 
   test("types the content and the trailing text with the marks across the replaced selection", () => {

@@ -159,10 +159,6 @@ export class MarkInputRule extends InputRule {
     end: number,
     text: string | undefined,
   ): Transaction | null {
-    // Without the typed text, which prosemirror-inputrules only passes since 1.7.0, the range it replaces is unknown
-    if (text === undefined) {
-      return null;
-    }
     const { closing, content, opening, trailing } = match.groups as {
       closing: string;
       content: string;
@@ -182,7 +178,9 @@ export class MarkInputRule extends InputRule {
 
     // The match ends with the typed text, which replaces the range from `from` to `end`, and the document holds the rest of it up to `from` - multi-character input (e.g. from autocorrect) may reach into the content or further.
     // The parts of the groups in the document are deleted, marked or kept in place, and the typed parts of the content and the trailing text are inserted.
-    const from = start + match[0].length - text.length;
+    // prosemirror-inputrules before 1.7.0 doesn't pass the typed text, which is then taken to be inserted at `end`
+    const from =
+      text === undefined ? end : start + match[0].length - text.length;
     const openingTo = Math.min(start + opening.length, from);
     const contentTo = Math.min(openingTo + content.length, from);
     const closingTo = Math.min(contentTo + closing.length, from);
