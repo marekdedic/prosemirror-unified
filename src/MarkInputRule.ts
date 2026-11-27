@@ -16,18 +16,6 @@ import { isCodeMark } from "./isCodeMark";
 // The object replacement character (U+FFFC), which prosemirror-inputrules puts in place of every inline leaf node
 const LEAF_NODE_PLACEHOLDER = String.fromCodePoint(0xfffc);
 
-/**
- * The range typed text replaces in `state`. Internal, not part of the public API.
- */
-export interface InputRange {
-  from: number;
-  state: EditorState;
-  to: number;
-}
-
-// The range recorded by withInputRange
-let recordedInputRange: InputRange | undefined = undefined;
-
 export interface MarkInputRuleOptions {
   /**
    * Whether the rule applies when the content contains an inline leaf node (an image, a hard break). Defaults to `false`.
@@ -46,28 +34,6 @@ export interface MarkInputRuleOptions {
    * Passed through to `InputRule`: whether `undoInputRule` can undo the rule.
    */
   undoable?: boolean;
-}
-
-/**
- * The range recorded by `withInputRange` while it runs. Internal, not part of the public API.
- */
-export function currentInputRange(): InputRange | undefined {
-  return recordedInputRange;
-}
-
-/**
- * Calls `run` with `range` recorded, so that a `MarkInputRule` running on its state knows which range the typed text replaces.
- * prosemirror-inputrules only passes the end of that range to a rule's handler. Internal, not part of the public API.
- */
-export function withInputRange<T>(range: InputRange, run: () => T): T {
-  // Restored afterwards rather than cleared, in case `run` is called while a range is already recorded
-  const previous = recordedInputRange;
-  recordedInputRange = range;
-  try {
-    return run();
-  } finally {
-    recordedInputRange = previous;
-  }
 }
 
 /**
@@ -138,35 +104,12 @@ export class MarkInputRule extends InputRule {
     }
     super(
       matcher,
-      (state, match, start, end) => this.markHandler(state, match, start, end),
+      (state, match, start, end, text) =>
+        this.markHandler(state, match, start, end, text),
       inputRuleOptions,
     );
     this.allowLeafNodes = allowLeafNodes ?? false;
     this.mark = markType.create(null);
-  }
-
-  /**
-   * Where the range the typed text replaces starts. It ends at `end`, but the handler isn't told where it starts.
-   * The input rules plugin from `ProseMirrorUnified` records it (see `withInputRange`), but not for a rule from another copy of this package.
-   * Without a record, a selection ending at `end` that the typed text can have replaced is taken to be that range, which holds whenever the input replaces the selection.
-   * But when the document holds the matched text up to `end`, the typed text may as well have been inserted there, and taking it to replace the selection would then delete and retype the selected content, losing its inline nodes and marks.
-   * Otherwise, the typed text is taken to be inserted at `end`.
-   */
-  private static inputFrom(
-    state: EditorState,
-    start: number,
-    end: number,
-    holdsMatchToEnd: boolean,
-  ): number {
-    const range = currentInputRange();
-    if (range?.state === state && range.to === end) {
-      return range.from;
-    }
-    const { empty, from, to } = state.selection;
-    if (!empty && from >= start && to === end && !holdsMatchToEnd) {
-      return from;
-    }
-    return end;
   }
 
   /**
@@ -214,7 +157,12 @@ export class MarkInputRule extends InputRule {
     match: RegExpMatchArray,
     start: number,
     end: number,
+    text: string | undefined,
   ): Transaction | null {
+    // Without the typed text, which prosemirror-inputrules only passes since 1.7.0, the range it replaces is unknown
+    if (text === undefined) {
+      return null;
+    }
     const { closing, content, opening, trailing } = match.groups as {
       closing: string;
       content: string;
@@ -232,13 +180,9 @@ export class MarkInputRule extends InputRule {
       return null;
     }
 
-    // The document holds the match up to `from`. The rest of it is the typed text, which replaces the range from `from` to `end` - multi-character input (e.g. from autocorrect) may reach into the content or further.
+    // The match ends with the typed text, which replaces the range from `from` to `end`, and the document holds the rest of it up to `from` - multi-character input (e.g. from autocorrect) may reach into the content or further.
     // The parts of the groups in the document are deleted, marked or kept in place, and the typed parts of the content and the trailing text are inserted.
-    // Whether the document holds the match up to `end`, as it does when the typed text is inserted there
-    const holdsMatchToEnd =
-      state.doc.textBetween(start, end, undefined, LEAF_NODE_PLACEHOLDER) ===
-      match[0].slice(0, end - start);
-    const from = MarkInputRule.inputFrom(state, start, end, holdsMatchToEnd);
+    const from = start + match[0].length - text.length;
     const openingTo = Math.min(start + opening.length, from);
     const contentTo = Math.min(openingTo + content.length, from);
     const closingTo = Math.min(contentTo + closing.length, from);
@@ -254,16 +198,10 @@ export class MarkInputRule extends InputRule {
     }
 
     // Everything from the opening delimiter up to `from` gets deleted, marked or kept, so the document must hold exactly the matched text there.
-    // It doesn't e.g. when the match contains an inline node with content, or when the typed text replaces a range that doesn't start where it is taken to.
+    // It doesn't e.g. when the match contains an inline node with content.
     if (
-      from === end
-        ? !holdsMatchToEnd
-        : state.doc.textBetween(
-            start,
-            from,
-            undefined,
-            LEAF_NODE_PLACEHOLDER,
-          ) !== match[0].slice(0, from - start)
+      state.doc.textBetween(start, from, undefined, LEAF_NODE_PLACEHOLDER) !==
+      match[0].slice(0, from - start)
     ) {
       return null;
     }

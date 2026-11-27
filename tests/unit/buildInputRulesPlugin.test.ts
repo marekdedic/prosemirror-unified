@@ -398,6 +398,7 @@ test("buildInputRulesPlugin calls an EnterInputRule's handler once per Enter", (
     expect.arrayContaining(["lo!!\n", "o!"]),
     4,
     8,
+    "\n",
   );
   expect(testEditor.doc).toEqualProseMirrorNode(
     doc(paragraph("Hello!!"), paragraph()),
@@ -667,10 +668,8 @@ const runPluginTextInput = (
   return { dispatch, handled: handled === true };
 };
 
-test("buildInputRulesPlugin tells a MarkInputRule the range typed text replaces", () => {
-  // "d</b> " replaces "XYZ", although the cursor is after it. Without knowing
-  // the range, the rule would take the typed text to be inserted at the
-  // cursor, where the document doesn't hold the content.
+test("buildInputRulesPlugin lets a MarkInputRule apply to the range typed text replaces", () => {
+  // "d</b> " replaces "XYZ", although the cursor is after it
   const { dispatch, handled } = runPluginTextInput(
     [schemaWithBold.text("<b>bolXYZ")],
     7,
@@ -683,10 +682,10 @@ test("buildInputRulesPlugin tells a MarkInputRule the range typed text replaces"
   expect(tr.doc).toEqualProseMirrorNode(doc(paragraph(bold("bold"), " ")));
 });
 
-test("buildInputRulesPlugin tells a MarkInputRule the marks typed text replaces", () => {
+test("buildInputRulesPlugin lets a MarkInputRule take the marks typed text replaces", () => {
   // "bc</b> " replaces "bc", whose start has the code mark, so ProseMirror
-  // would type the closing delimiter in code. The cursor is after the plain
-  // "c", so without knowing the range, the rule would take the marks there.
+  // would type the closing delimiter in code, although the cursor is after
+  // the plain "c"
   const { dispatch, handled } = runPluginTextInput(
     [schemaWithBold.text("x<b>a"), code("b"), "c"],
     6,
