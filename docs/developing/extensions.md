@@ -221,9 +221,9 @@ Extends ProseMirror's `InputRule`, for input rules that replace what Enter does 
 
 ### `constructor(matcher: RegExp, handler: EnterInputRuleHandler, options?: EnterInputRuleOptions)`
 
-Takes the same arguments as ProseMirror's [`InputRule`](https://prosemirror.net/docs/ref/#inputrules.InputRule.constructor), except that `handler` must be a function — `(state: EditorState, match: RegExpMatchArray, start: number, end: number) => Transaction | null` — not a string (a string throws a `TypeError`). `options` (`inCode`, `inCodeMark`, `undoable`) is passed through to `InputRule`.
+Takes the same arguments as ProseMirror's [`InputRule`](https://prosemirror.net/docs/ref/#inputrules.InputRule.constructor), except that `handler` must be a function — `(state: EditorState, match: RegExpMatchArray, start: number, end: number, text: string) => Transaction | null` — not a string (a string throws a `TypeError`). `options` (`inCode`, `inCodeMark`, `undoable`) is passed through to `InputRule`.
 
-On Enter, the text the matcher sees ends with `"\n"`, which isn't in the document, so `end` is the cursor position, or the end of the selection if there is one. The rule only replaces Enter when the handler returns a transaction; when it returns `null`, Enter is handled as usual. On Enter, `EnterInputRule`s are tried before all other input rules, regardless of the order of the extensions, so a rule that replaces Enter wins over one that only reacts to it. Text input other than Enter is handled exactly as by a plain `InputRule`, without any effect on later key presses:
+On Enter, the text the matcher sees ends with `"\n"`, which isn't in the document, so `end` is the cursor position, or the end of the selection if there is one, and `text` is `"\n"`. The rule only replaces Enter when the handler returns a transaction; when it returns `null`, Enter is handled as usual. On Enter, `EnterInputRule`s are tried before all other input rules, regardless of the order of the extensions, so a rule that replaces Enter wins over one that only reacts to it. Text input other than Enter is handled exactly as by a plain `InputRule`, without any effect on later key presses:
 
 ````ts
 new EnterInputRule(/^```(?<lang>\w*)\n$/u, (state, match, start, end) => {

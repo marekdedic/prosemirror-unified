@@ -7,6 +7,7 @@ export type EnterInputRuleHandler = (
   match: RegExpMatchArray,
   start: number,
   end: number,
+  text: string,
 ) => Transaction | null;
 
 export type EnterInputRuleOptions = NonNullable<
